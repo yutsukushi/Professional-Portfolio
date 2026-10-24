@@ -61,7 +61,9 @@ const activeSupplierPopoverSku = ref(null)
 const pinnedSupplierPopoverSku = ref(null)
 const activeSupplierDropdownSku = ref(null)
 const supplierPopoverPosition = ref({})
+const supplierDropdownPosition = ref({})
 const supplierTriggerElements = new Map()
+const supplierDropdownTriggerElements = new Map()
 let supplierPopoverCloseTimeout
 const availableSuppliers = [...new Set([
   ...procurementRows.map((row) => row.supplier),
@@ -118,6 +120,35 @@ function setSupplierTriggerElement(sku, element) {
     supplierTriggerElements.set(sku, element)
   } else {
     supplierTriggerElements.delete(sku)
+  }
+}
+
+function setSupplierDropdownTriggerElement(sku, element) {
+  if (element) {
+    supplierDropdownTriggerElements.set(sku, element)
+  } else {
+    supplierDropdownTriggerElements.delete(sku)
+  }
+}
+
+function positionSupplierDropdown(trigger) {
+  const bounds = trigger.getBoundingClientRect()
+  const viewportPadding = 12
+  const dropdownWidth = Math.min(320, window.innerWidth - viewportPadding * 2)
+  const left = Math.max(
+    viewportPadding,
+    Math.min(bounds.left, window.innerWidth - dropdownWidth - viewportPadding),
+  )
+  const estimatedDropdownHeight = 280
+  const top = bounds.bottom + 6 + estimatedDropdownHeight <= window.innerHeight - viewportPadding
+    ? bounds.bottom + 6
+    : Math.max(viewportPadding, bounds.top - estimatedDropdownHeight - 6)
+
+  supplierDropdownPosition.value = {
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${dropdownWidth}px`,
+    maxHeight: `${window.innerHeight - top - viewportPadding}px`,
   }
 }
 
@@ -182,13 +213,19 @@ function toggleSupplierPopover(sku, trigger) {
 }
 
 function closeSupplierPopoverOutside(event) {
-  if (!event.target.closest('.supplier-cell-content, .supplier-save-pill, .supplier-popover')) {
+  if (!event.target.closest('.supplier-cell-content, .supplier-options, .supplier-save-pill, .supplier-popover')) {
     closeSupplierPopover()
     activeSupplierDropdownSku.value = null
   }
 }
 
 function repositionActiveSupplierPopover() {
+  const dropdownSku = activeSupplierDropdownSku.value
+  const dropdownTrigger = dropdownSku && supplierDropdownTriggerElements.get(dropdownSku)
+  if (dropdownTrigger) {
+    positionSupplierDropdown(dropdownTrigger)
+  }
+
   const sku = activeSupplierPopoverSku.value
   const trigger = sku && supplierTriggerElements.get(sku)
   if (trigger) {
@@ -210,6 +247,10 @@ function openDropdown(sku) {
   } else {
     activeSupplierDropdownSku.value = sku
     closeSupplierPopover(sku)
+    const trigger = supplierDropdownTriggerElements.get(sku)
+    if (trigger) {
+      positionSupplierDropdown(trigger)
+    }
   }
 }
 </script>
@@ -294,6 +335,7 @@ function openDropdown(sku) {
                   <div class="supplier-cell-content"
                     @click="openDropdown(row.sku)">
                     <button
+                      :ref="(element) => setSupplierDropdownTriggerElement(row.sku, element)"
                       class="supplier-name"
                       type="button"
                       aria-haspopup="listbox"
@@ -322,23 +364,25 @@ function openDropdown(sku) {
                         <path d="M8 7.25v3.5M8 5.25h.01" />
                       </svg>
                     </button>
-                    <div
-                      v-if="activeSupplierDropdownSku === row.sku"
-                      :id="`supplier-options-${row.sku}`"
-                      class="supplier-options"
-                      role="listbox"
-                      :aria-label="`Available suppliers for ${row.sku}`"
-                    >
-                      <button
-                        v-for="supplier in availableSuppliers"
-                        :key="supplier"
-                        class="supplier-option"
-                        type="button"
-                        role="option"
-                        :aria-selected="supplierName(row) === supplier"
-                        @click.stop="selectSupplier(row, supplier)"
+                    <Teleport to="body">
+                      <div
+                        v-if="activeSupplierDropdownSku === row.sku"
+                        :id="`supplier-options-${row.sku}`"
+                        class="supplier-options"
+                        :style="supplierDropdownPosition"
+                        role="listbox"
+                        :aria-label="`Available suppliers for ${row.sku}`"
                       >
-                        <div class="supplier-option-layout">
+                        <button
+                          v-for="supplier in availableSuppliers"
+                          :key="supplier"
+                          class="supplier-option"
+                          type="button"
+                          role="option"
+                          :aria-selected="supplierName(row) === supplier"
+                          @click.stop="selectSupplier(row, supplier)"
+                        >
+                          <div class="supplier-option-layout">
                           <span class="supplier-option-initial">S</span>
                           <!-- <div class="supplier-option-details"> -->
                             <div class="supplier-option-description">
@@ -350,7 +394,7 @@ function openDropdown(sku) {
                               <div class="supplier-option-meta">
                                 <div class="supplier-option-stock">
                                   <span class="supplier-option-stock-dot" aria-hidden="true"></span>
-                                  <span>3 available</span>
+                                  <span class="supplier-option-stock-text">3 available</span>
                                 </div>
                                 <span class="supplier-option-separator" aria-hidden="true"></span>
                                 <button
@@ -374,9 +418,10 @@ function openDropdown(sku) {
                               <span><b>$999.99</b></span>
                               <span class="supplier-option-savings">Save $49.72</span>
                           </div>
-                        </div>
-                      </button>
-                    </div>
+                          </div>
+                        </button>
+                      </div>
+                    </Teleport>
                   </div>
                   <Teleport to="body">
                     <div
@@ -816,17 +861,16 @@ function openDropdown(sku) {
 }
 
 .supplier-options {
-  position: absolute;
-  z-index: 10;
-  top: calc(100% + 0.35rem);
-  left: 0;
+  position: fixed;
+  z-index: 1100;
   display: grid;
-  min-width: 100%;
+  box-sizing: border-box;
   padding: 0.25rem;
   border: 1px solid #dce2dd;
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 8px 20px rgb(21 48 32 / 16%);
+  overflow-y: auto;
 }
 
 .supplier-option {
@@ -840,7 +884,7 @@ function openDropdown(sku) {
   background: #fff;
   color: #282a32;
   cursor: pointer;
-  font: inherit;
+  font-size: 0.6875rem;
   text-align: left;
   white-space: nowrap;
 }
@@ -868,8 +912,8 @@ function openDropdown(sku) {
 
 .supplier-option-initial {
   display: grid;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.5rem;
+  height: 1.5rem;
   flex: 0 0 auto;
   place-items: center;
   border-radius: 3px;
@@ -929,6 +973,10 @@ function openDropdown(sku) {
   background: #278148;
 }
 
+.supplier-option-stock-text {
+  font-size: 9px;
+}
+
 .supplier-option-separator {
   width: 2.5px;
   height: 2.5px;
@@ -939,7 +987,7 @@ function openDropdown(sku) {
 
 button .supplier-option-alert {
   color: #a95f2b;
-  font-size: 0.625rem;
+  font-size: 9px;
 }
 
 .supplier-option-price {
@@ -947,11 +995,12 @@ button .supplier-option-alert {
   flex: 0 0 auto;
   flex-direction: column;
   text-align: right;
+  row-gap: 0.25rem;
 }
 
 .supplier-option-savings {
   color: #286238;
-  font-size: 0.625rem;
+  font-size: 9px;
 }
 
 .supplier-save-pill {
@@ -1056,7 +1105,7 @@ button .supplier-option-alert {
   color: inherit;
   cursor: help;
   font: inherit;
-  line-height: 1.35;
+  /* line-height: 1.35; */
   white-space: nowrap;
 }
 
