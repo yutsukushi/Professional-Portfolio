@@ -11,7 +11,7 @@ export default defineConfig({
         portfolio: resolve(process.cwd(), 'index.html'),
         materialProcurementWorkflow: resolve(
           process.cwd(),
-          'material-procurement-workflow.html',
+          'pages/material-procurement-workflow.html',
         ),
       },
     },

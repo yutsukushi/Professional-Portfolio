@@ -56,11 +56,17 @@ const procurementRows = [
 
 const selectedSkus = ref([])
 const switchedSupplierSkus = ref([])
+const selectedSuppliers = ref({})
 const activeSupplierPopoverSku = ref(null)
 const pinnedSupplierPopoverSku = ref(null)
+const activeSupplierDropdownSku = ref(null)
 const supplierPopoverPosition = ref({})
 const supplierTriggerElements = new Map()
 let supplierPopoverCloseTimeout
+const availableSuppliers = [...new Set([
+  ...procurementRows.map((row) => row.supplier),
+  'Beacon Supply',
+])]
 const allRowsSelected = computed(
   () =>
     procurementRows.length > 0 &&
@@ -81,11 +87,30 @@ function displayedRowTotal(row) {
   return total - (switchedSupplierSkus.value.includes(row.sku) ? 49.72 : 0)
 }
 
+function supplierName(row) {
+  if (switchedSupplierSkus.value.includes(row.sku)) {
+    return 'Beacon Supply'
+  }
+  return selectedSuppliers.value[row.sku] || row.supplier
+}
+
 function switchSupplier(sku) {
   if (!switchedSupplierSkus.value.includes(sku)) {
     switchedSupplierSkus.value = [...switchedSupplierSkus.value, sku]
   }
+  activeSupplierDropdownSku.value = null
   closeSupplierPopover(sku)
+}
+
+function selectSupplier(row, supplier) {
+  if (supplier === 'Beacon Supply') {
+    switchSupplier(row.sku)
+    return
+  }
+
+  switchedSupplierSkus.value = switchedSupplierSkus.value.filter((sku) => sku !== row.sku)
+  selectedSuppliers.value = { ...selectedSuppliers.value, [row.sku]: supplier }
+  activeSupplierDropdownSku.value = null
 }
 
 function setSupplierTriggerElement(sku, element) {
@@ -157,8 +182,9 @@ function toggleSupplierPopover(sku, trigger) {
 }
 
 function closeSupplierPopoverOutside(event) {
-  if (!event.target.closest('.supplier-save-pill, .supplier-popover')) {
+  if (!event.target.closest('.supplier-cell-content, .supplier-save-pill, .supplier-popover')) {
     closeSupplierPopover()
+    activeSupplierDropdownSku.value = null
   }
 }
 
@@ -178,6 +204,14 @@ function toggleAllRows(event) {
   }
 }
 
+function openDropdown(sku) {
+  if (activeSupplierDropdownSku.value === sku) {
+    activeSupplierDropdownSku.value = null
+  } else {
+    activeSupplierDropdownSku.value = sku
+    closeSupplierPopover(sku)
+  }
+}
 </script>
 
 <template>
@@ -257,26 +291,93 @@ function toggleAllRows(event) {
                 <th scope="row" class="sku-cell">{{ row.sku }}</th>
                 <td>{{ row.brand }}</td>
                 <td class="supplier-cell">
-                  <span class="supplier-name">{{ switchedSupplierSkus.includes(row.sku) ? 'Beacon Supply' : row.supplier }}</span>
-                  <button
-                    v-show="!switchedSupplierSkus.includes(row.sku)"
-                    :ref="(element) => setSupplierTriggerElement(row.sku, element)"
-                    class="supplier-save-pill"
-                    type="button"
-                    aria-haspopup="dialog"
-                    :aria-expanded="activeSupplierPopoverSku === row.sku"
-                    @mouseenter="showSupplierPopover(row.sku, $event.currentTarget)"
-                    @mouseleave="scheduleSupplierPopoverClose(row.sku)"
-                    @focus="showSupplierPopover(row.sku, $event.currentTarget)"
-                    @blur="scheduleSupplierPopoverClose(row.sku)"
-                    @click="toggleSupplierPopover(row.sku, $event.currentTarget)"
-                    @keydown.esc="closeSupplierPopover(row.sku)"
-                  >Switch & save $49.72
+                  <div class="supplier-cell-content"
+                    @click="openDropdown(row.sku)">
+                    <button
+                      class="supplier-name"
+                      type="button"
+                      aria-haspopup="listbox"
+                      :aria-expanded="activeSupplierDropdownSku === row.sku"
+                      :aria-controls="`supplier-options-${row.sku}`"
+                      @click.stop="openDropdown(row.sku)"
+                    >
+                      {{ supplierName(row) }}
+                    </button>
+                    <button
+                      v-show="!switchedSupplierSkus.includes(row.sku)"
+                      :ref="(element) => setSupplierTriggerElement(row.sku, element)"
+                      class="supplier-save-pill"
+                      type="button"
+                      aria-haspopup="dialog"
+                      :aria-expanded="activeSupplierPopoverSku === row.sku"
+                      @mouseenter="showSupplierPopover(row.sku, $event.currentTarget)"
+                      @mouseleave="scheduleSupplierPopoverClose(row.sku)"
+                      @focus="showSupplierPopover(row.sku, $event.currentTarget)"
+                      @blur="scheduleSupplierPopoverClose(row.sku)"
+                      @click.stop="toggleSupplierPopover(row.sku, $event.currentTarget)"
+                      @keydown.esc="closeSupplierPopover(row.sku)"
+                    >Switch & save $49.72
                       <svg aria-hidden="true" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="6.25" />
                         <path d="M8 7.25v3.5M8 5.25h.01" />
                       </svg>
-                  </button>
+                    </button>
+                    <div
+                      v-if="activeSupplierDropdownSku === row.sku"
+                      :id="`supplier-options-${row.sku}`"
+                      class="supplier-options"
+                      role="listbox"
+                      :aria-label="`Available suppliers for ${row.sku}`"
+                    >
+                      <button
+                        v-for="supplier in availableSuppliers"
+                        :key="supplier"
+                        class="supplier-option"
+                        type="button"
+                        role="option"
+                        :aria-selected="supplierName(row) === supplier"
+                        @click.stop="selectSupplier(row, supplier)"
+                      >
+                        <div class="supplier-option-layout">
+                          <span class="supplier-option-initial">S</span>
+                          <!-- <div class="supplier-option-details"> -->
+                            <div class="supplier-option-description">
+                              <div class="supplier-option-heading">
+                                <span><b>{{ supplier }}</b></span>
+                                <span class="supplier-option-badge supplier-option-badge--price"><b>Lowest price</b></span>
+                                <span class="supplier-option-badge supplier-option-badge--configurable"><b>Configurable</b></span>
+                              </div>
+                              <div class="supplier-option-meta">
+                                <div class="supplier-option-stock">
+                                  <span class="supplier-option-stock-dot" aria-hidden="true"></span>
+                                  <span>3 available</span>
+                                </div>
+                                <span class="supplier-option-separator" aria-hidden="true"></span>
+                                <button
+                                  class="supplier-alert-trigger supplier-option-alert"
+                                  type="button"
+                                  aria-label="One alert from current supplier"
+                                >
+                                  1 product alert
+                                  <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                                    <circle cx="8" cy="8" r="6.25" />
+                                    <path d="M8 7.25v3.5M8 5.25h.01" />
+                                  </svg>
+                                  <span class="supplier-alert-tooltip" role="tooltip">
+                                    ***LEADTIME: 2 TO 3 WEEKS***
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          <!-- </div> -->
+                          <div class="supplier-option-price">
+                              <span><b>$999.99</b></span>
+                              <span class="supplier-option-savings">Save $49.72</span>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
                   <Teleport to="body">
                     <div
                       v-if="activeSupplierPopoverSku === row.sku"
@@ -612,20 +713,9 @@ function toggleAllRows(event) {
 
 .procurement-table tbody td,
 .procurement-table tbody th {
-  /* background: #050505; */
   color: #282a32;
   font-weight: 400;
 }
-
-/* .procurement-table tbody tr:hover td,
-.procurement-table tbody tr:hover th {
-  background: #171717;
-}
-
-.procurement-table tbody tr.is-selected td,
-.procurement-table tbody tr.is-selected th {
-  background: #1b1820;
-} */
 
 .procurement-table tbody tr:last-child td,
 .procurement-table tbody tr:last-child th {
@@ -675,16 +765,193 @@ function toggleAllRows(event) {
 
 .procurement-table .supplier-cell {
   position: relative;
+  vertical-align: middle;
+  overflow: visible;
+}
+
+.supplier-cell-content {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.45rem;
-  overflow: visible;
+  min-width: 0;
+}
+
+.procurement-table .supplier-cell:hover {
+  background-color:#ebf2ff;
+  cursor: pointer;
 }
 
 .supplier-name {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.supplier-name svg {
+  width: 0.65rem;
+  height: 0.65rem;
+  flex: 0 0 auto;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.supplier-name:focus-visible,
+.supplier-option:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid #7550c8;
+  outline-offset: 2px;
+}
+
+.supplier-options {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  display: grid;
+  min-width: 100%;
+  padding: 0.25rem;
+  border: 1px solid #dce2dd;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgb(21 48 32 / 16%);
+}
+
+.supplier-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0.5rem;
+  border: 0;
+  border-radius: 3px;
+  background: #fff;
+  color: #282a32;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.supplier-option:hover,
+.supplier-option[aria-selected='true'] {
+  background: #f0f4ef;
+}
+
+.supplier-option-layout {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  align-items:flex-start;
+  gap: 0.75rem;
+}
+
+.supplier-option-details {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.supplier-option-initial {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 3px;
+  background: #e8ebe5;
+  color: #4c5259;
+  font-weight: 500;
+}
+
+.supplier-option-description {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.supplier-option-heading,
+.supplier-option-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.supplier-option-heading {
+  flex-wrap: wrap;
+}
+
+.supplier-option-badge {
+  padding: 0.05rem 0.15rem;
+  border-radius: 3px;
+  font-size: 0.5rem;
+  font-weight: 600;
+}
+
+.supplier-option-badge--price {
+  background: #e9f4e7;
+  color: #286238;
+}
+
+.supplier-option-badge--configurable {
+  background: #e7f0f5;
+  color: #315d78;
+}
+
+.supplier-option-stock {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #286238;
+  font-size: 0.625rem;
+}
+
+.supplier-option-stock-dot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #278148;
+}
+
+.supplier-option-separator {
+  width: 2.5px;
+  height: 2.5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #c8ccc5;
+}
+
+button .supplier-option-alert {
+  color: #a95f2b;
+  font-size: 0.625rem;
+}
+
+.supplier-option-price {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  text-align: right;
+}
+
+.supplier-option-savings {
+  color: #286238;
+  font-size: 0.625rem;
 }
 
 .supplier-save-pill {
@@ -705,6 +972,7 @@ function toggleAllRows(event) {
   line-height: 1.2;
   transition: background-color 140ms ease, border-color 140ms ease;
   height: 1rem;
+  background-color: #fff;
 }
 
 .supplier-save-pill:hover,
