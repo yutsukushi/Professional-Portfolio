@@ -331,7 +331,7 @@ function toggleAllRows(event) {
                               <path d="M8 7.25v3.5M8 5.25h.01" />
                             </svg>
                             <span class="supplier-alert-tooltip" role="tooltip">
-                              <span>***LEADTIME: 4 TO 6 WEEKS***</span>
+                              ***LEADTIME: 4 TO 6 WEEKS***
                             </span>
                           </button>
                         </div>
@@ -688,6 +688,7 @@ function toggleAllRows(event) {
 }
 
 .supplier-save-pill {
+  position: relative;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -749,11 +750,10 @@ function toggleAllRows(event) {
 }
 
 .supplier-comparison {
-  position: relative;
   display: grid;
-  grid-template-columns: 0.8fr 1fr 1fr;
+  grid-template-columns: 0.4fr 1fr 1fr;
   align-items: center;
-  gap: 0.28rem 0.35rem;
+  gap: 0.28rem 0.3rem;
   font-size: 0.58rem;
 }
 
@@ -777,6 +777,7 @@ function toggleAllRows(event) {
 }
 
 .supplier-alert-trigger {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-self: end;
@@ -803,12 +804,14 @@ function toggleAllRows(event) {
 
 .supplier-alert-tooltip {
   position: absolute;
-  z-index: 1;
-  right: 0;
-  bottom: 18px;
+  z-index: 2;
+  right: auto;
+  bottom: calc(100% + 5px);
+  left: 0;
+  box-sizing: border-box;
   display: grid;
   width: max-content;
-  max-width: min(190px, calc(100vw - 72px));
+  max-width: min(130px, calc(100vw - 48px));
   gap: 0.25rem;
   padding: 0.45rem 0.55rem;
   border: 1px solid #dce2dd;
@@ -818,12 +821,21 @@ function toggleAllRows(event) {
   font-size: 0.58rem;
   font-weight: 400;
   line-height: 1.4;
+  overflow-wrap: anywhere;
   opacity: 0;
   pointer-events: none;
+  white-space: normal;
   text-align: left;
   visibility: hidden;
   background-color: #c76b25;
   color: #fff;
+}
+
+.supplier-alert-beacon .supplier-alert-tooltip {
+  top: calc(100% + 5px);
+  right: 0;
+  bottom: auto;
+  left: auto;
 }
 
 .supplier-alert-trigger:hover .supplier-alert-tooltip,
