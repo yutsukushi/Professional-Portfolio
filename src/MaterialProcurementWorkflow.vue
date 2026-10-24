@@ -55,6 +55,12 @@ const procurementRows = [
 ]
 
 const selectedSkus = ref([])
+const switchedSupplierSkus = ref([])
+const activeSupplierPopoverSku = ref(null)
+const pinnedSupplierPopoverSku = ref(null)
+const supplierPopoverPosition = ref({})
+const supplierTriggerElements = new Map()
+let supplierPopoverCloseTimeout
 const allRowsSelected = computed(
   () =>
     procurementRows.length > 0 &&
@@ -70,6 +76,100 @@ function formatCurrency(amount) {
   return currencyFormatter.format(amount)
 }
 
+function displayedRowTotal(row) {
+  const total = row.unitCost * row.orderedQty
+  return total - (switchedSupplierSkus.value.includes(row.sku) ? 49.72 : 0)
+}
+
+function switchSupplier(sku) {
+  if (!switchedSupplierSkus.value.includes(sku)) {
+    switchedSupplierSkus.value = [...switchedSupplierSkus.value, sku]
+  }
+  closeSupplierPopover(sku)
+}
+
+function setSupplierTriggerElement(sku, element) {
+  if (element) {
+    supplierTriggerElements.set(sku, element)
+  } else {
+    supplierTriggerElements.delete(sku)
+  }
+}
+
+function positionSupplierPopover(trigger) {
+  const bounds = trigger.getBoundingClientRect()
+  const popoverWidth = Math.min(240, window.innerWidth - 24)
+  const estimatedPopoverHeight = 150
+  const popoverGap = 4
+  const viewportPadding = 12
+  const maxLeft = window.innerWidth - popoverWidth - viewportPadding
+  const left = Math.max(
+    viewportPadding,
+    Math.min(bounds.left, maxLeft),
+  )
+  const rightAlignedLeft = Math.max(
+    viewportPadding,
+    Math.min(bounds.right - popoverWidth, maxLeft),
+  )
+  const alignRight = bounds.left + popoverWidth > window.innerWidth - viewportPadding
+  const hasRoomBelow =
+    bounds.bottom + popoverGap + estimatedPopoverHeight <= window.innerHeight - viewportPadding
+  const top = hasRoomBelow
+    ? bounds.bottom + popoverGap
+    : Math.max(viewportPadding, bounds.top - estimatedPopoverHeight - popoverGap)
+
+  supplierPopoverPosition.value = {
+    left: `${(alignRight ? rightAlignedLeft : left) + window.scrollX}px`,
+    top: `${top + window.scrollY}px`,
+  }
+}
+
+function showSupplierPopover(sku, trigger) {
+  window.clearTimeout(supplierPopoverCloseTimeout)
+  activeSupplierPopoverSku.value = sku
+  positionSupplierPopover(trigger)
+}
+
+function scheduleSupplierPopoverClose(sku) {
+  window.clearTimeout(supplierPopoverCloseTimeout)
+  supplierPopoverCloseTimeout = window.setTimeout(() => {
+    if (pinnedSupplierPopoverSku.value !== sku) {
+      closeSupplierPopover(sku)
+    }
+  }, 140)
+}
+
+function closeSupplierPopover(sku = activeSupplierPopoverSku.value) {
+  if (activeSupplierPopoverSku.value === sku) {
+    activeSupplierPopoverSku.value = null
+    pinnedSupplierPopoverSku.value = null
+  }
+  window.clearTimeout(supplierPopoverCloseTimeout)
+}
+
+function toggleSupplierPopover(sku, trigger) {
+  if (pinnedSupplierPopoverSku.value === sku) {
+    closeSupplierPopover(sku)
+    return
+  }
+  pinnedSupplierPopoverSku.value = sku
+  showSupplierPopover(sku, trigger)
+}
+
+function closeSupplierPopoverOutside(event) {
+  if (!event.target.closest('.supplier-save-pill, .supplier-popover')) {
+    closeSupplierPopover()
+  }
+}
+
+function repositionActiveSupplierPopover() {
+  const sku = activeSupplierPopoverSku.value
+  const trigger = sku && supplierTriggerElements.get(sku)
+  if (trigger) {
+    positionSupplierPopover(trigger)
+  }
+}
+
 function toggleAllRows(event) {
   if (event.target.checked) {
     selectedSkus.value = procurementRows.map((row) => row.sku)
@@ -81,7 +181,12 @@ function toggleAllRows(event) {
 </script>
 
 <template>
-  <div class="case-study">
+  <div
+    class="case-study"
+    @click.window="closeSupplierPopoverOutside"
+    @resize.passive.window="repositionActiveSupplierPopover"
+    @scroll.passive.window="repositionActiveSupplierPopover"
+  >
     <header class="case-header">
       <a class="case-wordmark" href="./index.html" aria-label="Yukie Kushibiki, home">YK<span>.</span></a>
       <nav aria-label="Case study navigation">
@@ -104,7 +209,7 @@ function toggleAllRows(event) {
         </div>
 
         <div class="table-scroll-hint"><span aria-hidden="true">↔</span> Scroll to see all material details</div>
-        <div class="procurement-table-scroll" tabindex="0" role="region" aria-label="Material schedule table, scroll horizontally to see more columns">
+        <div class="procurement-table-scroll" tabindex="0" role="region" aria-label="Material schedule table, scroll horizontally to see more columns" @scroll.passive="repositionActiveSupplierPopover">
           <table class="procurement-table" aria-label="Harbor House material schedule">
             <colgroup>
               <col class="select-col" />
@@ -151,11 +256,101 @@ function toggleAllRows(event) {
                 </td>
                 <th scope="row" class="sku-cell">{{ row.sku }}</th>
                 <td>{{ row.brand }}</td>
-                <td>{{ row.supplier }}</td>
+                <td class="supplier-cell">
+                  <span class="supplier-name">{{ switchedSupplierSkus.includes(row.sku) ? 'Beacon Supply' : row.supplier }}</span>
+                  <button
+                    v-show="!switchedSupplierSkus.includes(row.sku)"
+                    :ref="(element) => setSupplierTriggerElement(row.sku, element)"
+                    class="supplier-save-pill"
+                    type="button"
+                    aria-haspopup="dialog"
+                    :aria-expanded="activeSupplierPopoverSku === row.sku"
+                    @mouseenter="showSupplierPopover(row.sku, $event.currentTarget)"
+                    @mouseleave="scheduleSupplierPopoverClose(row.sku)"
+                    @focus="showSupplierPopover(row.sku, $event.currentTarget)"
+                    @blur="scheduleSupplierPopoverClose(row.sku)"
+                    @click="toggleSupplierPopover(row.sku, $event.currentTarget)"
+                    @keydown.esc="closeSupplierPopover(row.sku)"
+                  >Switch & save $49.72
+                      <svg aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="6.25" />
+                        <path d="M8 7.25v3.5M8 5.25h.01" />
+                      </svg>
+                  </button>
+                  <Teleport to="body">
+                    <div
+                      v-if="activeSupplierPopoverSku === row.sku"
+                      class="supplier-popover"
+                      :style="supplierPopoverPosition"
+                      role="dialog"
+                      :aria-label="`Supplier comparison for ${row.sku}`"
+                      @mouseenter="showSupplierPopover(row.sku, supplierTriggerElements.get(row.sku))"
+                      @mouseleave="scheduleSupplierPopoverClose(row.sku)"
+                      @focusin="showSupplierPopover(row.sku, supplierTriggerElements.get(row.sku))"
+                      @focusout="scheduleSupplierPopoverClose(row.sku)"
+                      @keydown.esc="closeSupplierPopover(row.sku)"
+                    >
+                      <div class="supplier-popover-header">
+                        <p class="supplier-popover-title"><b>Save $49.72 with Beacon Supply</b>
+                        </p>
+                      </div>
+                      <div class="supplier-popover-content">
+                        <div class="supplier-comparison">
+                          <span></span>
+                          <span>{{ row.supplier }}</span>
+                          <strong>Beacon Supply</strong>
+                          <span>Price</span>
+                          <span>{{ formatCurrency(row.unitCost * row.orderedQty) }}</span>
+                          <strong>{{ formatCurrency(row.unitCost * row.orderedQty - 49.72) }}</strong>
+                          <span>Stock</span>
+                          <span>12 available</span>
+                          <span>4 available</span>
+                          <span>Alerts</span>
+                          <button
+                            class="supplier-alert-trigger"
+                            type="button"
+                            aria-label="One alert from current supplier"
+                          >
+                            1 alert
+                            <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="6.25" />
+                              <path d="M8 7.25v3.5M8 5.25h.01" />
+                            </svg>
+                            <span class="supplier-alert-tooltip" role="tooltip">
+                              ***LEADTIME: 2 TO 3 WEEKS***
+                            </span>
+                          </button>
+                          <button
+                            class="supplier-alert-trigger supplier-alert-beacon"
+                            type="button"
+                            aria-label="Two alerts from Beacon Supply"
+                          >
+                            2 alerts
+                            <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                              <circle cx="8" cy="8" r="6.25" />
+                              <path d="M8 7.25v3.5M8 5.25h.01" />
+                            </svg>
+                            <span class="supplier-alert-tooltip" role="tooltip">
+                              <span>***LEADTIME: 4 TO 6 WEEKS***</span>
+                            </span>
+                          </button>
+                        </div>
+                        <button
+                          class="supplier-switch-button"
+                          type="button"
+                          :disabled="switchedSupplierSkus.includes(row.sku)"
+                          @click="switchSupplier(row.sku)"
+                        >
+                          {{ switchedSupplierSkus.includes(row.sku) ? 'Beacon Supply selected' : 'Switch to Beacon Supply' }}
+                        </button>
+                      </div>
+                    </div>
+                  </Teleport>
+                </td>
                 <td>{{ row.plannedQty }}</td>
                 <td>{{ row.orderedQty }}</td>
-                <td>{{ formatCurrency(row.unitCost) }}</td>
-                <td class="total-cell">{{ formatCurrency(row.unitCost * row.orderedQty) }}</td>
+                <td>{{ formatCurrency(displayedRowTotal(row) / row.orderedQty) }}</td>
+                <td class="total-cell">{{ formatCurrency(displayedRowTotal(row)) }}</td>
                 <td><span class="phase-pill" :class="`phase-${row.phase.toLowerCase().replace('-', '')}`">{{ row.phase }}</span></td>
                 <td>{{ row.dateNeeded }}</td>
               </tr>
@@ -343,8 +538,8 @@ function toggleAllRows(event) {
 .procurement-table-scroll {
   max-width: 100%;
   overflow: auto;
-  border: 1px solid #e0e3dc;
-  background: #252823;
+  border: 1px solid #E2E3E7;
+  background: #fff;
   overscroll-behavior-inline: contain;
   scrollbar-color: #9aa295 #e8ebe5;
   scrollbar-width: thin;
@@ -371,17 +566,17 @@ function toggleAllRows(event) {
 
 .procurement-table {
   width: 100%;
-  min-width: 1300px;
+  min-width: 1340px;
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
-  font-size: 0.67rem;
+  font-size: 0.72rem;
 }
 
 .procurement-table .select-col { width: 42px; }
 .procurement-table .sku-col { width: 135px; }
 .procurement-table .brand-col { width: 120px; }
-.procurement-table .supplier-col { width: 165px; }
+.procurement-table .supplier-col { width: 16rem; }
 .procurement-table .quantity-col { width: 112px; }
 .procurement-table .cost-col { width: 125px; }
 .procurement-table .phase-col { width: 112px; }
@@ -389,11 +584,11 @@ function toggleAllRows(event) {
 
 .procurement-table th,
 .procurement-table td {
-  height: 42px;
-  padding: 0.55rem 0.7rem;
+  height: 28px;
+  padding: 0.2rem 0.6rem;
   overflow: hidden;
-  border-right: 1px solid #dfe3dc;
-  border-bottom: 1px solid #dfe3dc;
+  border-right: 1px solid #E2E3E7;
+  border-bottom: 1px solid #E2E3E7;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -408,29 +603,29 @@ function toggleAllRows(event) {
   z-index: 1;
   top: 0;
   height: 54px;
-  background: #fbfbf8;
-  color: #343831;
-  font-size: 0.65rem;
+  background: #fff;
+  color: #282a32;
+  font-size: 0.72rem;
   font-weight: 600;
   line-height: 1.2;
 }
 
 .procurement-table tbody td,
 .procurement-table tbody th {
-  background: #252823;
-  color: #e1e4dd;
+  /* background: #050505; */
+  color: #282a32;
   font-weight: 400;
 }
 
-.procurement-table tbody tr:hover td,
+/* .procurement-table tbody tr:hover td,
 .procurement-table tbody tr:hover th {
-  background: #30342e;
+  background: #171717;
 }
 
 .procurement-table tbody tr.is-selected td,
 .procurement-table tbody tr.is-selected th {
-  background: #363a33;
-}
+  background: #1b1820;
+} */
 
 .procurement-table tbody tr:last-child td,
 .procurement-table tbody tr:last-child th {
@@ -443,16 +638,243 @@ function toggleAllRows(event) {
 }
 
 .procurement-table input[type='checkbox'] {
+  display: inline-grid;
   width: 15px;
   height: 15px;
   margin: 0;
-  accent-color: #536d55;
+  place-content: center;
+  appearance: none;
+  border: 1px solid #E2E3E7;
+  border-radius: 3px;
+  background: #fff;
   vertical-align: middle;
+}
+
+.procurement-table input[type='checkbox']::before {
+  width: 7px;
+  height: 4px;
+  border: solid #282a32;
+  border-width: 0 0 2px 2px;
+  content: '';
+  transform: rotate(-45deg) scale(0);
+}
+
+.procurement-table input[type='checkbox']:checked::before {
+  transform: rotate(-45deg) scale(1);
+}
+
+.procurement-table input[type='checkbox']:focus-visible {
+  outline: 2px solid #7550c8;
+  outline-offset: 2px;
 }
 
 .procurement-table .sku-cell,
 .procurement-table .total-cell {
   font-weight: 600;
+}
+
+.procurement-table .supplier-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  overflow: visible;
+}
+
+.supplier-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.supplier-save-pill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.16rem 0.4rem;
+  border: 1px solid #ead8b9;
+  border-radius: 999px;
+  background: transparent;
+  color: #a95f2b;
+  cursor: pointer;
+  font-size: 0.6rem;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.2;
+  transition: background-color 140ms ease, border-color 140ms ease;
+  height: 1rem;
+}
+
+.supplier-save-pill:hover,
+.supplier-save-pill:focus-visible,
+.supplier-save-pill[aria-expanded='true'] {
+  border-color: #ead8b9;
+  background: #fbf1dd;
+}
+
+.supplier-popover {
+  position: absolute;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: min(240px, calc(100vw - 24px));
+  border: 1px solid #dce2dd;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(21 48 32 / 20%);
+  color: #4c5259;
+  white-space: normal;
+}
+
+.supplier-popover-header {
+  padding: 7px 10px;
+  border-radius: 8px 8px 0 0;
+  background: #fbf1dd;
+}
+
+.supplier-popover-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  color: #a95f2b;
+  font-size: 0.6rem;
+  font-weight: 500;
+}
+
+.supplier-popover-content {
+  padding: 9px 10px 10px;
+}
+
+.supplier-comparison {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.8fr 1fr 1fr;
+  align-items: center;
+  gap: 0.28rem 0.35rem;
+  font-size: 0.58rem;
+}
+
+.supplier-comparison > :nth-child(3n + 2) {
+  color: #747d84;
+  text-align: right;
+}
+
+.supplier-comparison > :nth-child(3n) {
+  text-align: right;
+}
+
+.supplier-comparison strong {
+  color: #4c5259;
+  font-weight: 600;
+}
+
+.supplier-comparison > :nth-child(6) {
+  color: #247847;
+  font-weight: 600;
+}
+
+.supplier-alert-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-self: end;
+  gap: 0.15rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: help;
+  font: inherit;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.supplier-alert-beacon {
+  color: #b56a39;
+}
+
+.supplier-alert-trigger:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid #7550c8;
+  outline-offset: 2px;
+}
+
+.supplier-alert-tooltip {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 18px;
+  display: grid;
+  width: max-content;
+  max-width: min(190px, calc(100vw - 72px));
+  gap: 0.25rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #dce2dd;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgb(21 48 32 / 14%);
+  color: #4c5259;
+  font-size: 0.58rem;
+  font-weight: 400;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  text-align: left;
+  visibility: hidden;
+  background-color: #c76b25;
+  color: #fff;
+}
+
+.supplier-alert-trigger:hover .supplier-alert-tooltip,
+.supplier-alert-trigger:focus-visible .supplier-alert-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.supplier-info-icon,
+.supplier-save-pill svg {
+  display: block;
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.supplier-switch-button {
+  width: 100%;
+  margin-top: 0.55rem;
+  padding: 0.45rem 0.55rem;
+  border: 0;
+  border-radius: 6px;
+  background: #177541;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.supplier-switch-button:focus-visible {
+  outline: 2px solid #7550c8;
+  outline-offset: 3px;
+}
+
+.supplier-switch-button:disabled {
+  background: #e8f1eb;
+  color: #247847;
+  cursor: default;
+}
+
+.supplier-save-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #c48742;
 }
 
 .phase-pill {
@@ -466,18 +888,18 @@ function toggleAllRows(event) {
 }
 
 .phase-pill.phase-roughin {
-  background: #eee9dd;
-  color: #70603e;
+  background: #f1f1f3;
+  color: #282a32;
 }
 
 .phase-pill.phase-fitout {
-  background: #e5ece5;
-  color: #536c55;
+  background: #f1f1f3;
+  color: #282a32;
 }
 
 .phase-pill.phase-finishes {
-  background: #e9e5ed;
-  color: #6d587d;
+  background: #f1f1f3;
+  color: #282a32;
 }
 
 .table-footer {
