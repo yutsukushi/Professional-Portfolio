@@ -737,6 +737,7 @@ function toggleProductDropdown(sku, trigger) {
                     v-model="row.sku"
                     class="empty-product-sku-input"
                     type="text"
+                    placeholder="Select or search for product"
                     role="combobox"
                     aria-autocomplete="list"
                     :aria-expanded="activeEmptyProductDropdownId === row.id"
@@ -771,7 +772,16 @@ function toggleProductDropdown(sku, trigger) {
                     </div>
                   </Teleport>
                 </th>
-                <td v-for="column in 8" :key="column"></td>
+                <td></td>
+                <td>
+                  <input
+                    class="empty-product-supplier-input"
+                    type="text"
+                    placeholder="Type or select supplier"
+                    :aria-label="`Supplier for new product row ${row.id}`"
+                  />
+                </td>
+                <td v-for="column in 6" :key="column"></td>
               </tr>
             </tbody>
           </table>
@@ -1102,7 +1112,8 @@ function toggleProductDropdown(sku, trigger) {
   text-align: left;
 }
 
-.empty-product-sku-input {
+.empty-product-sku-input,
+.empty-product-supplier-input {
   display: block;
   width: 100%;
   min-width: 0;
@@ -1113,12 +1124,19 @@ function toggleProductDropdown(sku, trigger) {
   font: inherit;
 }
 
-.sku-cell:focus-within {
+.empty-product-supplier-input::placeholder {
+  color: #8a8f98;
+  font-weight: 400;
+}
+
+.sku-cell:focus-within,
+.procurement-table td:focus-within {
   outline: 2px solid #7550c8;
   outline-offset: -2px;
 }
 
-.empty-product-sku-input:focus-visible {
+.empty-product-sku-input:focus-visible,
+.empty-product-supplier-input:focus-visible {
   outline: none;
 }
 
