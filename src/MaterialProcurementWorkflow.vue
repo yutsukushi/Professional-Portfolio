@@ -86,17 +86,22 @@ const procurementRows = [
 
 const selectedSkus = ref([])
 const selectedSuppliers = ref({})
+const emptyProductRows = ref([])
+const selectedEmptyProductRows = ref([])
 const activeSupplierPopoverSku = ref(null)
 const pinnedSupplierPopoverSku = ref(null)
 const activeSupplierDropdownSku = ref(null)
 const activeProductDropdownSku = ref(null)
+const activeEmptyProductDropdownId = ref(null)
 const supplierPopoverPosition = ref({})
 const supplierDropdownPosition = ref({})
 const productDropdownPosition = ref({})
 const supplierTriggerElements = new Map()
 const supplierDropdownTriggerElements = new Map()
 const productDropdownTriggerElements = new Map()
+const emptyProductDropdownTriggerElements = new Map()
 let supplierPopoverCloseTimeout
+let nextEmptyProductRowId = 1
 const allRowsSelected = computed(
   () =>
     procurementRows.length > 0 &&
@@ -177,6 +182,14 @@ function setProductDropdownTriggerElement(sku, element) {
     productDropdownTriggerElements.set(sku, element)
   } else {
     productDropdownTriggerElements.delete(sku)
+  }
+}
+
+function setEmptyProductDropdownTriggerElement(id, element) {
+  if (element) {
+    emptyProductDropdownTriggerElements.set(id, element)
+  } else {
+    emptyProductDropdownTriggerElements.delete(id)
   }
 }
 
@@ -304,8 +317,9 @@ function closeSupplierPopoverOutside(event) {
     closeSupplierPopover()
     activeSupplierDropdownSku.value = null
   }
-  if (!event.target.closest('.sku-cell-trigger, .sku-product-options')) {
+  if (!event.target.closest('.sku-cell-trigger, .empty-product-sku-input, .sku-product-options')) {
     closeProductDropdown()
+    activeEmptyProductDropdownId.value = null
   }
 }
 
@@ -315,6 +329,13 @@ function repositionActiveSupplierPopover() {
   if (productTrigger) {
     const dropdown = document.getElementById(`sku-products-${productSku}`)
     positionProductDropdown(productTrigger, dropdown)
+  }
+
+  const emptyProductId = activeEmptyProductDropdownId.value
+  const emptyProductTrigger = emptyProductId && emptyProductDropdownTriggerElements.get(emptyProductId)
+  if (emptyProductTrigger) {
+    const dropdown = document.getElementById(`empty-product-options-${emptyProductId}`)
+    positionProductDropdown(emptyProductTrigger, dropdown)
   }
 
   const dropdownSku = activeSupplierDropdownSku.value
@@ -333,6 +354,7 @@ function repositionActiveSupplierPopover() {
 
 function closeDropdownsOnScroll() {
   closeProductDropdown()
+  activeEmptyProductDropdownId.value = null
   activeSupplierDropdownSku.value = null
   repositionActiveSupplierPopover()
 }
@@ -353,8 +375,14 @@ function toggleAllRows(event) {
   }
 }
 
+function addProductRow() {
+  emptyProductRows.value.push({ id: nextEmptyProductRowId, sku: '' })
+  nextEmptyProductRowId += 1
+}
+
 function openDropdown(sku) {
   closeProductDropdown()
+  activeEmptyProductDropdownId.value = null
   if (activeSupplierDropdownSku.value === sku) {
     activeSupplierDropdownSku.value = null
   } else {
@@ -379,6 +407,35 @@ function closeProductDropdown(sku = activeProductDropdownSku.value) {
   }
 }
 
+function filteredDummyProducts(row) {
+  const query = row.sku.trim().toLowerCase()
+  if (!query) {
+    return procurementRows
+  }
+  return procurementRows.filter((product) =>
+    `${product.sku} ${product.brand}`.toLowerCase().includes(query),
+  )
+}
+
+function openEmptyProductDropdown(row, trigger) {
+  closeProductDropdown()
+  closeSupplierPopover()
+  activeSupplierDropdownSku.value = null
+  activeEmptyProductDropdownId.value = row.id
+  positionProductDropdown(trigger)
+  nextTick(() => {
+    if (activeEmptyProductDropdownId.value === row.id) {
+      const dropdown = document.getElementById(`empty-product-options-${row.id}`)
+      positionProductDropdown(trigger, dropdown)
+    }
+  })
+}
+
+function selectDummyProduct(row, product) {
+  row.sku = product.sku
+  activeEmptyProductDropdownId.value = null
+}
+
 function toggleProductDropdown(sku, trigger) {
   if (activeProductDropdownSku.value === sku) {
     closeProductDropdown(sku)
@@ -387,6 +444,7 @@ function toggleProductDropdown(sku, trigger) {
 
   closeSupplierPopover()
   activeSupplierDropdownSku.value = null
+  activeEmptyProductDropdownId.value = null
   activeProductDropdownSku.value = sku
   positionProductDropdown(trigger)
   nextTick(() => {
@@ -664,11 +722,62 @@ function toggleProductDropdown(sku, trigger) {
                 <td><span class="phase-pill" :class="`phase-${row.phase.toLowerCase().replace('-', '')}`">{{ row.phase }}</span></td>
                 <td>{{ row.dateNeeded }}</td>
               </tr>
+              <tr v-for="row in emptyProductRows" :key="`empty-product-${row.id}`">
+                <td class="select-cell">
+                  <input
+                    v-model="selectedEmptyProductRows"
+                    type="checkbox"
+                    :value="row.id"
+                    :aria-label="`Select new product row ${row.id}`"
+                  />
+                </td>
+                <th scope="row" class="sku-cell">
+                  <input
+                    :ref="(element) => setEmptyProductDropdownTriggerElement(row.id, element)"
+                    v-model="row.sku"
+                    class="empty-product-sku-input"
+                    type="text"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    :aria-expanded="activeEmptyProductDropdownId === row.id"
+                    :aria-controls="`empty-product-options-${row.id}`"
+                    :aria-label="`SKU for new product row ${row.id}`"
+                    @focus="openEmptyProductDropdown(row, $event.currentTarget)"
+                    @click.stop="openEmptyProductDropdown(row, $event.currentTarget)"
+                    @keydown.esc="activeEmptyProductDropdownId = null"
+                  />
+                  <Teleport to="body">
+                    <div
+                      v-if="activeEmptyProductDropdownId === row.id"
+                      :id="`empty-product-options-${row.id}`"
+                      class="sku-product-options"
+                      :style="productDropdownPosition"
+                      role="listbox"
+                      aria-label="Dummy products"
+                    >
+                      <div
+                        v-for="product in filteredDummyProducts(row)"
+                        :key="product.sku"
+                        class="sku-product-option"
+                        role="option"
+                        tabindex="0"
+                        @click.stop="selectDummyProduct(row, product)"
+                        @keydown.enter.stop="selectDummyProduct(row, product)"
+                        @keydown.space.prevent.stop="selectDummyProduct(row, product)"
+                      >
+                        <span>{{ product.sku }}</span>
+                        <span>{{ product.brand }}</span>
+                      </div>
+                    </div>
+                  </Teleport>
+                </th>
+                <td v-for="column in 8" :key="column"></td>
+              </tr>
             </tbody>
           </table>
         </div>
         <div class="table-actions">
-          <button class="add-product-button" type="button">
+          <button class="add-product-button" type="button" @click="addProductRow">
             <span aria-hidden="true">+</span> Add Product
           </button>
         </div>
@@ -991,6 +1100,26 @@ function toggleProductDropdown(sku, trigger) {
   cursor: pointer;
   font: inherit;
   text-align: left;
+}
+
+.empty-product-sku-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.sku-cell:focus-within {
+  outline: 2px solid #7550c8;
+  outline-offset: -2px;
+}
+
+.empty-product-sku-input:focus-visible {
+  outline: none;
 }
 
 .sku-cell-trigger:focus-visible {
