@@ -1,61 +1,90 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const procurementRows = [
   {
     sku: 'MAT-1001',
+    productType: 'Configurable',
     brand: 'Acme',
     supplier: 'Central Supply',
     plannedQty: 24,
     orderedQty: 20,
-    unitCost: 18.5,
     phase: 'Rough-in',
     dateNeeded: '11/02/26',
+    offers: [
+      { supplier: 'Central Supply', productType: 'Configurable', unitCost: 18.5, stockStatus: 'in-stock', stockQuantity: 12, alerts: ['Lead time: 2–3 weeks'] },
+      { supplier: 'Metro Materials', productType: 'Flat', unitCost: 19.25, stockStatus: 'low-stock', stockQuantity: 3, alerts: [] },
+      { supplier: 'General Wholesale', productType: 'Flat', unitCost: 17.95, stockStatus: 'in-stock', stockQuantity: 28, alerts: ['Configurable finish selected'] },
+      { supplier: 'Beacon Supply', productType: 'Configurable', unitCost: 16.85, stockStatus: 'low-stock', stockQuantity: 5, alerts: ['Lead time: 4–6 weeks'] },
+    ],
   },
   {
     sku: 'MAT-1002',
+    productType: 'Flat',
     brand: 'Northline',
     supplier: 'Metro Materials',
     plannedQty: 12,
     orderedQty: 10,
-    unitCost: 24,
     phase: 'Fit-out',
     dateNeeded: '11/04/26',
+    offers: [
+      { supplier: 'Central Supply', productType: 'Flat', unitCost: 26.5, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Expected restock: Nov 14'] },
+      { supplier: 'Metro Materials', productType: 'Configurable', unitCost: 24, stockStatus: 'in-stock', stockQuantity: 8, alerts: ['Price valid through Oct 31'] },
+      { supplier: 'General Wholesale', productType: 'Flat', unitCost: 23.75, stockStatus: 'in-stock', stockQuantity: 16, alerts: [] },
+      { supplier: 'Beacon Supply', productType: 'Flat', unitCost: 22.9, stockStatus: 'low-stock', stockQuantity: 2, alerts: ['Only two units available', 'Freight surcharge may apply'] },
+    ],
   },
   {
     sku: 'MAT-1003',
+    productType: 'NCP',
     brand: 'Standard',
     supplier: 'Central Supply',
     plannedQty: 40,
     orderedQty: 36,
-    unitCost: 32.5,
     phase: 'Rough-in',
     dateNeeded: '11/06/26',
+    offers: [
+      { supplier: 'Central Supply', productType: 'Flat', unitCost: 32.5, stockStatus: 'in-stock', stockQuantity: 36, alerts: [] },
+      { supplier: 'Metro Materials', productType: 'Flat', unitCost: 35.25, stockStatus: 'out-of-stock', stockQuantity: 0, alerts: ['Item temporarily unavailable'] },
+      { supplier: 'General Wholesale', productType: 'Configurable', unitCost: 31.8, stockStatus: 'low-stock', stockQuantity: 4, alerts: ['Minimum order quantity: 10'] },
+      { supplier: 'Beacon Supply', productType: 'Flat', unitCost: 30.95, stockStatus: 'in-stock', stockQuantity: 18, alerts: ['NCP item: confirm finish before ordering'] },
+    ],
   },
   {
     sku: 'MAT-1004',
+    productType: 'Configurable',
     brand: 'Apex',
     supplier: 'General Wholesale',
     plannedQty: 18,
     orderedQty: 18,
-    unitCost: 45,
     phase: 'Fit-out',
     dateNeeded: '11/09/26',
+    offers: [
+      { supplier: 'Central Supply', productType: 'Flat', unitCost: 42.5, stockStatus: 'low-stock', stockQuantity: 6, alerts: [] },
+      { supplier: 'Metro Materials', productType: 'Configurable', unitCost: 47.25, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Custom configuration: 3-week lead time'] },
+      { supplier: 'General Wholesale', productType: 'Configurable', unitCost: 45, stockStatus: 'in-stock', stockQuantity: 18, alerts: ['Confirm dimensions before fulfillment'] },
+      { supplier: 'Beacon Supply', productType: 'Flat', unitCost: 39.8, stockStatus: 'low-stock', stockQuantity: 2, alerts: ['Only two units available', 'Custom finish adds 1 week'] },
+    ],
   },
   {
     sku: 'MAT-1005',
+    productType: 'Flat',
     brand: 'Acme',
     supplier: 'Metro Materials',
     plannedQty: 30,
     orderedQty: 24,
-    unitCost: 7.25,
     phase: 'Finishes',
     dateNeeded: '11/12/26',
+    offers: [
+      { supplier: 'Central Supply', productType: 'Flat', unitCost: 8.1, stockStatus: 'low-stock', stockQuantity: 5, alerts: ['Restock expected next week'] },
+      { supplier: 'Metro Materials', productType: 'Flat', unitCost: 7.25, stockStatus: 'in-stock', stockQuantity: 40, alerts: [] },
+      { supplier: 'General Wholesale', productType: 'Configurable', unitCost: 6.95, stockStatus: 'in-stock', stockQuantity: 60, alerts: ['Bulk pricing available at 50 units'] },
+      { supplier: 'Beacon Supply', productType: 'Flat', unitCost: 6.5, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Expected restock: Nov 18'] },
+    ],
   },
 ]
 
 const selectedSkus = ref([])
-const switchedSupplierSkus = ref([])
 const selectedSuppliers = ref({})
 const activeSupplierPopoverSku = ref(null)
 const pinnedSupplierPopoverSku = ref(null)
@@ -68,10 +97,6 @@ const supplierTriggerElements = new Map()
 const supplierDropdownTriggerElements = new Map()
 const productDropdownTriggerElements = new Map()
 let supplierPopoverCloseTimeout
-const availableSuppliers = [...new Set([
-  ...procurementRows.map((row) => row.supplier),
-  'Beacon Supply',
-])]
 const allRowsSelected = computed(
   () =>
     procurementRows.length > 0 &&
@@ -88,32 +113,45 @@ function formatCurrency(amount) {
 }
 
 function displayedRowTotal(row) {
-  const total = row.unitCost * row.orderedQty
-  return total - (switchedSupplierSkus.value.includes(row.sku) ? 49.72 : 0)
+  return supplierOffer(row).unitCost * row.orderedQty
 }
 
 function supplierName(row) {
-  if (switchedSupplierSkus.value.includes(row.sku)) {
-    return 'Beacon Supply'
-  }
   return selectedSuppliers.value[row.sku] || row.supplier
 }
 
-function switchSupplier(sku) {
-  if (!switchedSupplierSkus.value.includes(sku)) {
-    switchedSupplierSkus.value = [...switchedSupplierSkus.value, sku]
+function supplierOffer(row, supplier = supplierName(row)) {
+  return row.offers.find((offer) => offer.supplier === supplier)
+}
+
+function lowestOfferPrice(row) {
+  return Math.min(...row.offers.map((offer) => offer.unitCost))
+}
+
+function stockLabel(offer) {
+  if (offer.stockStatus === 'backordered') {
+    return 'Backordered'
   }
+  if (offer.stockStatus === 'out-of-stock') {
+    return 'Out of stock'
+  }
+  return `${offer.stockQuantity} available`
+}
+
+function supplierSavings(row) {
+  return Math.max(
+    0,
+    (supplierOffer(row).unitCost - supplierOffer(row, 'Beacon Supply').unitCost) * row.orderedQty,
+  )
+}
+
+function switchSupplier(sku) {
+  selectedSuppliers.value = { ...selectedSuppliers.value, [sku]: 'Beacon Supply' }
   activeSupplierDropdownSku.value = null
   closeSupplierPopover(sku)
 }
 
 function selectSupplier(row, supplier) {
-  if (supplier === 'Beacon Supply') {
-    switchSupplier(row.sku)
-    return
-  }
-
-  switchedSupplierSkus.value = switchedSupplierSkus.value.filter((sku) => sku !== row.sku)
   selectedSuppliers.value = { ...selectedSuppliers.value, [row.sku]: supplier }
   activeSupplierDropdownSku.value = null
 }
@@ -142,14 +180,22 @@ function setProductDropdownTriggerElement(sku, element) {
   }
 }
 
-function positionProductDropdown(trigger) {
+function positionProductDropdown(trigger, dropdown) {
   const bounds = trigger.getBoundingClientRect()
   const viewportPadding = 12
+  const dropdownGap = 6
   const dropdownWidth = Math.min(240, window.innerWidth - viewportPadding * 2)
-  const estimatedDropdownHeight = 220
-  const top = bounds.bottom + 6 + estimatedDropdownHeight <= window.innerHeight - viewportPadding
-    ? bounds.bottom + 6
-    : Math.max(viewportPadding, bounds.top - estimatedDropdownHeight - 6)
+  const dropdownHeight = dropdown?.getBoundingClientRect().height || 220
+  const spaceBelow = Math.max(
+    0,
+    window.innerHeight - bounds.bottom - dropdownGap - viewportPadding,
+  )
+  const spaceAbove = Math.max(0, bounds.top - dropdownGap - viewportPadding)
+  const openBelow = dropdownHeight <= spaceBelow || spaceBelow >= spaceAbove
+  const availableHeight = openBelow ? spaceBelow : spaceAbove
+  const top = openBelow
+    ? bounds.bottom + dropdownGap
+    : Math.max(viewportPadding, bounds.top - Math.min(dropdownHeight, availableHeight) - dropdownGap)
   const left = Math.max(
     viewportPadding,
     Math.min(bounds.left, window.innerWidth - dropdownWidth - viewportPadding),
@@ -159,28 +205,36 @@ function positionProductDropdown(trigger) {
     left: `${left}px`,
     top: `${top}px`,
     width: `${dropdownWidth}px`,
-    maxHeight: `${window.innerHeight - top - viewportPadding}px`,
+    maxHeight: `${availableHeight}px`,
   }
 }
 
-function positionSupplierDropdown(trigger) {
+function positionSupplierDropdown(trigger, dropdown) {
   const bounds = trigger.getBoundingClientRect()
   const viewportPadding = 12
+  const dropdownGap = 6
   const dropdownWidth = Math.min(320, window.innerWidth - viewportPadding * 2)
   const left = Math.max(
     viewportPadding,
     Math.min(bounds.left, window.innerWidth - dropdownWidth - viewportPadding),
   )
-  const estimatedDropdownHeight = 280
-  const top = bounds.bottom + 6 + estimatedDropdownHeight <= window.innerHeight - viewportPadding
-    ? bounds.bottom + 6
-    : Math.max(viewportPadding, bounds.top - estimatedDropdownHeight - 6)
+  const dropdownHeight = dropdown?.getBoundingClientRect().height || 280
+  const spaceBelow = Math.max(
+    0,
+    window.innerHeight - bounds.bottom - dropdownGap - viewportPadding,
+  )
+  const spaceAbove = Math.max(0, bounds.top - dropdownGap - viewportPadding)
+  const openBelow = dropdownHeight <= spaceBelow || spaceBelow >= spaceAbove
+  const availableHeight = openBelow ? spaceBelow : spaceAbove
+  const top = openBelow
+    ? bounds.bottom + dropdownGap
+    : Math.max(viewportPadding, bounds.top - Math.min(dropdownHeight, availableHeight) - dropdownGap)
 
   supplierDropdownPosition.value = {
     left: `${left}px`,
     top: `${top}px`,
     width: `${dropdownWidth}px`,
-    maxHeight: `${window.innerHeight - top - viewportPadding}px`,
+    maxHeight: `${availableHeight}px`,
   }
 }
 
@@ -259,13 +313,15 @@ function repositionActiveSupplierPopover() {
   const productSku = activeProductDropdownSku.value
   const productTrigger = productSku && productDropdownTriggerElements.get(productSku)
   if (productTrigger) {
-    positionProductDropdown(productTrigger)
+    const dropdown = document.getElementById(`sku-products-${productSku}`)
+    positionProductDropdown(productTrigger, dropdown)
   }
 
   const dropdownSku = activeSupplierDropdownSku.value
   const dropdownTrigger = dropdownSku && supplierDropdownTriggerElements.get(dropdownSku)
   if (dropdownTrigger) {
-    positionSupplierDropdown(dropdownTrigger)
+    const dropdown = document.getElementById(`supplier-options-${dropdownSku}`)
+    positionSupplierDropdown(dropdownTrigger, dropdown)
   }
 
   const sku = activeSupplierPopoverSku.value
@@ -307,6 +363,12 @@ function openDropdown(sku) {
     const trigger = supplierDropdownTriggerElements.get(sku)
     if (trigger) {
       positionSupplierDropdown(trigger)
+      nextTick(() => {
+        if (activeSupplierDropdownSku.value === sku) {
+          const dropdown = document.getElementById(`supplier-options-${sku}`)
+          positionSupplierDropdown(trigger, dropdown)
+        }
+      })
     }
   }
 }
@@ -327,6 +389,12 @@ function toggleProductDropdown(sku, trigger) {
   activeSupplierDropdownSku.value = null
   activeProductDropdownSku.value = sku
   positionProductDropdown(trigger)
+  nextTick(() => {
+    if (activeProductDropdownSku.value === sku) {
+      const dropdown = document.getElementById(`sku-products-${sku}`)
+      positionProductDropdown(trigger, dropdown)
+    }
+  })
 }
 </script>
 
@@ -414,7 +482,9 @@ function toggleProductDropdown(sku, trigger) {
                     @keydown.esc="closeProductDropdown(row.sku)"
                   >
                     <span class="sku-value">{{ row.sku }}</span>
-                    <span class="sku-nugget"><b>NCP</b></span>
+                    <span v-show="row.productType == 'Configurable'" class="sku-nugget" :class="`sku-nugget--${row.productType.toLowerCase()}`">
+                      <b>{{ row.productType }}</b>
+                    </span>
                   </button>
                   <Teleport to="body">
                     <div
@@ -439,21 +509,22 @@ function toggleProductDropdown(sku, trigger) {
                 </th>
                 <td>{{ row.brand }}</td>
                 <td class="supplier-cell">
-                  <div class="supplier-cell-content"
-                    @click="openDropdown(row.sku)">
+                  <div
+                    :ref="(element) => setSupplierDropdownTriggerElement(row.sku, element)"
+                    class="supplier-cell-content"
+                    @click.stop="openDropdown(row.sku)"
+                  >
                     <button
-                      :ref="(element) => setSupplierDropdownTriggerElement(row.sku, element)"
                       class="supplier-name"
                       type="button"
                       aria-haspopup="listbox"
                       :aria-expanded="activeSupplierDropdownSku === row.sku"
                       :aria-controls="`supplier-options-${row.sku}`"
-                      @click.stop="openDropdown(row.sku)"
                     >
                       {{ supplierName(row) }}
                     </button>
                     <button
-                      v-show="!switchedSupplierSkus.includes(row.sku)"
+                      v-show="supplierName(row) !== 'Beacon Supply' && supplierSavings(row) > 0"
                       :ref="(element) => setSupplierTriggerElement(row.sku, element)"
                       class="supplier-save-pill"
                       type="button"
@@ -465,7 +536,7 @@ function toggleProductDropdown(sku, trigger) {
                       @blur="scheduleSupplierPopoverClose(row.sku)"
                       @click.stop="toggleSupplierPopover(row.sku, $event.currentTarget)"
                       @keydown.esc="closeSupplierPopover(row.sku)"
-                    >Switch & save $49.72
+                    >Switch & save {{ formatCurrency(supplierSavings(row)) }}
                       <svg aria-hidden="true" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="6.25" />
                         <path d="M8 7.25v3.5M8 5.25h.01" />
@@ -480,53 +551,65 @@ function toggleProductDropdown(sku, trigger) {
                         role="listbox"
                         :aria-label="`Available suppliers for ${row.sku}`"
                       >
-                        <button
-                          v-for="supplier in availableSuppliers"
-                          :key="supplier"
+                        <div
+                          v-for="offer in row.offers"
+                          :key="offer.supplier"
                           class="supplier-option"
-                          type="button"
                           role="option"
-                          :aria-selected="supplierName(row) === supplier"
-                          @click.stop="selectSupplier(row, supplier)"
+                          :aria-selected="supplierName(row) === offer.supplier"
+                          tabindex="0"
+                          @click.stop="selectSupplier(row, offer.supplier)"
+                          @keydown.enter.stop="selectSupplier(row, offer.supplier)"
+                          @keydown.space.prevent.stop="selectSupplier(row, offer.supplier)"
                         >
                           <div class="supplier-option-layout">
                           <span class="supplier-option-initial">S</span>
-                          <!-- <div class="supplier-option-details"> -->
                             <div class="supplier-option-description">
                               <div class="supplier-option-heading">
-                                <span><b>{{ supplier }}</b></span>
-                                <span class="supplier-option-badge supplier-option-badge--price"><b>Lowest price</b></span>
-                                <span class="supplier-option-badge supplier-option-badge--configurable"><b>Configurable</b></span>
+                                <span><b>{{ offer.supplier }}</b></span>
+                                <span
+                                  v-if="offer.unitCost === lowestOfferPrice(row)"
+                                  class="supplier-option-badge supplier-option-badge--price"
+                                ><b>Lowest price</b></span>
+                                <span
+                                  v-if="offer.productType !== 'Flat'"
+                                  class="supplier-option-badge"
+                                  :class="`supplier-option-badge--${offer.productType.toLowerCase()}`"
+                                ><b>{{ offer.productType }}</b></span>
                               </div>
                               <div class="supplier-option-meta">
-                                <div class="supplier-option-stock">
+                                <div class="supplier-option-stock" :class="`supplier-option-stock--${offer.stockStatus}`">
                                   <span class="supplier-option-stock-dot" aria-hidden="true"></span>
-                                  <span class="supplier-option-stock-text">3 available</span>
+                                  <span class="supplier-option-stock-text">{{ stockLabel(offer) }}</span>
                                 </div>
-                                <span class="supplier-option-separator" aria-hidden="true"></span>
-                                <button
-                                  class="supplier-alert-trigger supplier-option-alert"
-                                  type="button"
-                                  aria-label="One alert from current supplier"
-                                >
-                                  1 product alert
-                                  <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
-                                    <circle cx="8" cy="8" r="6.25" />
-                                    <path d="M8 7.25v3.5M8 5.25h.01" />
-                                  </svg>
-                                  <span class="supplier-alert-tooltip" role="tooltip">
-                                    ***LEADTIME: 2 TO 3 WEEKS***
-                                  </span>
-                                </button>
+                                <template v-if="offer.alerts.length">
+                                  <span class="supplier-option-separator" aria-hidden="true"></span>
+                                  <button
+                                    class="supplier-alert-trigger supplier-option-alert"
+                                    type="button"
+                                    :aria-label="`${offer.alerts.length} product alert${offer.alerts.length === 1 ? '' : 's'} from ${offer.supplier}`"
+                                    @click.stop
+                                  >
+                                    {{ offer.alerts.length }} product alert{{ offer.alerts.length === 1 ? '' : 's' }}
+                                    <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                                      <circle cx="8" cy="8" r="6.25" />
+                                      <path d="M8 7.25v3.5M8 5.25h.01" />
+                                    </svg>
+                                    <span class="supplier-alert-tooltip" role="tooltip">
+                                      <span v-for="alert in offer.alerts" :key="alert">{{ alert }}</span>
+                                    </span>
+                                  </button>
+                                </template>
                               </div>
                             </div>
-                          <!-- </div> -->
                           <div class="supplier-option-price">
-                              <span><b>$999.99</b></span>
-                              <span class="supplier-option-savings">Save $49.72</span>
+                              <span><b>{{ formatCurrency(offer.unitCost) }}</b></span>
+                              <span v-if="offer.supplier !== supplierName(row) && offer.unitCost < supplierOffer(row).unitCost" class="supplier-option-savings">
+                                Save {{ formatCurrency((supplierOffer(row).unitCost - offer.unitCost) * row.orderedQty) }}
+                              </span>
                           </div>
                           </div>
-                        </button>
+                        </div>
                       </div>
                     </Teleport>
                   </div>
@@ -544,57 +627,31 @@ function toggleProductDropdown(sku, trigger) {
                       @keydown.esc="closeSupplierPopover(row.sku)"
                     >
                       <div class="supplier-popover-header">
-                        <p class="supplier-popover-title"><b>Save $49.72 with Beacon Supply</b>
+                        <p class="supplier-popover-title"><b>Save {{ formatCurrency(supplierSavings(row)) }} with Beacon Supply</b>
                         </p>
                       </div>
                       <div class="supplier-popover-content">
                         <div class="supplier-comparison">
                           <span></span>
-                          <span>{{ row.supplier }}</span>
+                          <span>{{ supplierName(row) }}</span>
                           <strong>Beacon Supply</strong>
                           <span>Price</span>
-                          <span>{{ formatCurrency(row.unitCost * row.orderedQty) }}</span>
-                          <strong>{{ formatCurrency(row.unitCost * row.orderedQty - 49.72) }}</strong>
+                          <span>{{ formatCurrency(supplierOffer(row).unitCost * row.orderedQty) }}</span>
+                          <strong>{{ formatCurrency(supplierOffer(row, 'Beacon Supply').unitCost * row.orderedQty) }}</strong>
                           <span>Stock</span>
-                          <span>12 available</span>
-                          <span>4 available</span>
+                          <span>{{ stockLabel(supplierOffer(row)) }}</span>
+                          <span>{{ stockLabel(supplierOffer(row, 'Beacon Supply')) }}</span>
                           <span>Alerts</span>
-                          <button
-                            class="supplier-alert-trigger"
-                            type="button"
-                            aria-label="One alert from current supplier"
-                          >
-                            1 alert
-                            <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
-                              <circle cx="8" cy="8" r="6.25" />
-                              <path d="M8 7.25v3.5M8 5.25h.01" />
-                            </svg>
-                            <span class="supplier-alert-tooltip" role="tooltip">
-                              ***LEADTIME: 2 TO 3 WEEKS***
-                            </span>
-                          </button>
-                          <button
-                            class="supplier-alert-trigger supplier-alert-beacon"
-                            type="button"
-                            aria-label="Two alerts from Beacon Supply"
-                          >
-                            2 alerts
-                            <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
-                              <circle cx="8" cy="8" r="6.25" />
-                              <path d="M8 7.25v3.5M8 5.25h.01" />
-                            </svg>
-                            <span class="supplier-alert-tooltip" role="tooltip">
-                              ***LEADTIME: 4 TO 6 WEEKS***
-                            </span>
-                          </button>
+                          <span>{{ supplierOffer(row).alerts.length || 'None' }}</span>
+                          <span>{{ supplierOffer(row, 'Beacon Supply').alerts.length || 'None' }}</span>
                         </div>
                         <button
                           class="supplier-switch-button"
                           type="button"
-                          :disabled="switchedSupplierSkus.includes(row.sku)"
+                          :disabled="supplierName(row) === 'Beacon Supply'"
                           @click="switchSupplier(row.sku)"
                         >
-                          {{ switchedSupplierSkus.includes(row.sku) ? 'Beacon Supply selected' : 'Switch to Beacon Supply' }}
+                          {{ supplierName(row) === 'Beacon Supply' ? 'Beacon Supply selected' : 'Switch to Beacon Supply' }}
                         </button>
                       </div>
                     </div>
@@ -953,6 +1010,21 @@ function toggleProductDropdown(sku, trigger) {
   font-weight: 600;
 }
 
+.sku-nugget--flat {
+  background: #f0f1ed;
+  color: #5d6258;
+}
+
+.sku-nugget--configurable {
+  background: #e7f0f5;
+  color: #315d78;
+}
+
+.sku-nugget--ncp {
+  background: #fbf1dd;
+  color: #8a6028;
+}
+
 .sku-product-options {
   position: fixed;
   z-index: 1100;
@@ -994,7 +1066,8 @@ function toggleProductDropdown(sku, trigger) {
   min-width: 0;
 }
 
-.procurement-table .supplier-cell:hover {
+.procurement-table .supplier-cell:hover,
+.procurement-table .sku-cell:hover {
   background-color:#ebf2ff;
   cursor: pointer;
 }
@@ -1068,9 +1141,8 @@ function toggleProductDropdown(sku, trigger) {
 .supplier-option-layout {
   display: flex;
   width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  align-items:flex-start;
+  align-items: flex-start;
+  justify-content: flex-start;
   gap: 0.75rem;
 }
 
@@ -1128,12 +1200,40 @@ function toggleProductDropdown(sku, trigger) {
   color: #315d78;
 }
 
+.supplier-option-badge--flat {
+  background: #f0f1ed;
+  color: #5d6258;
+}
+
+.supplier-option-badge--ncp {
+  background: #fbf1dd;
+  color: #8a6028;
+}
+
 .supplier-option-stock {
   display: flex;
   align-items: center;
   gap: 0.25rem;
   color: #286238;
   font-size: 0.625rem;
+}
+
+.supplier-option-stock--low-stock {
+  color: #9a6a25;
+}
+
+.supplier-option-stock--low-stock .supplier-option-stock-dot {
+  background: #c48742;
+}
+
+.supplier-option-stock--backordered,
+.supplier-option-stock--out-of-stock {
+  color: #a34a3f;
+}
+
+.supplier-option-stock--backordered .supplier-option-stock-dot,
+.supplier-option-stock--out-of-stock .supplier-option-stock-dot {
+  background: #c65e51;
 }
 
 .supplier-option-stock-dot {
@@ -1156,7 +1256,7 @@ function toggleProductDropdown(sku, trigger) {
   background: #c8ccc5;
 }
 
-button .supplier-option-alert {
+.supplier-alert-trigger.supplier-option-alert {
   color: #a95f2b;
   font-size: 9px;
 }
@@ -1165,6 +1265,7 @@ button .supplier-option-alert {
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
+  margin-left: auto;
   text-align: right;
   row-gap: 0.25rem;
 }
@@ -1657,7 +1758,13 @@ button .supplier-option-alert {
 }
 
 .case-next-steps > .back-link {
-  white-space: nowrap;
+  white-space: normal;
+}
+
+.supplier-option-alert .supplier-alert-tooltip {
+  display: grid;
+  min-width: 130px;
+  gap: 0.2rem;
 }
 
 .case-footer {
