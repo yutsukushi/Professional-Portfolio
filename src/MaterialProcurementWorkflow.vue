@@ -482,7 +482,7 @@ function toggleProductDropdown(sku, trigger) {
                     @keydown.esc="closeProductDropdown(row.sku)"
                   >
                     <span class="sku-value">{{ row.sku }}</span>
-                    <span v-show="row.productType == 'Configurable'" class="sku-nugget" :class="`sku-nugget--${row.productType.toLowerCase()}`">
+                    <span v-show="row.productType == 'NCP'" class="sku-nugget" :class="`sku-nugget--${row.productType.toLowerCase()}`">
                       <b>{{ row.productType }}</b>
                     </span>
                   </button>
