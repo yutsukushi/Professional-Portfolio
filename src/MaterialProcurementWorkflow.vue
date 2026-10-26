@@ -60,10 +60,13 @@ const selectedSuppliers = ref({})
 const activeSupplierPopoverSku = ref(null)
 const pinnedSupplierPopoverSku = ref(null)
 const activeSupplierDropdownSku = ref(null)
+const activeProductDropdownSku = ref(null)
 const supplierPopoverPosition = ref({})
 const supplierDropdownPosition = ref({})
+const productDropdownPosition = ref({})
 const supplierTriggerElements = new Map()
 const supplierDropdownTriggerElements = new Map()
+const productDropdownTriggerElements = new Map()
 let supplierPopoverCloseTimeout
 const availableSuppliers = [...new Set([
   ...procurementRows.map((row) => row.supplier),
@@ -131,6 +134,35 @@ function setSupplierDropdownTriggerElement(sku, element) {
   }
 }
 
+function setProductDropdownTriggerElement(sku, element) {
+  if (element) {
+    productDropdownTriggerElements.set(sku, element)
+  } else {
+    productDropdownTriggerElements.delete(sku)
+  }
+}
+
+function positionProductDropdown(trigger) {
+  const bounds = trigger.getBoundingClientRect()
+  const viewportPadding = 12
+  const dropdownWidth = Math.min(240, window.innerWidth - viewportPadding * 2)
+  const estimatedDropdownHeight = 220
+  const top = bounds.bottom + 6 + estimatedDropdownHeight <= window.innerHeight - viewportPadding
+    ? bounds.bottom + 6
+    : Math.max(viewportPadding, bounds.top - estimatedDropdownHeight - 6)
+  const left = Math.max(
+    viewportPadding,
+    Math.min(bounds.left, window.innerWidth - dropdownWidth - viewportPadding),
+  )
+
+  productDropdownPosition.value = {
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${dropdownWidth}px`,
+    maxHeight: `${window.innerHeight - top - viewportPadding}px`,
+  }
+}
+
 function positionSupplierDropdown(trigger) {
   const bounds = trigger.getBoundingClientRect()
   const viewportPadding = 12
@@ -181,6 +213,7 @@ function positionSupplierPopover(trigger) {
 }
 
 function showSupplierPopover(sku, trigger) {
+  closeProductDropdown()
   window.clearTimeout(supplierPopoverCloseTimeout)
   activeSupplierPopoverSku.value = sku
   positionSupplierPopover(trigger)
@@ -217,9 +250,18 @@ function closeSupplierPopoverOutside(event) {
     closeSupplierPopover()
     activeSupplierDropdownSku.value = null
   }
+  if (!event.target.closest('.sku-cell-trigger, .sku-product-options')) {
+    closeProductDropdown()
+  }
 }
 
 function repositionActiveSupplierPopover() {
+  const productSku = activeProductDropdownSku.value
+  const productTrigger = productSku && productDropdownTriggerElements.get(productSku)
+  if (productTrigger) {
+    positionProductDropdown(productTrigger)
+  }
+
   const dropdownSku = activeSupplierDropdownSku.value
   const dropdownTrigger = dropdownSku && supplierDropdownTriggerElements.get(dropdownSku)
   if (dropdownTrigger) {
@@ -242,6 +284,7 @@ function toggleAllRows(event) {
 }
 
 function openDropdown(sku) {
+  closeProductDropdown()
   if (activeSupplierDropdownSku.value === sku) {
     activeSupplierDropdownSku.value = null
   } else {
@@ -252,6 +295,24 @@ function openDropdown(sku) {
       positionSupplierDropdown(trigger)
     }
   }
+}
+
+function closeProductDropdown(sku = activeProductDropdownSku.value) {
+  if (activeProductDropdownSku.value === sku) {
+    activeProductDropdownSku.value = null
+  }
+}
+
+function toggleProductDropdown(sku, trigger) {
+  if (activeProductDropdownSku.value === sku) {
+    closeProductDropdown(sku)
+    return
+  }
+
+  closeSupplierPopover()
+  activeSupplierDropdownSku.value = null
+  activeProductDropdownSku.value = sku
+  positionProductDropdown(trigger)
 }
 </script>
 
@@ -329,7 +390,40 @@ function openDropdown(sku) {
                     :aria-label="`Select ${row.sku}`"
                   />
                 </td>
-                <th scope="row" class="sku-cell">{{ row.sku }}</th>
+                <th scope="row" class="sku-cell">
+                  <button
+                    :ref="(element) => setProductDropdownTriggerElement(row.sku, element)"
+                    class="sku-cell-trigger"
+                    type="button"
+                    :aria-expanded="activeProductDropdownSku === row.sku"
+                    :aria-controls="`sku-products-${row.sku}`"
+                    @click.stop="toggleProductDropdown(row.sku, $event.currentTarget)"
+                    @keydown.esc="closeProductDropdown(row.sku)"
+                  >
+                    <span class="sku-value">{{ row.sku }}</span>
+                    <span class="sku-nugget"><b>NCP</b></span>
+                  </button>
+                  <Teleport to="body">
+                    <div
+                      v-if="activeProductDropdownSku === row.sku"
+                      :id="`sku-products-${row.sku}`"
+                      class="sku-product-options"
+                      :style="productDropdownPosition"
+                      role="list"
+                      aria-label="Products"
+                    >
+                      <div
+                        v-for="product in procurementRows"
+                        :key="product.sku"
+                        class="sku-product-option"
+                        role="listitem"
+                      >
+                        <span>{{ product.sku }}</span>
+                        <span>{{ product.brand }}</span>
+                      </div>
+                    </div>
+                  </Teleport>
+                </th>
                 <td>{{ row.brand }}</td>
                 <td class="supplier-cell">
                   <div class="supplier-cell-content"
@@ -806,6 +900,70 @@ function openDropdown(sku) {
 .procurement-table .sku-cell,
 .procurement-table .total-cell {
   font-weight: 600;
+}
+
+.sku-cell-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.sku-cell-trigger:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid #7550c8;
+  outline-offset: 2px;
+}
+
+.sku-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sku-nugget {
+  flex: 0 0 auto;
+  padding: 0.12rem 0.3rem;
+  border-radius: 3px;
+  background: #f0f1ed;
+  color: #5d6258;
+  font-size: 0.52rem;
+  font-weight: 600;
+}
+
+.sku-product-options {
+  position: fixed;
+  z-index: 1100;
+  box-sizing: border-box;
+  padding: 0.25rem;
+  overflow-y: auto;
+  border: 1px solid #dce2dd;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgb(21 48 32 / 16%);
+}
+
+.sku-product-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0.5rem;
+  color: #282a32;
+  font-size: 0.6875rem;
+}
+
+.sku-product-option + .sku-product-option {
+  border-top: 1px solid #f0f1ed;
 }
 
 .procurement-table .supplier-cell {
