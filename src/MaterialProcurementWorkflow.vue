@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const procurementRows = [
   {
@@ -275,6 +275,20 @@ function repositionActiveSupplierPopover() {
   }
 }
 
+function closeDropdownsOnScroll() {
+  closeProductDropdown()
+  activeSupplierDropdownSku.value = null
+  repositionActiveSupplierPopover()
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', closeDropdownsOnScroll, true)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', closeDropdownsOnScroll, true)
+})
+
 function toggleAllRows(event) {
   if (event.target.checked) {
     selectedSkus.value = procurementRows.map((row) => row.sku)
@@ -321,7 +335,6 @@ function toggleProductDropdown(sku, trigger) {
     class="case-study"
     @click.window="closeSupplierPopoverOutside"
     @resize.passive.window="repositionActiveSupplierPopover"
-    @scroll.passive.window="repositionActiveSupplierPopover"
   >
     <header class="case-header">
       <a class="case-wordmark" href="./index.html" aria-label="Yukie Kushibiki, home">YK<span>.</span></a>
@@ -345,7 +358,7 @@ function toggleProductDropdown(sku, trigger) {
         </div>
 
         <div class="table-scroll-hint"><span aria-hidden="true">↔</span> Scroll to see all material details</div>
-        <div class="procurement-table-scroll" tabindex="0" role="region" aria-label="Material schedule table, scroll horizontally to see more columns" @scroll.passive="repositionActiveSupplierPopover">
+        <div class="procurement-table-scroll" tabindex="0" role="region" aria-label="Material schedule table, scroll horizontally to see more columns">
           <table class="procurement-table" aria-label="Harbor House material schedule">
             <colgroup>
               <col class="select-col" />
