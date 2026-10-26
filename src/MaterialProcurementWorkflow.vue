@@ -667,6 +667,11 @@ function toggleProductDropdown(sku, trigger) {
             </tbody>
           </table>
         </div>
+        <div class="table-actions">
+          <button class="add-product-button" type="button">
+            <span aria-hidden="true">+</span> Add Product
+          </button>
+        </div>
         <div class="table-footer">
           <span><span class="table-footer-dot"></span> Project material list</span>
           <span>Costs shown in USD · Sample data</span>
@@ -1516,6 +1521,44 @@ function toggleProductDropdown(sku, trigger) {
   color: var(--muted);
   font-family: var(--mono);
   font-size: 0.51rem;
+}
+
+.table-actions {
+  display: flex;
+  justify-content: flex-start;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #e0e3dc;
+  border-top: 0;
+  background: #fff;
+}
+
+.add-product-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #dce2dd;
+  border-radius: 4px;
+  background: #fff;
+  color: #315d78;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.add-product-button:hover {
+  background: #f3f7fa;
+}
+
+.add-product-button:focus-visible {
+  outline: 2px solid #7550c8;
+  outline-offset: 2px;
+}
+
+.add-product-button > span {
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
 .table-footer > span:first-child {
