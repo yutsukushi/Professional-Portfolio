@@ -197,7 +197,7 @@ function positionProductDropdown(trigger, dropdown) {
   const bounds = trigger.getBoundingClientRect()
   const viewportPadding = 12
   const dropdownGap = 6
-  const dropdownWidth = Math.min(240, window.innerWidth - viewportPadding * 2)
+  const dropdownWidth = Math.min(320, window.innerWidth - viewportPadding * 2)
   const dropdownHeight = dropdown?.getBoundingClientRect().height || 220
   const spaceBelow = Math.max(
     0,
@@ -559,8 +559,19 @@ function toggleProductDropdown(sku, trigger) {
                         class="sku-product-option"
                         role="listitem"
                       >
-                        <span>{{ product.sku }}</span>
-                        <span>{{ product.brand }}</span>
+                        <div class="supplier-option-description">
+                          <div class="supplier-option-heading">
+                            <span><b>{{ product.sku }}</b></span>
+                          </div>
+                          <div class="supplier-option-meta">
+                            <span class="supplier-option-brand">{{ product.brand }}</span>
+                            <span class="supplier-option-separator" aria-hidden="true"></span>
+                            <span class="sku-product-supplier">{{ supplierName(product) }}</span>
+                          </div>
+                        </div>
+                        <div class="supplier-option-price">
+                          <span><b>{{ formatCurrency(supplierOffer(product).unitCost) }}</b></span>
+                        </div>
                       </div>
                     </div>
                   </Teleport>
@@ -764,13 +775,25 @@ function toggleProductDropdown(sku, trigger) {
                         :key="product.sku"
                         class="sku-product-option"
                         role="option"
+                        :aria-selected="product.sku === row.sku"
                         tabindex="0"
                         @click.stop="selectDummyProduct(row, product)"
                         @keydown.enter.stop="selectDummyProduct(row, product)"
                         @keydown.space.prevent.stop="selectDummyProduct(row, product)"
                       >
-                        <span>{{ product.sku }}</span>
-                        <span>{{ product.brand }}</span>
+                        <div class="supplier-option-description">
+                          <div class="supplier-option-heading">
+                            <span><b>{{ product.sku }}</b></span>
+                          </div>
+                          <div class="supplier-option-meta">
+                            <span class="supplier-option-brand">{{ product.brand }}</span>
+                            <span class="supplier-option-separator" aria-hidden="true"></span>
+                            <span class="sku-product-supplier">{{ supplierName(product) }}</span>
+                          </div>
+                        </div>
+                        <div class="supplier-option-price">
+                          <span><b>{{ formatCurrency(supplierOffer(product).unitCost) }}</b></span>
+                        </div>
                       </div>
                     </div>
                   </Teleport>
@@ -1176,11 +1199,12 @@ function toggleProductDropdown(sku, trigger) {
 }
 
 .sku-nugget--ncp {
-  background: #fbf1dd;
-  color: #8a6028;
+  background: #e8e9ff;
+  color: #4b4edb;
 }
 
-.sku-product-options {
+.sku-product-options,
+.supplier-options {
   position: fixed;
   z-index: 1100;
   box-sizing: border-box;
@@ -1190,20 +1214,6 @@ function toggleProductDropdown(sku, trigger) {
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 8px 20px rgb(21 48 32 / 16%);
-}
-
-.sku-product-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.4rem 0.5rem;
-  color: #282a32;
-  font-size: 0.6875rem;
-}
-
-.sku-product-option + .sku-product-option {
-  border-top: 1px solid #f0f1ed;
 }
 
 .procurement-table .supplier-cell {
@@ -1253,6 +1263,7 @@ function toggleProductDropdown(sku, trigger) {
 }
 
 .supplier-name:focus-visible,
+.sku-product-option:focus-visible,
 .supplier-option:focus-visible {
   border-radius: 3px;
   outline: 2px solid #7550c8;
@@ -1260,18 +1271,14 @@ function toggleProductDropdown(sku, trigger) {
 }
 
 .supplier-options {
-  position: fixed;
-  z-index: 1100;
   display: grid;
-  box-sizing: border-box;
-  padding: 0.25rem;
-  border: 1px solid #dce2dd;
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 8px 20px rgb(21 48 32 / 16%);
-  overflow-y: auto;
 }
 
+.sku-product-options {
+  display: grid;
+}
+
+.sku-product-option,
 .supplier-option {
   display: flex;
   align-items: center;
@@ -1288,9 +1295,20 @@ function toggleProductDropdown(sku, trigger) {
   white-space: nowrap;
 }
 
+.sku-product-option .supplier-option-price {
+  align-self: flex-start;
+}
+
+.sku-product-option:hover,
+.sku-product-option[aria-selected='true'],
 .supplier-option:hover,
 .supplier-option[aria-selected='true'] {
   background: #f0f4ef;
+}
+
+.sku-product-supplier {
+  color: #60665f;
+  font-size: 0.6rem;
 }
 
 .supplier-option-layout {
