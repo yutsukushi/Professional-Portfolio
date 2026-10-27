@@ -407,7 +407,17 @@ function toggleAllRows(event) {
 }
 
 function addProductRow() {
-  emptyProductRows.value.push({ id: nextEmptyProductRowId, sku: '' })
+  emptyProductRows.value.push({
+    id: nextEmptyProductRowId,
+    sku: '',
+    brand: '',
+    supplier: '',
+    plannedQty: null,
+    orderedQty: null,
+    unitCost: null,
+    phase: '',
+    dateNeeded: '',
+  })
   nextEmptyProductRowId += 1
 }
 
@@ -465,7 +475,14 @@ function openEmptyProductDropdown(row, trigger) {
 }
 
 function selectDummyProduct(row, product) {
-  row.sku = product.configuredSku
+  Object.assign(row, {
+    sku: product.configuredSku,
+    brand: product.brand,
+    supplier: product.supplier,
+    plannedQty: 1,
+    orderedQty: 1,
+    unitCost: product.unitCost,
+  })
   activeEmptyProductDropdownId.value = null
 }
 
@@ -831,16 +848,24 @@ function toggleProductDropdown(sku, trigger) {
                     </div>
                   </Teleport>
                 </th>
-                <td></td>
+                <td>{{ row.brand }}</td>
                 <td>
                   <input
+                    v-model="row.supplier"
                     class="empty-product-supplier-input"
                     type="text"
                     placeholder="Type or select supplier"
                     :aria-label="`Supplier for new product row ${row.id}`"
                   />
                 </td>
-                <td v-for="column in 6" :key="column"></td>
+                <td>{{ row.plannedQty }}</td>
+                <td>{{ row.orderedQty }}</td>
+                <td>{{ row.unitCost == null ? '' : formatCurrency(row.unitCost) }}</td>
+                <td class="total-cell">
+                  {{ row.unitCost == null || row.orderedQty == null ? '' : formatCurrency(row.unitCost * row.orderedQty) }}
+                </td>
+                <td>{{ row.phase }}</td>
+                <td>{{ row.dateNeeded }}</td>
               </tr>
             </tbody>
           </table>
@@ -1199,12 +1224,6 @@ function toggleProductDropdown(sku, trigger) {
   outline: none;
 }
 
-.sku-cell-trigger:focus-visible {
-  border-radius: 3px;
-  outline: 2px solid #7550c8;
-  outline-offset: 2px;
-}
-
 .sku-value {
   min-width: 0;
   overflow: hidden;
@@ -1285,6 +1304,12 @@ function toggleProductDropdown(sku, trigger) {
   text-overflow: ellipsis;
 }
 
+.sku-cell-trigger:focus,
+.supplier-name:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 .supplier-name svg {
   width: 0.65rem;
   height: 0.65rem;
@@ -1295,7 +1320,6 @@ function toggleProductDropdown(sku, trigger) {
   stroke-width: 1.5;
 }
 
-.supplier-name:focus-visible,
 .sku-product-option:focus-visible,
 .supplier-option:focus-visible {
   border-radius: 3px;
