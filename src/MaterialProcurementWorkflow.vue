@@ -12,10 +12,10 @@ const procurementRows = [
     phase: 'Rough-in',
     dateNeeded: '11/02/26',
     offers: [
-      { supplier: 'Central Supply', productType: 'Configurable', unitCost: 18.5, stockStatus: 'in-stock', stockQuantity: 12, alerts: ['Lead time: 2–3 weeks'] },
-      { supplier: 'Metro Materials', productType: 'Flat', unitCost: 19.25, stockStatus: 'low-stock', stockQuantity: 3, alerts: [] },
-      { supplier: 'General Wholesale', productType: 'Flat', unitCost: 17.95, stockStatus: 'in-stock', stockQuantity: 28, alerts: ['Configurable finish selected'] },
-      { supplier: 'Beacon Supply', productType: 'Configurable', unitCost: 16.85, stockStatus: 'low-stock', stockQuantity: 5, alerts: ['Lead time: 4–6 weeks'] },
+      { supplier: 'Central Supply', brand: 'Acme', productType: 'Configurable', unitCost: 18.5, stockStatus: 'in-stock', stockQuantity: 12, alerts: ['Lead time: 2–3 weeks'] },
+      { supplier: 'Metro Materials', brand: 'Northline', productType: 'Flat', unitCost: 19.25, stockStatus: 'low-stock', stockQuantity: 3, alerts: [] },
+      { supplier: 'General Wholesale', brand: 'Standard', productType: 'Flat', unitCost: 17.95, stockStatus: 'in-stock', stockQuantity: 28, alerts: ['Configurable finish selected'] },
+      { supplier: 'Beacon Supply', brand: 'Apex', productType: 'Configurable', unitCost: 16.85, stockStatus: 'low-stock', stockQuantity: 5, alerts: ['Lead time: 4–6 weeks'] },
     ],
   },
   {
@@ -28,10 +28,10 @@ const procurementRows = [
     phase: 'Fit-out',
     dateNeeded: '11/04/26',
     offers: [
-      { supplier: 'Central Supply', productType: 'Flat', unitCost: 26.5, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Expected restock: Nov 14'] },
-      { supplier: 'Metro Materials', productType: 'Configurable', unitCost: 24, stockStatus: 'in-stock', stockQuantity: 8, alerts: ['Price valid through Oct 31'] },
-      { supplier: 'General Wholesale', productType: 'Flat', unitCost: 23.75, stockStatus: 'in-stock', stockQuantity: 16, alerts: [] },
-      { supplier: 'Beacon Supply', productType: 'Flat', unitCost: 22.9, stockStatus: 'low-stock', stockQuantity: 2, alerts: ['Only two units available', 'Freight surcharge may apply'] },
+      { supplier: 'Central Supply', brand: 'Apex', productType: 'Flat', unitCost: 26.5, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Expected restock: Nov 14'] },
+      { supplier: 'Metro Materials', brand: 'Northline', productType: 'Configurable', unitCost: 24, stockStatus: 'in-stock', stockQuantity: 8, alerts: ['Price valid through Oct 31'] },
+      { supplier: 'General Wholesale', brand: 'Standard', productType: 'Flat', unitCost: 23.75, stockStatus: 'in-stock', stockQuantity: 16, alerts: [] },
+      { supplier: 'Beacon Supply', brand: 'Acme', productType: 'Flat', unitCost: 22.9, stockStatus: 'low-stock', stockQuantity: 2, alerts: ['Only two units available', 'Freight surcharge may apply'] },
     ],
   },
   {
@@ -44,10 +44,10 @@ const procurementRows = [
     phase: 'Rough-in',
     dateNeeded: '11/06/26',
     offers: [
-      { supplier: 'Central Supply', productType: 'Flat', unitCost: 32.5, stockStatus: 'in-stock', stockQuantity: 36, alerts: [] },
-      { supplier: 'Metro Materials', productType: 'Flat', unitCost: 35.25, stockStatus: 'out-of-stock', stockQuantity: 0, alerts: ['Item temporarily unavailable'] },
-      { supplier: 'General Wholesale', productType: 'Configurable', unitCost: 31.8, stockStatus: 'low-stock', stockQuantity: 4, alerts: ['Minimum order quantity: 10'] },
-      { supplier: 'Beacon Supply', productType: 'Flat', unitCost: 30.95, stockStatus: 'in-stock', stockQuantity: 18, alerts: ['NCP item: confirm finish before ordering'] },
+      { supplier: 'Central Supply', brand: 'Standard', productType: 'Flat', unitCost: 32.5, stockStatus: 'in-stock', stockQuantity: 36, alerts: [] },
+      { supplier: 'Metro Materials', brand: 'Acme', productType: 'Flat', unitCost: 35.25, stockStatus: 'out-of-stock', stockQuantity: 0, alerts: ['Item temporarily unavailable'] },
+      { supplier: 'General Wholesale', brand: 'Northline', productType: 'Configurable', unitCost: 31.8, stockStatus: 'low-stock', stockQuantity: 4, alerts: ['Minimum order quantity: 10'] },
+      { supplier: 'Beacon Supply', brand: 'Apex', productType: 'Flat', unitCost: 30.95, stockStatus: 'in-stock', stockQuantity: 18, alerts: ['NCP item: confirm finish before ordering'] },
     ],
   },
   {
@@ -60,10 +60,10 @@ const procurementRows = [
     phase: 'Fit-out',
     dateNeeded: '11/09/26',
     offers: [
-      { supplier: 'Central Supply', productType: 'Flat', unitCost: 42.5, stockStatus: 'low-stock', stockQuantity: 6, alerts: [] },
-      { supplier: 'Metro Materials', productType: 'Configurable', unitCost: 47.25, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Custom configuration: 3-week lead time'] },
-      { supplier: 'General Wholesale', productType: 'Configurable', unitCost: 45, stockStatus: 'in-stock', stockQuantity: 18, alerts: ['Confirm dimensions before fulfillment'] },
-      { supplier: 'Beacon Supply', productType: 'Flat', unitCost: 39.8, stockStatus: 'low-stock', stockQuantity: 2, alerts: ['Only two units available', 'Custom finish adds 1 week'] },
+      { supplier: 'Central Supply', brand: 'Standard', productType: 'Flat', unitCost: 42.5, stockStatus: 'low-stock', stockQuantity: 6, alerts: [] },
+      { supplier: 'Metro Materials', brand: 'Northline', productType: 'Configurable', unitCost: 47.25, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Custom configuration: 3-week lead time'] },
+      { supplier: 'General Wholesale', brand: 'Acme', productType: 'Configurable', unitCost: 45, stockStatus: 'in-stock', stockQuantity: 18, alerts: ['Confirm dimensions before fulfillment'] },
+      { supplier: 'Beacon Supply', brand: 'Northline', productType: 'Flat', unitCost: 39.8, stockStatus: 'low-stock', stockQuantity: 2, alerts: ['Only two units available', 'Custom finish adds 1 week'] },
     ],
   },
   {
@@ -76,10 +76,10 @@ const procurementRows = [
     phase: 'Finishes',
     dateNeeded: '11/12/26',
     offers: [
-      { supplier: 'Central Supply', productType: 'Flat', unitCost: 8.1, stockStatus: 'low-stock', stockQuantity: 5, alerts: ['Restock expected next week'] },
-      { supplier: 'Metro Materials', productType: 'Flat', unitCost: 7.25, stockStatus: 'in-stock', stockQuantity: 40, alerts: [] },
-      { supplier: 'General Wholesale', productType: 'Configurable', unitCost: 6.95, stockStatus: 'in-stock', stockQuantity: 60, alerts: ['Bulk pricing available at 50 units'] },
-      { supplier: 'Beacon Supply', productType: 'Flat', unitCost: 6.5, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Expected restock: Nov 18'] },
+      { supplier: 'Central Supply', brand: 'Northline', productType: 'Flat', unitCost: 8.1, stockStatus: 'low-stock', stockQuantity: 5, alerts: ['Restock expected next week'] },
+      { supplier: 'Metro Materials', brand: 'Acme', productType: 'Flat', unitCost: 7.25, stockStatus: 'in-stock', stockQuantity: 40, alerts: [] },
+      { supplier: 'General Wholesale', brand: 'Standard', productType: 'Configurable', unitCost: 6.95, stockStatus: 'in-stock', stockQuantity: 60, alerts: ['Bulk pricing available at 50 units'] },
+      { supplier: 'Beacon Supply', brand: 'Apex', productType: 'Flat', unitCost: 6.5, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Expected restock: Nov 18'] },
     ],
   },
 ]
@@ -634,6 +634,9 @@ function toggleProductDropdown(sku, trigger) {
                                   class="supplier-option-badge"
                                   :class="`supplier-option-badge--${offer.productType.toLowerCase()}`"
                                 ><b>{{ offer.productType }}</b></span>
+                              </div>
+                              <div v-if="offer.brand !== row.brand" class="supplier-option-brand">
+                                {{ offer.brand }}
                               </div>
                               <div class="supplier-option-meta">
                                 <div class="supplier-option-stock" :class="`supplier-option-stock--${offer.stockStatus}`">
@@ -1321,7 +1324,7 @@ function toggleProductDropdown(sku, trigger) {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.1rem;
 }
 
 .supplier-option-heading,
@@ -1333,6 +1336,12 @@ function toggleProductDropdown(sku, trigger) {
 
 .supplier-option-heading {
   flex-wrap: wrap;
+}
+
+.supplier-option-brand {
+  color: #747b73;
+  font-size: 0.6rem;
+  line-height: 1.1;
 }
 
 .supplier-option-badge {
