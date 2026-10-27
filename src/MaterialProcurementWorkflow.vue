@@ -3,7 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const procurementRows = [
   {
-    sku: 'MAT-1001',
+    sku: 'F-1100-2IN-BRONZE',
     productType: 'Configurable',
     brand: 'Acme',
     supplier: 'Central Supply',
@@ -19,7 +19,7 @@ const procurementRows = [
     ],
   },
   {
-    sku: 'MAT-1002',
+    sku: '1100-6FT-HDMI',
     productType: 'Flat',
     brand: 'Northline',
     supplier: 'Metro Materials',
@@ -35,7 +35,7 @@ const procurementRows = [
     ],
   },
   {
-    sku: 'MAT-1003',
+    sku: 'NCP-3200',
     productType: 'NCP',
     brand: 'Standard',
     supplier: 'Central Supply',
@@ -51,7 +51,7 @@ const procurementRows = [
     ],
   },
   {
-    sku: 'MAT-1004',
+    sku: 'VAV-4100-24V-BACNET',
     productType: 'Configurable',
     brand: 'Apex',
     supplier: 'General Wholesale',
@@ -67,7 +67,7 @@ const procurementRows = [
     ],
   },
   {
-    sku: 'MAT-1005',
+    sku: '1100-2193-NATURAL-GAS',
     productType: 'Flat',
     brand: 'Acme',
     supplier: 'Metro Materials',
@@ -81,6 +81,37 @@ const procurementRows = [
       { supplier: 'General Wholesale', brand: 'Standard', productType: 'Configurable', unitCost: 6.95, stockStatus: 'in-stock', stockQuantity: 60, alerts: ['Bulk pricing available at 50 units'] },
       { supplier: 'Beacon Supply', brand: 'Apex', productType: 'Flat', unitCost: 6.5, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Expected restock: Nov 18'] },
     ],
+  },
+]
+
+const dummyProducts = [
+  {
+    sku: 'F-1100####################',
+    configuredSku: 'F-1100-2IN-BRONZE',
+    brand: 'Northstar Instruments',
+    supplier: 'Summit Supply',
+    unitCost: 18.5,
+  },
+  {
+    sku: '1100',
+    configuredSku: '1100-6FT-HDMI',
+    brand: 'Clearline Cable Works',
+    supplier: 'Summit Supply',
+    unitCost: 19.25,
+  },
+  {
+    sku: 'VAV-4100########################',
+    configuredSku: 'VAV-4100-24V-BACNET',
+    brand: 'Pioneer Building Systems',
+    supplier: 'Harbor Industrial',
+    unitCost: 39.8,
+  },
+  {
+    sku: '1100-2193',
+    configuredSku: '1100-2193-NATURAL-GAS',
+    brand: 'Evergreen Safety Products',
+    supplier: 'Summit Supply',
+    unitCost: 32.5,
   },
 ]
 
@@ -410,10 +441,12 @@ function closeProductDropdown(sku = activeProductDropdownSku.value) {
 function filteredDummyProducts(row) {
   const query = row.sku.trim().toLowerCase()
   if (!query) {
-    return procurementRows
+    return dummyProducts
   }
-  return procurementRows.filter((product) =>
-    `${product.sku} ${product.brand}`.toLowerCase().includes(query),
+  return dummyProducts.filter((product) =>
+    `${product.sku} ${product.configuredSku} ${product.brand} ${product.supplier}`
+      .toLowerCase()
+      .includes(query),
   )
 }
 
@@ -432,7 +465,7 @@ function openEmptyProductDropdown(row, trigger) {
 }
 
 function selectDummyProduct(row, product) {
-  row.sku = product.sku
+  row.sku = product.configuredSku
   activeEmptyProductDropdownId.value = null
 }
 
@@ -554,7 +587,7 @@ function toggleProductDropdown(sku, trigger) {
                       aria-label="Products"
                     >
                       <div
-                        v-for="product in procurementRows"
+                        v-for="product in dummyProducts"
                         :key="product.sku"
                         class="sku-product-option"
                         role="listitem"
@@ -566,11 +599,11 @@ function toggleProductDropdown(sku, trigger) {
                           <div class="supplier-option-meta">
                             <span class="supplier-option-brand">{{ product.brand }}</span>
                             <span class="supplier-option-separator" aria-hidden="true"></span>
-                            <span class="sku-product-supplier">{{ supplierName(product) }}</span>
+                            <span class="sku-product-supplier">{{ product.supplier }}</span>
                           </div>
                         </div>
                         <div class="supplier-option-price">
-                          <span><b>{{ formatCurrency(supplierOffer(product).unitCost) }}</b></span>
+                          <span><b>{{ formatCurrency(product.unitCost) }}</b></span>
                         </div>
                       </div>
                     </div>
@@ -775,7 +808,7 @@ function toggleProductDropdown(sku, trigger) {
                         :key="product.sku"
                         class="sku-product-option"
                         role="option"
-                        :aria-selected="product.sku === row.sku"
+                        :aria-selected="product.configuredSku === row.sku"
                         tabindex="0"
                         @click.stop="selectDummyProduct(row, product)"
                         @keydown.enter.stop="selectDummyProduct(row, product)"
@@ -788,11 +821,11 @@ function toggleProductDropdown(sku, trigger) {
                           <div class="supplier-option-meta">
                             <span class="supplier-option-brand">{{ product.brand }}</span>
                             <span class="supplier-option-separator" aria-hidden="true"></span>
-                            <span class="sku-product-supplier">{{ supplierName(product) }}</span>
+                            <span class="sku-product-supplier">{{ product.supplier }}</span>
                           </div>
                         </div>
                         <div class="supplier-option-price">
-                          <span><b>{{ formatCurrency(supplierOffer(product).unitCost) }}</b></span>
+                          <span><b>{{ formatCurrency(product.unitCost) }}</b></span>
                         </div>
                       </div>
                     </div>
@@ -1276,11 +1309,14 @@ function toggleProductDropdown(sku, trigger) {
 
 .sku-product-options {
   display: grid;
+  overflow-x: hidden;
 }
 
 .sku-product-option,
 .supplier-option {
   display: flex;
+  min-width: 0;
+  box-sizing: border-box;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -1297,6 +1333,27 @@ function toggleProductDropdown(sku, trigger) {
 
 .sku-product-option .supplier-option-price {
   align-self: flex-start;
+}
+
+.sku-product-option .supplier-option-description {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.sku-product-option .supplier-option-heading {
+  min-width: 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.sku-product-option .supplier-option-heading > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sku-product-option .supplier-option-price {
+  margin-left: 0;
 }
 
 .sku-product-option:hover,
