@@ -1436,7 +1436,7 @@ function toggleProductDropdown(sku, trigger) {
   padding: 0.16rem 0.4rem;
   border: 1px solid #ead8b9;
   border-radius: 999px;
-  background: transparent;
+  background: #fbf1dd;
   color: #a95f2b;
   cursor: pointer;
   font-size: 0.6rem;
@@ -1445,14 +1445,13 @@ function toggleProductDropdown(sku, trigger) {
   line-height: 1.2;
   transition: background-color 140ms ease, border-color 140ms ease;
   height: 1rem;
-  background-color: #fff;
 }
 
 .supplier-save-pill:hover,
 .supplier-save-pill:focus-visible,
 .supplier-save-pill[aria-expanded='true'] {
-  border-color: #ead8b9;
-  background: #fbf1dd;
+  border-color: #dfc79c;
+  background: #f4e4c4;
 }
 
 .supplier-popover {
