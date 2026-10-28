@@ -84,10 +84,17 @@ const procurementRows = [
   },
 ]
 
+const initialProductDetails = procurementRows.map(({ sku, brand, productType }) => ({
+  sku,
+  brand,
+  productType,
+}))
+
 const dummyProducts = [
   {
     sku: 'F-1100####################',
     configuredSku: 'F-1100-2IN-BRONZE',
+    productType: 'Configurable',
     brand: 'Northstar Instruments',
     supplier: 'Summit Supply',
     unitCost: 18.5,
@@ -95,6 +102,7 @@ const dummyProducts = [
   {
     sku: '1100',
     configuredSku: '1100-6FT-HDMI',
+    productType: 'Flat',
     brand: 'Clearline Cable Works',
     supplier: 'Summit Supply',
     unitCost: 19.25,
@@ -102,6 +110,7 @@ const dummyProducts = [
   {
     sku: 'VAV-4100########################',
     configuredSku: 'VAV-4100-24V-BACNET',
+    productType: 'Configurable',
     brand: 'Pioneer Building Systems',
     supplier: 'Harbor Industrial',
     unitCost: 39.8,
@@ -109,10 +118,28 @@ const dummyProducts = [
   {
     sku: '1100-2193',
     configuredSku: '1100-2193-NATURAL-GAS',
+    productType: 'Flat',
     brand: 'Evergreen Safety Products',
     supplier: 'Summit Supply',
     unitCost: 32.5,
   },
+]
+
+const configurationFields = [
+  { label: 'Output', options: ['Frequency & Scaled Pulse Dry Contact Output', 'Analog 4–20 mA Output', 'Pulse Output'] },
+  { label: 'Flow Size Range', options: ['1/2–2.5 in', '1/2–1.5 in', '2–4 in'] },
+  { label: 'Wetted Material', options: ['Nickel Plated Brass', 'Stainless Steel', 'Bronze'] },
+  { label: 'Enclosure', options: ['NEMA 4 Weatherproof Enclosure', 'NEMA 1 Indoor Enclosure', 'NEMA 4X Corrosion Resistant'] },
+  { label: 'Wiring Connection', options: ['1/2 in NPT, Jacketed Cable With 1/2 in Conduit Adapter', 'Terminal Block', 'M12 Connector'] },
+  { label: 'Process Ambient', options: ['70°F typical, medium temperature range', 'Low temperature range', 'High temperature range'] },
+  { label: 'Application', options: ['Chilled Water', 'Hot Water', 'Process Water'] },
+  { label: 'Glycol %', options: ['10% Glycol', '0% Glycol', '20% Glycol', '30% Glycol'] },
+  { label: 'Type of Glycol', options: ['Ethylene', 'Propylene'] },
+  { label: 'Pipe Material', options: ['Carbon Steel', 'Copper', 'Stainless Steel', 'PVC'] },
+  { label: 'Volume Units', options: ['GPM, Gallons', 'LPM, Liters', 'CFM, Cubic Feet'] },
+  { label: 'Pipe Schedule', options: ['Schedule 40', 'Schedule 10', 'Schedule 80'] },
+  { label: 'Set Point Flow Rate', options: ['H', 'L', 'Custom'] },
+  { label: 'Stack Height', options: ['Standard', 'Extended'] },
 ]
 
 const selectedSkus = ref([])
@@ -125,6 +152,11 @@ const pinnedSupplierPopoverSku = ref(null)
 const activeSupplierDropdownSku = ref(null)
 const activeProductDropdownSku = ref(null)
 const activeEmptyProductDropdownId = ref(null)
+const productConfiguration = ref(null)
+const configurationDraft = ref({})
+const savedProductConfigurations = ref({})
+const configurationDialog = ref(null)
+const configurationReturnFocus = ref(null)
 const supplierPopoverPosition = ref({})
 const supplierDropdownPosition = ref({})
 const productDropdownPosition = ref({})
@@ -427,6 +459,7 @@ function addProductRow() {
 }
 
 function resetDemo() {
+  procurementRows.forEach((row, index) => Object.assign(row, initialProductDetails[index]))
   selectedSkus.value = []
   selectedSuppliers.value = {}
   emptyProductRows.value = []
@@ -436,6 +469,10 @@ function resetDemo() {
   activeSupplierDropdownSku.value = null
   activeProductDropdownSku.value = null
   activeEmptyProductDropdownId.value = null
+  productConfiguration.value = null
+  configurationDraft.value = {}
+  savedProductConfigurations.value = {}
+  configurationReturnFocus.value = null
   supplierPopoverPosition.value = {}
   supplierDropdownPosition.value = {}
   productDropdownPosition.value = {}
@@ -468,6 +505,89 @@ function closeProductDropdown(sku = activeProductDropdownSku.value) {
   if (activeProductDropdownSku.value === sku) {
     activeProductDropdownSku.value = null
   }
+}
+
+function defaultConfiguration() {
+  return Object.fromEntries(configurationFields.map((field) => [field.label, field.options[0]]))
+}
+
+function openProductConfiguration(row, product, isNewProduct = false) {
+  closeProductDropdown()
+  activeEmptyProductDropdownId.value = null
+  configurationReturnFocus.value = isNewProduct
+    ? emptyProductDropdownTriggerElements.get(row.id)
+    : productDropdownTriggerElements.get(row.sku)
+  productConfiguration.value = { row, product, isNewProduct }
+  configurationDraft.value = {
+    ...defaultConfiguration(),
+    ...savedProductConfigurations.value[product.sku],
+  }
+  nextTick(() => configurationDialog.value?.querySelector('select')?.focus())
+}
+
+function applyProductSelection(row, product) {
+  const previousSku = row.sku
+  const wasSelected = selectedSkus.value.includes(previousSku)
+  row.sku = product.configuredSku
+  row.brand = product.brand
+  row.productType = product.productType
+
+  if (wasSelected) {
+    selectedSkus.value = selectedSkus.value.map((sku) =>
+      sku === previousSku ? row.sku : sku,
+    )
+  }
+}
+
+function chooseProduct(row, product) {
+  if (product.productType === 'Configurable') {
+    openProductConfiguration(row, product)
+    return
+  }
+
+  applyProductSelection(row, product)
+  closeProductDropdown()
+}
+
+function chooseEmptyProduct(row, product) {
+  if (product.productType === 'Configurable') {
+    openProductConfiguration(row, product, true)
+    return
+  }
+
+  selectDummyProduct(row, product)
+}
+
+function closeProductConfiguration(restoreFocus = true, closeEmptyDropdownAfterFocus = false) {
+  const returnFocus = configurationReturnFocus.value
+  productConfiguration.value = null
+  configurationReturnFocus.value = null
+  if (restoreFocus && returnFocus) {
+    nextTick(() => {
+      returnFocus.focus()
+      if (closeEmptyDropdownAfterFocus) {
+        activeEmptyProductDropdownId.value = null
+      }
+    })
+  }
+}
+
+function saveProductConfiguration() {
+  if (!productConfiguration.value) {
+    return
+  }
+
+  const { row, product, isNewProduct } = productConfiguration.value
+  savedProductConfigurations.value = {
+    ...savedProductConfigurations.value,
+    [product.sku]: { ...configurationDraft.value },
+  }
+  if (isNewProduct) {
+    selectDummyProduct(row, product)
+  } else {
+    applyProductSelection(row, product)
+  }
+  closeProductConfiguration(true, isNewProduct)
 }
 
 function filteredDummyProducts(row) {
@@ -622,18 +742,27 @@ function toggleProductDropdown(sku, trigger) {
                       :id="`sku-products-${row.sku}`"
                       class="sku-product-options"
                       :style="productDropdownPosition"
-                      role="list"
+                      role="listbox"
                       aria-label="Products"
                     >
                       <div
                         v-for="product in dummyProducts"
                         :key="product.sku"
                         class="sku-product-option"
-                        role="listitem"
+                        role="option"
+                        :aria-selected="row.sku === product.configuredSku"
+                        tabindex="0"
+                        @click.stop="chooseProduct(row, product)"
+                        @keydown.enter.stop="chooseProduct(row, product)"
+                        @keydown.space.prevent.stop="chooseProduct(row, product)"
                       >
                         <div class="supplier-option-description">
                           <div class="supplier-option-heading">
                             <span><b>{{ product.sku }}</b></span>
+                            <span
+                              v-if="product.productType === 'Configurable'"
+                              class="supplier-option-badge supplier-option-badge--configurable"
+                            ><b>Configurable</b></span>
                           </div>
                           <div class="supplier-option-meta">
                             <span class="supplier-option-brand">{{ product.brand }}</span>
@@ -849,9 +978,9 @@ function toggleProductDropdown(sku, trigger) {
                         role="option"
                         :aria-selected="product.configuredSku === row.sku"
                         tabindex="0"
-                        @click.stop="selectDummyProduct(row, product)"
-                        @keydown.enter.stop="selectDummyProduct(row, product)"
-                        @keydown.space.prevent.stop="selectDummyProduct(row, product)"
+                        @click.stop="chooseEmptyProduct(row, product)"
+                        @keydown.enter.stop="chooseEmptyProduct(row, product)"
+                        @keydown.space.prevent.stop="chooseEmptyProduct(row, product)"
                       >
                         <div class="supplier-option-description">
                           <div class="supplier-option-heading">
@@ -970,6 +1099,64 @@ function toggleProductDropdown(sku, trigger) {
       <span>© 2026 Yukie Kushibiki</span>
     </footer>
   </div>
+  <Teleport to="body">
+    <div
+      v-if="productConfiguration"
+      class="configuration-modal-backdrop"
+      @click.self="closeProductConfiguration()"
+    >
+      <section
+        ref="configurationDialog"
+        class="configuration-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="configuration-title"
+        @keydown.esc.stop.prevent="closeProductConfiguration()"
+      >
+        <header class="configuration-modal-header">
+          <div>
+            <h2 id="configuration-title">Configure Product</h2>
+            <p>{{ productConfiguration.product.brand }} · {{ productConfiguration.product.supplier }}</p>
+            <p>Product: {{ productConfiguration.product.sku }}</p>
+          </div>
+          <button
+            class="configuration-close-button"
+            type="button"
+            aria-label="Close product configuration"
+            @click="closeProductConfiguration()"
+          >×</button>
+        </header>
+        <form class="configuration-form" @submit.prevent="saveProductConfiguration">
+          <div class="configuration-fields">
+            <label
+              v-for="(field, index) in configurationFields"
+              :key="field.label"
+              class="configuration-field"
+              :for="`configuration-field-${index}`"
+            >
+              <span>{{ field.label }}</span>
+              <select
+                :id="`configuration-field-${index}`"
+                v-model="configurationDraft[field.label]"
+              >
+                <option v-for="option in field.options" :key="option" :value="option">
+                  {{ option }}
+                </option>
+              </select>
+            </label>
+          </div>
+          <footer class="configuration-modal-actions">
+            <button
+              class="configuration-cancel-button"
+              type="button"
+              @click="closeProductConfiguration()"
+            >Cancel</button>
+            <button class="configuration-save-button" type="submit">Save Configuration</button>
+          </footer>
+        </form>
+      </section>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -1362,6 +1549,135 @@ function toggleProductDropdown(sku, trigger) {
 .sku-product-options {
   display: grid;
   overflow-x: hidden;
+}
+
+.configuration-modal-backdrop {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  padding: 1rem;
+  place-items: center;
+  background: rgb(21 29 24 / 42%);
+}
+
+.configuration-modal {
+  display: flex;
+  width: min(620px, 100%);
+  max-height: min(850px, 100%);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #dce2dd;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgb(21 29 32 / 24%);
+  color: #282a32;
+}
+
+.configuration-modal-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem 0.8rem;
+  border-bottom: 1px solid #e2e3e7;
+}
+
+.configuration-modal-header h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.configuration-modal-header p {
+  margin: 0.2rem 0;
+  color: #60665f;
+  font-size: 0.7rem;
+}
+
+.configuration-close-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #687067;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.configuration-form {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.configuration-fields {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0.65rem;
+  overflow-y: auto;
+  padding: 0.15rem 1.25rem 1rem;
+}
+
+.configuration-field {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+  color: #373a40;
+  font-size: 0.67rem;
+  font-weight: 600;
+}
+
+.configuration-field select {
+  width: 100%;
+  min-height: 2rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #d9dde2;
+  border-radius: 4px;
+  background: #fff;
+  color: #343840;
+  font: inherit;
+  font-weight: 400;
+}
+
+.configuration-field select:focus-visible,
+.configuration-close-button:focus-visible,
+.configuration-modal-actions button:focus-visible {
+  outline: 2px solid #7550c8;
+  outline-offset: 2px;
+}
+
+.configuration-modal-actions {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.8rem 1.25rem;
+  border-top: 1px solid #e2e3e7;
+  background: #fff;
+}
+
+.configuration-modal-actions button {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid #d9dde2;
+  border-radius: 4px;
+  background: #fff;
+  color: #343840;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.configuration-modal-actions .configuration-save-button {
+  border-color: #315d78;
+  background: #315d78;
+  color: #fff;
 }
 
 .sku-product-option,
