@@ -118,6 +118,7 @@ const dummyProducts = [
 const selectedSkus = ref([])
 const selectedSuppliers = ref({})
 const emptyProductRows = ref([])
+const maxNewProductRows = 3
 const selectedEmptyProductRows = ref([])
 const activeSupplierPopoverSku = ref(null)
 const pinnedSupplierPopoverSku = ref(null)
@@ -407,6 +408,10 @@ function toggleAllRows(event) {
 }
 
 function addProductRow() {
+  if (emptyProductRows.value.length >= maxNewProductRows) {
+    return
+  }
+
   emptyProductRows.value.push({
     id: nextEmptyProductRowId,
     sku: '',
@@ -419,6 +424,23 @@ function addProductRow() {
     dateNeeded: '',
   })
   nextEmptyProductRowId += 1
+}
+
+function resetDemo() {
+  selectedSkus.value = []
+  selectedSuppliers.value = {}
+  emptyProductRows.value = []
+  selectedEmptyProductRows.value = []
+  activeSupplierPopoverSku.value = null
+  pinnedSupplierPopoverSku.value = null
+  activeSupplierDropdownSku.value = null
+  activeProductDropdownSku.value = null
+  activeEmptyProductDropdownId.value = null
+  supplierPopoverPosition.value = {}
+  supplierDropdownPosition.value = {}
+  productDropdownPosition.value = {}
+  nextEmptyProductRowId = 1
+  window.clearTimeout(supplierPopoverCloseTimeout)
 }
 
 function openDropdown(sku) {
@@ -848,7 +870,7 @@ function toggleProductDropdown(sku, trigger) {
                     </div>
                   </Teleport>
                 </th>
-                <td>{{ row.brand }}</td>
+                <td>{{ row.brand || (row.unitCost == null ? '-' : '') }}</td>
                 <td>
                   <input
                     v-model="row.supplier"
@@ -858,26 +880,32 @@ function toggleProductDropdown(sku, trigger) {
                     :aria-label="`Supplier for new product row ${row.id}`"
                   />
                 </td>
-                <td>{{ row.plannedQty }}</td>
-                <td>{{ row.orderedQty }}</td>
-                <td>{{ row.unitCost == null ? '' : formatCurrency(row.unitCost) }}</td>
+                <td>{{ row.plannedQty ?? (row.unitCost == null ? '-' : '') }}</td>
+                <td>{{ row.orderedQty ?? (row.unitCost == null ? '-' : '') }}</td>
+                <td>{{ row.unitCost == null ? '-' : formatCurrency(row.unitCost) }}</td>
                 <td class="total-cell">
-                  {{ row.unitCost == null || row.orderedQty == null ? '' : formatCurrency(row.unitCost * row.orderedQty) }}
+                  {{ row.unitCost == null ? '-' : row.orderedQty == null ? '' : formatCurrency(row.unitCost * row.orderedQty) }}
                 </td>
-                <td>{{ row.phase }}</td>
-                <td>{{ row.dateNeeded }}</td>
+                <td>{{ row.phase || (row.unitCost == null ? '-' : '') }}</td>
+                <td>{{ row.dateNeeded || (row.unitCost == null ? '-' : '') }}</td>
               </tr>
             </tbody>
           </table>
         </div>
         <div class="table-actions">
-          <button class="add-product-button" type="button" @click="addProductRow">
+          <button
+            class="add-product-button"
+            type="button"
+            :disabled="emptyProductRows.length >= maxNewProductRows"
+            @click="addProductRow"
+          >
             <span aria-hidden="true">+</span> Add Product
           </button>
         </div>
         <div class="table-footer">
           <span><span class="table-footer-dot"></span> Project material list</span>
           <span>Costs shown in USD · Sample data</span>
+          <button class="reset-demo-button" type="button" @click="resetDemo">Reset demo</button>
         </div>
       </section>
 
@@ -1805,6 +1833,15 @@ function toggleProductDropdown(sku, trigger) {
   background: #f3f7fa;
 }
 
+.add-product-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.add-product-button:disabled:hover {
+  background: #fff;
+}
+
 .add-product-button:focus-visible {
   outline: 2px solid #7550c8;
   outline-offset: 2px;
@@ -1819,6 +1856,26 @@ function toggleProductDropdown(sku, trigger) {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+.reset-demo-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #315d78;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+}
+
+.reset-demo-button:hover {
+  text-decoration: underline;
+}
+
+.reset-demo-button:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid #7550c8;
+  outline-offset: 3px;
 }
 
 .table-footer-dot {
