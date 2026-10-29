@@ -131,15 +131,6 @@ const configurationFields = [
   { label: 'Wetted Material', options: ['Nickel Plated Brass', 'Stainless Steel', 'Bronze'] },
   { label: 'Enclosure', options: ['NEMA 4 Weatherproof Enclosure', 'NEMA 1 Indoor Enclosure', 'NEMA 4X Corrosion Resistant'] },
   { label: 'Wiring Connection', options: ['1/2 in NPT, Jacketed Cable With 1/2 in Conduit Adapter', 'Terminal Block', 'M12 Connector'] },
-  { label: 'Process Ambient', options: ['70°F typical, medium temperature range', 'Low temperature range', 'High temperature range'] },
-  { label: 'Application', options: ['Chilled Water', 'Hot Water', 'Process Water'] },
-  { label: 'Glycol %', options: ['10% Glycol', '0% Glycol', '20% Glycol', '30% Glycol'] },
-  { label: 'Type of Glycol', options: ['Ethylene', 'Propylene'] },
-  { label: 'Pipe Material', options: ['Carbon Steel', 'Copper', 'Stainless Steel', 'PVC'] },
-  { label: 'Volume Units', options: ['GPM, Gallons', 'LPM, Liters', 'CFM, Cubic Feet'] },
-  { label: 'Pipe Schedule', options: ['Schedule 40', 'Schedule 10', 'Schedule 80'] },
-  { label: 'Set Point Flow Rate', options: ['H', 'L', 'Custom'] },
-  { label: 'Stack Height', options: ['Standard', 'Extended'] },
 ]
 
 const selectedSkus = ref([])
@@ -183,6 +174,11 @@ function formatCurrency(amount) {
 
 function displayedRowTotal(row) {
   return supplierOffer(row).unitCost * row.orderedQty
+}
+
+function productDisplayName(sku) {
+  const product = dummyProducts.find((item) => item.configuredSku === sku)
+  return product?.productType === 'Configurable' ? sku : product?.sku || sku
 }
 
 function supplierName(row) {
@@ -731,8 +727,8 @@ function toggleProductDropdown(sku, trigger) {
                     @click.stop="toggleProductDropdown(row.sku, $event.currentTarget)"
                     @keydown.esc="closeProductDropdown(row.sku)"
                   >
-                    <span class="sku-value">{{ row.sku }}</span>
-                    <span v-show="row.productType == 'NCP'" class="sku-nugget" :class="`sku-nugget--${row.productType.toLowerCase()}`">
+                    <span class="sku-value">{{ productDisplayName(row.sku) }}</span>
+                    <span v-show="row.productType === 'NCP'" class="sku-nugget" :class="`sku-nugget--${row.productType.toLowerCase()}`">
                       <b>{{ row.productType }}</b>
                     </span>
                   </button>
@@ -1440,14 +1436,17 @@ function toggleProductDropdown(sku, trigger) {
 }
 
 .sku-value {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sku-nugget {
   flex: 0 0 auto;
   padding: 0.12rem 0.3rem;
+  white-space: nowrap;
   border-radius: 3px;
   background: #f0f1ed;
   color: #5d6258;
@@ -1563,8 +1562,8 @@ function toggleProductDropdown(sku, trigger) {
 
 .configuration-modal {
   display: flex;
-  width: min(620px, 100%);
-  max-height: min(850px, 100%);
+  width: min(580px, 100%);
+  max-height: min(760px, 100%);
   flex-direction: column;
   overflow: hidden;
   border: 1px solid #dce2dd;
@@ -1579,20 +1578,20 @@ function toggleProductDropdown(sku, trigger) {
   flex: 0 0 auto;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.25rem 0.8rem;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem 0.65rem;
   border-bottom: 1px solid #e2e3e7;
 }
 
 .configuration-modal-header h2 {
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.45rem;
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0;
 }
 
 .configuration-modal-header p {
-  margin: 0.2rem 0;
+  margin: 0.15rem 0;
   color: #60665f;
   font-size: 0.7rem;
 }
@@ -1619,15 +1618,15 @@ function toggleProductDropdown(sku, trigger) {
   display: grid;
   flex: 1 1 auto;
   min-height: 0;
-  gap: 0.65rem;
+  gap: 0.5rem;
   overflow-y: auto;
-  padding: 0.15rem 1.25rem 1rem;
+  padding: 0.55rem 1rem 0.75rem;
 }
 
 .configuration-field {
   display: grid;
   min-width: 0;
-  gap: 0.25rem;
+  gap: 0.2rem;
   color: #373a40;
   font-size: 0.67rem;
   font-weight: 600;
@@ -1635,11 +1634,16 @@ function toggleProductDropdown(sku, trigger) {
 
 .configuration-field select {
   width: 100%;
-  min-height: 2rem;
-  padding: 0.35rem 0.55rem;
+  min-height: 1.65rem;
+  padding: 0.15rem 1.75rem 0.15rem 0.4rem;
+  appearance: none;
   border: 1px solid #d9dde2;
   border-radius: 4px;
   background: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%2360665f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 0.85rem;
   color: #343840;
   font: inherit;
   font-weight: 400;
@@ -1656,15 +1660,15 @@ function toggleProductDropdown(sku, trigger) {
   display: flex;
   flex: 0 0 auto;
   justify-content: flex-end;
-  gap: 0.6rem;
-  padding: 0.8rem 1.25rem;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
   border-top: 1px solid #e2e3e7;
   background: #fff;
 }
 
 .configuration-modal-actions button {
-  min-height: 2.25rem;
-  padding: 0.45rem 0.8rem;
+  min-height: 1.85rem;
+  padding: 0.25rem 0.65rem;
   border: 1px solid #d9dde2;
   border-radius: 4px;
   background: #fff;
@@ -1718,6 +1722,12 @@ function toggleProductDropdown(sku, trigger) {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.sku-product-option .supplier-option-heading > .supplier-option-badge {
+  flex: 0 0 auto;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .sku-product-option .supplier-option-price {
