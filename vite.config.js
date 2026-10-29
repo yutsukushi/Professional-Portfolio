@@ -13,6 +13,10 @@ export default defineConfig({
           process.cwd(),
           'pages/material-procurement-workflow.html',
         ),
+        erpDataTranslation: resolve(
+          process.cwd(),
+          'pages/self-service-erp-data-translation.html',
+        ),
       },
     },
   },

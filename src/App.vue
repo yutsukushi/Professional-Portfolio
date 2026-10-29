@@ -49,6 +49,19 @@ const projects = [
     rows: ['Engineered oak flooring', 'Acoustic wall panels', 'Concrete mix'],
     href: './material-procurement-workflow.html',
   },
+  {
+    number: '05',
+    title: 'Self-Service ERP Data Translation',
+    type: 'Product design · Frontend engineering',
+    description:
+      'A configurable translation system that helps administrators shape procurement data for each client’s ERP.',
+    className: 'project-card--erp',
+    label: 'ERP export template',
+    metric: '4 fields mapped',
+    metricLabel: 'preview ready · validated',
+    rows: ['Project Number → Job Code', 'Date Format → MM/DD/YYYY', 'Overflow → Column B'],
+    href: './self-service-erp-data-translation.html',
+  },
 ]
 
 const skills = [

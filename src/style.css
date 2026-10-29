@@ -776,6 +776,7 @@ h2 {
 .project-card--ground .project-art { background: #f0e7dc; }
 .project-card--landing .project-art { background: #e2eaf0; }
  .project-card--materials .project-art { background: #e8ece5; }
+.project-card--erp .project-art { background: #e7ece3; }
 
 .product-preview {
   display: flex;
@@ -815,6 +816,7 @@ h2 {
 .project-card--ground .preview-mark { background: #f6e9dc; color: #a46644; }
 .project-card--landing .preview-mark { background: #e6edf4; color: #4d6c83; }
 .project-card--materials .preview-mark { background: #eee7da; color: #836848; }
+.project-card--erp .preview-mark { background: #e7eee1; color: #5b7554; }
 
 .preview-title {
   font-size: 0.64rem;

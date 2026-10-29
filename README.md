@@ -22,6 +22,7 @@ npm run preview
 
 - Edit the name, intro, project cards, skills, contact address, and social links in `src/App.vue`.
 - Update the Material Procurement Workflow case study in `src/MaterialProcurementWorkflow.vue`; its spreadsheet-style table and interactive request demo use sample material and supplier data.
+- Update the Self-Service ERP Data Translation case study in `src/ErpDataTranslation.vue`.
 - Update the page title and description in `index.html`.
 - Adjust colors, typography, and responsive layouts in `src/style.css`.
 
