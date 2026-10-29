@@ -17,6 +17,10 @@ export default defineConfig({
           process.cwd(),
           'pages/self-service-erp-data-translation.html',
         ),
+        promotionsAuthoringSystem: resolve(
+          process.cwd(),
+          'pages/promotions-authoring-system.html',
+        ),
       },
     },
   },

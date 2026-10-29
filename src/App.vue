@@ -62,6 +62,19 @@ const projects = [
     rows: ['Project Number → Job Code', 'Date Format → MM/DD/YYYY', 'Overflow → Column B'],
     href: './self-service-erp-data-translation.html',
   },
+  {
+    number: '06',
+    title: 'Promotions Authoring System',
+    type: 'Product design · Frontend engineering',
+    description:
+      'A flexible authoring workspace for complex promotions, interconnected business rules, and performance tracking.',
+    className: 'project-card--promotions',
+    label: 'Promotion editor',
+    metric: '20% off',
+    metricLabel: 'spring collection · draft saved',
+    rows: ['Discount & duration', 'Assignments & eligibility', 'Messaging & rules'],
+    href: './promotions-authoring-system.html',
+  },
 ]
 
 const skills = [
