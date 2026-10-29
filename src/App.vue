@@ -2,42 +2,6 @@
 const projects = [
   {
     number: '01',
-    title: 'Relay',
-    type: 'Product design · Engineering',
-    description:
-      'A coordination workspace that helps food-rescue teams get good food where it needs to go.',
-    className: 'project-card--relay',
-    label: 'Operations dashboard',
-    metric: '12',
-    metricLabel: 'pickups today',
-    rows: ['Northside Market', 'Juniper Grocer', 'The Corner Co-op'],
-  },
-  {
-    number: '02',
-    title: 'Common Ground',
-    type: 'Research · Product design',
-    description:
-      'A neighborhood hub for making plans, sharing useful things, and getting to know the people nearby.',
-    className: 'project-card--ground',
-    label: 'Community board',
-    metric: 'This Saturday',
-    metricLabel: 'garden day · 10:30 am',
-    rows: ['Garden day', 'Tool library', 'Block dinner'],
-  },
-  {
-    number: '03',
-    title: 'Soft Landing',
-    type: 'Product design · Design systems',
-    description:
-      'A gentle habit companion designed around real life, not perfect streaks.',
-    className: 'project-card--landing',
-    label: 'Your evening',
-    metric: 'A little at a time',
-    metricLabel: 'no streaks, just progress',
-    rows: ['Put the kettle on', 'Leave your phone', 'Read a few pages'],
-  },
-  {
-    number: '04',
     title: 'Material Procurement Workflow',
     type: 'Product design · Interactive concept',
     description:
@@ -50,7 +14,7 @@ const projects = [
     href: './material-procurement-workflow.html',
   },
   {
-    number: '05',
+    number: '02',
     title: 'Self-Service ERP Data Translation',
     type: 'Product design · Frontend engineering',
     description:
@@ -63,7 +27,7 @@ const projects = [
     href: './self-service-erp-data-translation.html',
   },
   {
-    number: '06',
+    number: '03',
     title: 'Promotions Authoring System',
     type: 'Product design · Frontend engineering',
     description:
