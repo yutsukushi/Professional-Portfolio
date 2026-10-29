@@ -1,8 +1,9 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 
-const procurementRows = [
+const procurementRows = reactive([
   {
+    id: 'procurement-1',
     sku: 'F-1100-2IN-BRONZE',
     productType: 'Configurable',
     brand: 'Acme',
@@ -19,6 +20,7 @@ const procurementRows = [
     ],
   },
   {
+    id: 'procurement-2',
     sku: '1100-6FT-HDMI',
     productType: 'Flat',
     brand: 'Northline',
@@ -35,6 +37,7 @@ const procurementRows = [
     ],
   },
   {
+    id: 'procurement-3',
     sku: 'NCP-3200',
     productType: 'NCP',
     brand: 'Standard',
@@ -51,6 +54,7 @@ const procurementRows = [
     ],
   },
   {
+    id: 'procurement-4',
     sku: 'VAV-4100-24V-BACNET',
     productType: 'Configurable',
     brand: 'Apex',
@@ -67,6 +71,7 @@ const procurementRows = [
     ],
   },
   {
+    id: 'procurement-5',
     sku: '1100-2193-NATURAL-GAS',
     productType: 'Flat',
     brand: 'Acme',
@@ -82,7 +87,7 @@ const procurementRows = [
       { supplier: 'Beacon Supply', brand: 'Apex', productType: 'Flat', unitCost: 6.5, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Expected restock: Nov 18'] },
     ],
   },
-]
+])
 
 const initialProductDetails = procurementRows.map(({ sku, brand, productType }) => ({
   sku,
@@ -176,9 +181,12 @@ function displayedRowTotal(row) {
   return supplierOffer(row).unitCost * row.orderedQty
 }
 
-function productDisplayName(sku) {
-  const product = dummyProducts.find((item) => item.configuredSku === sku)
-  return product?.productType === 'Configurable' ? sku : product?.sku || sku
+function productDisplayName(row) {
+  if (row.productType === 'NCP') {
+    return row.sku
+  }
+  const product = dummyProducts.find((item) => item.configuredSku === row.sku)
+  return product?.productType === 'Configurable' ? row.sku : product?.sku || row.sku
 }
 
 function supplierName(row) {
@@ -237,11 +245,11 @@ function setSupplierDropdownTriggerElement(sku, element) {
   }
 }
 
-function setProductDropdownTriggerElement(sku, element) {
+function setProductDropdownTriggerElement(id, element) {
   if (element) {
-    productDropdownTriggerElements.set(sku, element)
+    productDropdownTriggerElements.set(id, element)
   } else {
-    productDropdownTriggerElements.delete(sku)
+    productDropdownTriggerElements.delete(id)
   }
 }
 
@@ -377,7 +385,7 @@ function closeSupplierPopoverOutside(event) {
     closeSupplierPopover()
     activeSupplierDropdownSku.value = null
   }
-  if (!event.target.closest('.sku-cell-trigger, .empty-product-sku-input, .sku-product-options')) {
+  if (!event.target.closest('.sku-cell-input, .empty-product-sku-input, .sku-product-options')) {
     closeProductDropdown()
     activeEmptyProductDropdownId.value = null
   }
@@ -512,7 +520,7 @@ function openProductConfiguration(row, product, isNewProduct = false) {
   activeEmptyProductDropdownId.value = null
   configurationReturnFocus.value = isNewProduct
     ? emptyProductDropdownTriggerElements.get(row.id)
-    : productDropdownTriggerElements.get(row.sku)
+    : productDropdownTriggerElements.get(row.id)
   productConfiguration.value = { row, product, isNewProduct }
   configurationDraft.value = {
     ...defaultConfiguration(),
@@ -521,18 +529,34 @@ function openProductConfiguration(row, product, isNewProduct = false) {
   nextTick(() => configurationDialog.value?.querySelector('select')?.focus())
 }
 
-function applyProductSelection(row, product) {
+function updateRowSku(row, sku) {
   const previousSku = row.sku
-  const wasSelected = selectedSkus.value.includes(previousSku)
-  row.sku = product.configuredSku
+  if (previousSku === sku) {
+    return
+  }
+
+  row.sku = sku
+  selectedSkus.value = selectedSkus.value.map((selectedSku) =>
+    selectedSku === previousSku ? sku : selectedSku,
+  )
+
+  const selectedSupplier = selectedSuppliers.value[previousSku]
+  if (selectedSupplier) {
+    const updatedSuppliers = { ...selectedSuppliers.value, [sku]: selectedSupplier }
+    delete updatedSuppliers[previousSku]
+    selectedSuppliers.value = updatedSuppliers
+  }
+}
+
+function setCustomSku(row, sku) {
+  updateRowSku(row, sku)
+  row.productType = sku.trim() ? 'NCP' : ''
+}
+
+function applyProductSelection(row, product) {
+  updateRowSku(row, product.configuredSku)
   row.brand = product.brand
   row.productType = product.productType
-
-  if (wasSelected) {
-    selectedSkus.value = selectedSkus.value.map((sku) =>
-      sku === previousSku ? row.sku : sku,
-    )
-  }
 }
 
 function chooseProduct(row, product) {
@@ -616,6 +640,7 @@ function selectDummyProduct(row, product) {
   Object.assign(row, {
     sku: product.configuredSku,
     brand: product.brand,
+    productType: product.productType,
     supplier: product.supplier,
     plannedQty: 1,
     orderedQty: 1,
@@ -624,20 +649,15 @@ function selectDummyProduct(row, product) {
   activeEmptyProductDropdownId.value = null
 }
 
-function toggleProductDropdown(sku, trigger) {
-  if (activeProductDropdownSku.value === sku) {
-    closeProductDropdown(sku)
-    return
-  }
-
+function openProductDropdown(id, trigger) {
   closeSupplierPopover()
   activeSupplierDropdownSku.value = null
   activeEmptyProductDropdownId.value = null
-  activeProductDropdownSku.value = sku
+  activeProductDropdownSku.value = id
   positionProductDropdown(trigger)
   nextTick(() => {
-    if (activeProductDropdownSku.value === sku) {
-      const dropdown = document.getElementById(`sku-products-${sku}`)
+    if (activeProductDropdownSku.value === id) {
+      const dropdown = document.getElementById(`sku-products-${id}`)
       positionProductDropdown(trigger, dropdown)
     }
   })
@@ -708,7 +728,7 @@ function toggleProductDropdown(sku, trigger) {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in procurementRows" :key="row.sku" :class="{ 'is-selected': selectedSkus.includes(row.sku) }">
+              <tr v-for="row in procurementRows" :key="row.id" :class="{ 'is-selected': selectedSkus.includes(row.sku) }">
                 <td class="select-cell">
                   <input
                     v-model="selectedSkus"
@@ -718,24 +738,30 @@ function toggleProductDropdown(sku, trigger) {
                   />
                 </td>
                 <th scope="row" class="sku-cell">
-                  <button
-                    :ref="(element) => setProductDropdownTriggerElement(row.sku, element)"
-                    class="sku-cell-trigger"
-                    type="button"
-                    :aria-expanded="activeProductDropdownSku === row.sku"
-                    :aria-controls="`sku-products-${row.sku}`"
-                    @click.stop="toggleProductDropdown(row.sku, $event.currentTarget)"
-                    @keydown.esc="closeProductDropdown(row.sku)"
-                  >
-                    <span class="sku-value">{{ productDisplayName(row.sku) }}</span>
-                    <span v-show="row.productType === 'NCP'" class="sku-nugget" :class="`sku-nugget--${row.productType.toLowerCase()}`">
-                      <b>{{ row.productType }}</b>
+                  <div class="sku-entry">
+                    <input
+                      :ref="(element) => setProductDropdownTriggerElement(row.id, element)"
+                      :value="productDisplayName(row)"
+                      class="sku-cell-input"
+                      type="text"
+                      role="combobox"
+                      aria-autocomplete="list"
+                      :aria-expanded="activeProductDropdownSku === row.id"
+                      :aria-controls="`sku-products-${row.id}`"
+                      :aria-label="`SKU for ${row.brand} product row`"
+                      @input="setCustomSku(row, $event.target.value)"
+                      @focus="openProductDropdown(row.id, $event.currentTarget)"
+                      @click.stop="openProductDropdown(row.id, $event.currentTarget)"
+                      @keydown.esc="closeProductDropdown(row.id)"
+                    />
+                    <span v-if="row.productType === 'NCP'" class="sku-nugget sku-nugget--ncp">
+                      <b>NCP</b>
                     </span>
-                  </button>
+                  </div>
                   <Teleport to="body">
                     <div
-                      v-if="activeProductDropdownSku === row.sku"
-                      :id="`sku-products-${row.sku}`"
+                      v-if="activeProductDropdownSku === row.id"
+                      :id="`sku-products-${row.id}`"
                       class="sku-product-options"
                       :style="productDropdownPosition"
                       role="listbox"
@@ -748,6 +774,7 @@ function toggleProductDropdown(sku, trigger) {
                         role="option"
                         :aria-selected="row.sku === product.configuredSku"
                         tabindex="0"
+                        @mousedown.prevent
                         @click.stop="chooseProduct(row, product)"
                         @keydown.enter.stop="chooseProduct(row, product)"
                         @keydown.space.prevent.stop="chooseProduct(row, product)"
@@ -790,7 +817,7 @@ function toggleProductDropdown(sku, trigger) {
                       {{ supplierName(row) }}
                     </button>
                     <button
-                      v-show="supplierName(row) !== 'Beacon Supply' && supplierSavings(row) > 0"
+                      v-if="row.productType !== 'NCP' && supplierName(row) !== 'Beacon Supply' && supplierSavings(row) > 0"
                       :ref="(element) => setSupplierTriggerElement(row.sku, element)"
                       class="supplier-save-pill"
                       type="button"
@@ -834,11 +861,11 @@ function toggleProductDropdown(sku, trigger) {
                               <div class="supplier-option-heading">
                                 <span><b>{{ offer.supplier }}</b></span>
                                 <span
-                                  v-if="offer.unitCost === lowestOfferPrice(row)"
+                                  v-if="row.productType !== 'NCP' && offer.unitCost === lowestOfferPrice(row)"
                                   class="supplier-option-badge supplier-option-badge--price"
                                 ><b>Lowest price</b></span>
                                 <span
-                                  v-if="offer.productType !== 'Flat'"
+                                  v-if="row.productType !== 'NCP' && offer.productType !== 'Flat'"
                                   class="supplier-option-badge"
                                   :class="`supplier-option-badge--${offer.productType.toLowerCase()}`"
                                 ><b>{{ offer.productType }}</b></span>
@@ -846,7 +873,7 @@ function toggleProductDropdown(sku, trigger) {
                               <div v-if="offer.brand !== row.brand" class="supplier-option-brand">
                                 {{ offer.brand }}
                               </div>
-                              <div class="supplier-option-meta">
+                              <div v-if="row.productType !== 'NCP'" class="supplier-option-meta">
                                 <div class="supplier-option-stock" :class="`supplier-option-stock--${offer.stockStatus}`">
                                   <span class="supplier-option-stock-dot" aria-hidden="true"></span>
                                   <span class="supplier-option-stock-text">{{ stockLabel(offer) }}</span>
@@ -873,7 +900,7 @@ function toggleProductDropdown(sku, trigger) {
                             </div>
                           <div class="supplier-option-price">
                               <span><b>{{ formatCurrency(offer.unitCost) }}</b></span>
-                              <span v-if="offer.supplier !== supplierName(row) && offer.unitCost < supplierOffer(row).unitCost" class="supplier-option-savings">
+                              <span v-if="row.productType !== 'NCP' && offer.supplier !== supplierName(row) && offer.unitCost < supplierOffer(row).unitCost" class="supplier-option-savings">
                                 Save {{ formatCurrency((supplierOffer(row).unitCost - offer.unitCost) * row.orderedQty) }}
                               </span>
                           </div>
@@ -884,7 +911,7 @@ function toggleProductDropdown(sku, trigger) {
                   </div>
                   <Teleport to="body">
                     <div
-                      v-if="activeSupplierPopoverSku === row.sku"
+                      v-if="activeSupplierPopoverSku === row.sku && row.productType !== 'NCP'"
                       class="supplier-popover"
                       :style="supplierPopoverPosition"
                       role="dialog"
@@ -943,21 +970,27 @@ function toggleProductDropdown(sku, trigger) {
                   />
                 </td>
                 <th scope="row" class="sku-cell">
-                  <input
-                    :ref="(element) => setEmptyProductDropdownTriggerElement(row.id, element)"
-                    v-model="row.sku"
-                    class="empty-product-sku-input"
-                    type="text"
-                    placeholder="Select or search for product"
-                    role="combobox"
-                    aria-autocomplete="list"
-                    :aria-expanded="activeEmptyProductDropdownId === row.id"
-                    :aria-controls="`empty-product-options-${row.id}`"
-                    :aria-label="`SKU for new product row ${row.id}`"
-                    @focus="openEmptyProductDropdown(row, $event.currentTarget)"
-                    @click.stop="openEmptyProductDropdown(row, $event.currentTarget)"
-                    @keydown.esc="activeEmptyProductDropdownId = null"
-                  />
+                  <div class="sku-entry">
+                    <input
+                      :ref="(element) => setEmptyProductDropdownTriggerElement(row.id, element)"
+                      :value="row.sku"
+                      class="empty-product-sku-input"
+                      type="text"
+                      placeholder="Select or search for product"
+                      role="combobox"
+                      aria-autocomplete="list"
+                      :aria-expanded="activeEmptyProductDropdownId === row.id"
+                      :aria-controls="`empty-product-options-${row.id}`"
+                      :aria-label="`SKU for new product row ${row.id}`"
+                      @input="setCustomSku(row, $event.target.value)"
+                      @focus="openEmptyProductDropdown(row, $event.currentTarget)"
+                      @click.stop="openEmptyProductDropdown(row, $event.currentTarget)"
+                      @keydown.esc="activeEmptyProductDropdownId = null"
+                    />
+                    <span v-if="row.productType === 'NCP'" class="sku-nugget sku-nugget--ncp">
+                      <b>NCP</b>
+                    </span>
+                  </div>
                   <Teleport to="body">
                     <div
                       v-if="activeEmptyProductDropdownId === row.id"
@@ -974,6 +1007,7 @@ function toggleProductDropdown(sku, trigger) {
                         role="option"
                         :aria-selected="product.configuredSku === row.sku"
                         tabindex="0"
+                        @mousedown.prevent
                         @click.stop="chooseEmptyProduct(row, product)"
                         @keydown.enter.stop="chooseEmptyProduct(row, product)"
                         @keydown.space.prevent.stop="chooseEmptyProduct(row, product)"
@@ -1039,53 +1073,280 @@ function toggleProductDropdown(sku, trigger) {
           <span aria-hidden="true">←</span> Back to selected work
         </a>
         <div class="case-title-block">
-          <p class="case-eyebrow"><span class="case-status-dot"></span> Case study in progress</p>
-          <h1 id="case-title">Material Procurement <em>Workflow</em></h1>
+          <p class="case-eyebrow"><span class="case-status-dot"></span> Product design · Frontend engineering</p>
+          <h1 id="case-title">Material Procurement <em>Table</em></h1>
           <p class="case-intro">
-            A working concept for making material requests easier to prepare,
-            compare, and move toward approval.
+            Vue · TypeScript · .NET
           </p>
           <div class="case-tags" aria-label="Project disciplines">
-            <span>Product design</span>
-            <span>Workflow design</span>
-            <span>Interactive concept</span>
+            <span>Vue</span>
+            <span>TypeScript</span>
+            <span>.NET</span>
           </div>
         </div>
-        <div class="case-hero-art" aria-hidden="true">
-          <div class="material-swatch swatch-oak"></div>
-          <div class="material-swatch swatch-stone"></div>
-          <div class="material-swatch swatch-felt"></div>
-          <div class="hero-art-note"><span>PROJECT MATERIALS</span><strong>Planned with care.</strong></div>
-          <span class="hero-art-index">01 / 03</span>
+        <figure class="case-image-placeholder case-hero-image">
+          <span class="case-image-placeholder-label">Hero screenshot</span>
+          <figcaption>Material procurement workspace</figcaption>
+        </figure>
+      </section>
+
+      <section class="case-study-section case-problem" aria-labelledby="problem-title">
+        <div class="case-section-heading">
+          <p class="case-eyebrow">The challenge</p>
+          <h2 id="problem-title">Problem</h2>
+        </div>
+        <div class="case-section-copy">
+          <p class="case-lede">
+            The challenge wasn't replacing Excel. It was preserving the speed
+            and flexibility users relied on while supporting procurement
+            decisions spreadsheets couldn't handle.
+          </p>
+          <p>
+            Contractors build purchase orders from bills of materials
+            containing hundreds of parts sourced across multiple suppliers.
+            Some materials come from supplier catalogs, others are
+            configurable, and many are custom items that don't exist in any
+            catalog.
+          </p>
+          <p>
+            While most teams manage this process in spreadsheets, procurement
+            requires more than organizing rows and columns. Supplier
+            availability, pricing, sourcing decisions, and purchasing rules all
+            influence what ultimately gets ordered.
+          </p>
+          <p>My role covered both interaction design and frontend implementation.</p>
+          <div class="case-inline-meta">
+            <span>Product design</span>
+            <span>Frontend engineering</span>
+            <span>Vue · TypeScript · .NET</span>
+          </div>
         </div>
       </section>
 
-      <section class="case-overview" aria-label="Case study overview">
-        <div class="overview-label">THE OPPORTUNITY</div>
-        <p>
-          Procurement can involve several people, details, and handoffs. This
-          concept explores how one clear request can keep material, supplier,
-          quantity, and delivery information together as a decision moves
-          forward.
-        </p>
-        <div class="overview-meta">
-          <div><span>ROLE</span><strong>Product design &amp; prototyping</strong></div>
-          <div><span>STATUS</span><strong>Exploratory concept</strong></div>
-          <div><span>FOCUS</span><strong>Request to approval</strong></div>
+      <section class="case-study-section" aria-labelledby="decisions-title">
+        <div class="case-section-heading">
+          <p class="case-eyebrow">Design approach</p>
+          <h2 id="decisions-title">Key Design Decisions</h2>
+        </div>
+        <div class="case-decision-list">
+          <article class="case-decision">
+            <div class="case-decision-copy">
+              <p class="case-eyebrow">01 / Material types</p>
+              <h3>Supporting Mixed Material Types</h3>
+              <p class="case-decision-summary">
+                Contractors needed to manage catalog, configurable, and custom
+                materials within a single workflow rather than across separate
+                experiences.
+              </p>
+              <p>
+                Contractors regularly work with custom-fabricated components,
+                configurable products, and materials that have yet to be
+                cataloged. Relegating these items to separate experiences
+                would introduce unnecessary complexity and break the user's
+                workflow.
+              </p>
+              <p>
+                A key design principle was ensuring that all material types
+                received a consistent level of treatment. Previous approaches
+                handled each type differently, often pulling users out of
+                context and forcing them to think about the system's structure
+                rather than their work.
+              </p>
+              <p>
+                Keeping all material types within the same workflow preserves
+                context, reduces cognitive overhead, and supports a more
+                seamless user experience.
+              </p>
+            </div>
+            <figure class="case-image-placeholder">
+              <span class="case-image-placeholder-label">Screenshot</span>
+              <figcaption>Catalog and non-catalog rows side-by-side</figcaption>
+            </figure>
+          </article>
+
+          <article class="case-decision">
+            <div class="case-decision-copy">
+              <p class="case-eyebrow">02 / Supplier selection</p>
+              <h3>Making Supplier Decisions Earlier</h3>
+              <p class="case-decision-summary">
+                Supplier availability and pricing were surfaced during
+                material selection so users could evaluate options before
+                committing to a vendor.
+              </p>
+              <p>Availability often determines what can be purchased just as much as price.</p>
+              <p>
+                Rather than surfacing inventory information after a supplier
+                is selected, availability is shown during material search and
+                selection. Users can compare options before committing to a
+                vendor.
+              </p>
+              <p>
+                This reduced the need to repeatedly switch between material
+                selection and supplier research.
+              </p>
+            </div>
+            <figure class="case-image-placeholder">
+              <span class="case-image-placeholder-label">Screenshot</span>
+              <figcaption>Supplier search dropdown showing inventory and pricing</figcaption>
+            </figure>
+          </article>
+
+          <article class="case-decision">
+            <div class="case-decision-copy">
+              <p class="case-eyebrow">03 / Sourcing options</p>
+              <h3>Surfacing Alternative Suppliers</h3>
+              <p class="case-decision-summary">
+                Alternative supplier options are surfaced directly within the
+                workflow so users can evaluate tradeoffs without leaving the
+                table context.
+              </p>
+              <p>
+                The same material is often available from multiple suppliers
+                with different pricing, stock levels, and lead times.
+              </p>
+              <p>
+                To help users evaluate tradeoffs during procurement,
+                alternative supplier options are surfaced directly through
+                supplier recommendations and supplier selection tools.
+              </p>
+              <p>
+                Users can compare available options without leaving the table
+                context.
+              </p>
+            </div>
+            <figure class="case-image-placeholder">
+              <span class="case-image-placeholder-label">Screenshot</span>
+              <figcaption>Switch &amp; Save nugget and supplier comparison experience</figcaption>
+            </figure>
+          </article>
         </div>
       </section>
 
-      <section class="case-next-steps" aria-labelledby="next-steps-title">
-        <div>
-          <p class="case-eyebrow">Still taking shape</p>
-          <h2 id="next-steps-title">More to <em>explore.</em></h2>
+      <section class="case-study-section case-technical" aria-labelledby="technical-title">
+        <div class="case-section-heading">
+          <p class="case-eyebrow">Implementation</p>
+          <h2 id="technical-title">Technical Considerations</h2>
         </div>
-        <p>
-          This case study is an early concept. Next, I’ll develop the workflow
-          across roles and edge cases, then document the research, design
-          decisions, and what I learn through testing.
-        </p>
-        <a class="back-link" href="./index.html#work">Explore more selected work <span aria-hidden="true">↗</span></a>
+        <div class="case-section-copy">
+          <p class="case-lede">
+            Although the interaction model appears spreadsheet-like,
+            implementation complexity increased significantly as procurement
+            workflows were layered on top.
+          </p>
+          <p>
+            The application needed to support large material lists while
+            coordinating validation, persistence, pricing calculations,
+            supplier data, and purchasing logic.
+          </p>
+          <p>Key implementation considerations included:</p>
+          <ul class="case-bullet-list">
+            <li>Debounced per-cell saves</li>
+            <li>Independent validation states</li>
+            <li>Optimistic total calculations</li>
+            <li>Deferred rendering for heavier cell types</li>
+            <li>Frozen-column support</li>
+            <li>Simplified editors for high-frequency fields</li>
+          </ul>
+          <p>
+            One of the biggest lessons from this project was how quickly
+            feature-rich tables accumulate complexity. Separating behaviors
+            early proved significantly easier than untangling them later.
+          </p>
+        </div>
+      </section>
+
+      <section class="case-study-section case-tradeoffs" aria-labelledby="tradeoffs-title">
+        <div class="case-section-heading">
+          <p class="case-eyebrow">Design rationale</p>
+          <h2 id="tradeoffs-title">Key Tradeoffs</h2>
+        </div>
+        <div class="case-tradeoff-grid">
+          <article>
+            <h3>Stable Layout Over Column Resizing</h3>
+            <p class="case-decision-summary">
+              Maintaining predictable layouts across different viewport sizes
+              proved more valuable than supporting custom column widths.
+            </p>
+            <p>
+              Custom column resizing was explored early in the design process.
+              As procurement workflows became more complex, maintaining
+              predictable layouts across different viewport sizes proved more
+              valuable than supporting user-defined column widths.
+            </p>
+            <p>
+              The final implementation prioritized consistency and
+              responsiveness over customization.
+            </p>
+          </article>
+          <article>
+            <h3>Progressive Disclosure Over Information Density</h3>
+            <p class="case-decision-summary">
+              High-value information remained visible while supporting details
+              were surfaced through contextual interactions.
+            </p>
+            <p>
+              A significant amount of procurement data could be associated
+              with each material, including inventory availability, supplier
+              alternatives, pricing details, and quantity breakdowns.
+              Displaying all of this information directly within the table
+              would have created a denser interface that was harder to scan
+              and navigate.
+            </p>
+            <p>
+              Instead, the design prioritized progressive disclosure.
+              Supporting details were surfaced through contextual
+              interactions such as popovers, supplier selection experiences,
+              and comparison tools.
+            </p>
+            <p>
+              This allowed users to access deeper information when needed
+              while preserving the familiarity and readability of a
+              spreadsheet-like workflow.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="case-study-section case-outcome" aria-labelledby="outcome-title">
+        <div class="case-section-heading">
+          <p class="case-eyebrow">Impact</p>
+          <h2 id="outcome-title">Outcome</h2>
+        </div>
+        <div class="case-section-copy">
+          <p class="case-lede">
+            The materials table evolved from a passive planning tool into an
+            active procurement workspace.
+          </p>
+          <p>
+            Users could manage catalog, configurable, and non-catalog
+            materials, evaluate supplier options, and prepare purchasing
+            information without leaving their primary workflow.
+          </p>
+          <p>
+            Together, these decisions transformed the table from a planning
+            tool into a workspace that actively supported procurement
+            decision-making.
+          </p>
+        </div>
+      </section>
+
+      <section class="case-study-section case-reflection" aria-labelledby="reflection-title">
+        <div class="case-section-heading">
+          <p class="case-eyebrow">Looking ahead</p>
+          <h2 id="reflection-title">Reflection</h2>
+        </div>
+        <div class="case-section-copy">
+          <p class="case-lede">
+            If revisiting the project today, I would focus on improving
+            quantity visibility, editing flexibility, and personalization.
+          </p>
+          <p>Areas I would prioritize include:</p>
+          <ul class="case-bullet-list">
+            <li>Improving visualization of planned, ordered, received, and remaining quantities.</li>
+            <li>Expanding undo support to individual cell and row-level edits.</li>
+            <li>Providing additional personalization options for teams managing large material lists.</li>
+          </ul>
+        </div>
       </section>
     </main>
 
@@ -1391,25 +1652,19 @@ function toggleProductDropdown(sku, trigger) {
   font-weight: 600;
 }
 
-.sku-cell-trigger {
+.sku-entry {
   display: flex;
   width: 100%;
   align-items: center;
-  justify-content: space-between;
   gap: 0.35rem;
   min-width: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
 }
 
+.sku-cell-input,
 .empty-product-sku-input,
 .empty-product-supplier-input {
   display: block;
+  flex: 1 1 auto;
   width: 100%;
   min-width: 0;
   padding: 0;
@@ -1417,6 +1672,10 @@ function toggleProductDropdown(sku, trigger) {
   background: transparent;
   color: inherit;
   font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .empty-product-supplier-input::placeholder {
@@ -1430,6 +1689,7 @@ function toggleProductDropdown(sku, trigger) {
   outline-offset: -2px;
 }
 
+.sku-cell-input:focus-visible,
 .empty-product-sku-input:focus-visible,
 .empty-product-supplier-input:focus-visible {
   outline: none;
@@ -1518,7 +1778,7 @@ function toggleProductDropdown(sku, trigger) {
   text-overflow: ellipsis;
 }
 
-.sku-cell-trigger:focus,
+.sku-cell-input:focus,
 .supplier-name:focus {
   outline: none;
   box-shadow: none;
@@ -2238,10 +2498,7 @@ function toggleProductDropdown(sku, trigger) {
   padding-block: 1.1rem;
 }
 
-.case-eyebrow,
-.overview-label,
-.overview-meta span,
-.hero-art-index {
+.case-eyebrow {
   font-family: var(--mono);
   font-size: 0.63rem;
   letter-spacing: 0.045em;
@@ -2274,7 +2531,7 @@ function toggleProductDropdown(sku, trigger) {
 }
 
 .case-title-block h1 em,
-.case-next-steps h2 em {
+.case-section-heading h2 em {
   color: var(--accent);
   font-family: var(--serif);
   font-weight: 500;
@@ -2304,141 +2561,168 @@ function toggleProductDropdown(sku, trigger) {
   font-size: 0.56rem;
 }
 
-.case-hero-art {
+.case-image-placeholder {
   position: relative;
-  display: flex;
-  min-height: 390px;
-  align-items: center;
-  justify-content: center;
-  gap: 0.65rem;
-  overflow: hidden;
-  background: #e8ece5;
-}
-
-.material-swatch {
-  width: 26%;
-  height: 210px;
-  box-shadow: 0 16px 30px rgb(32 39 32 / 12%);
-  transform: rotate(-7deg);
-}
-
-.swatch-oak {
-  z-index: 1;
-  background: repeating-linear-gradient(90deg, #b88b62 0 5px, #c79a70 5px 10px, #ae8059 10px 12px);
-  transform: translateY(-16px) rotate(-9deg);
-}
-
-.swatch-stone {
-  z-index: 2;
-  background: linear-gradient(145deg, #d2d0c5, #aaa99e 55%, #c5c4b9);
-  transform: translateY(8px) rotate(3deg);
-}
-
-.swatch-felt {
-  z-index: 0;
-  background: repeating-linear-gradient(0deg, #79837a 0 3px, #879188 3px 5px);
-  transform: translateY(-4px) rotate(12deg);
-}
-
-.hero-art-note {
-  position: absolute;
-  bottom: 1.5rem;
-  left: 1.5rem;
   display: grid;
-  gap: 0.35rem;
+  width: 100%;
+  min-height: 250px;
+  aspect-ratio: 16 / 10;
+  align-content: center;
+  justify-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #dfe3dc;
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 55%), transparent 58%),
+    repeating-linear-gradient(135deg, #f1f2ed 0 1px, #f7f7f3 1px 9px);
 }
 
-.hero-art-note span {
+.case-hero-image {
+  min-height: 370px;
+}
+
+.case-image-placeholder-label {
+  color: #777e74;
   font-family: var(--mono);
-  font-size: 0.52rem;
-  color: #656d62;
-  letter-spacing: 0.06em;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.hero-art-note strong {
+.case-image-placeholder figcaption {
+  max-width: 80%;
+  color: #454b43;
   font-family: var(--serif);
   font-size: 1.05rem;
-  font-weight: 500;
+  text-align: center;
 }
 
-.hero-art-index {
-  position: absolute;
-  right: 1.5rem;
-  bottom: 1.65rem;
-  color: #656d62;
-}
-
-.case-overview {
+.case-study-section {
   display: grid;
-  grid-template-columns: 0.55fr 1.25fr 1fr;
-  gap: 7%;
-  align-items: start;
-  padding-block: 2.4rem 2.7rem;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.overview-label {
-  padding-top: 0.25rem;
-  color: var(--muted);
-}
-
-.case-overview > p {
-  margin: 0;
-  color: #606057;
-  font-size: 0.85rem;
-  line-height: 1.8;
-}
-
-.overview-meta {
-  display: grid;
-  gap: 1rem;
-}
-
-.overview-meta div {
-  display: grid;
-  gap: 0.3rem;
-}
-
-.overview-meta span {
-  color: var(--muted);
-  font-size: 0.52rem;
-}
-
-.overview-meta strong {
-  font-size: 0.72rem;
-  font-weight: 500;
-}
-
-.case-next-steps {
-  display: grid;
-  grid-template-columns: 1fr 1.1fr auto;
-  gap: 4rem;
-  align-items: center;
-  padding-block: 3.4rem;
+  grid-template-columns: minmax(180px, 0.55fr) minmax(0, 1.45fr);
+  gap: 2rem 7%;
+  padding-block: 3.75rem;
   border-top: 1px solid var(--line);
 }
 
-.case-next-steps .case-eyebrow {
+.case-section-heading .case-eyebrow {
   margin-bottom: 0.7rem;
 }
 
-.case-next-steps h2 {
+.case-section-heading h2 {
   margin: 0;
-  font-size: clamp(2.4rem, 4vw, 3.5rem);
+  font-size: clamp(1.75rem, 3vw, 2.45rem);
   font-weight: 500;
-  line-height: 1;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
 }
 
-.case-next-steps > p {
-  margin: 0;
+.case-section-copy {
+  max-width: 690px;
+}
+
+.case-section-copy p,
+.case-decision-copy p,
+.case-tradeoff-grid p {
+  margin: 0 0 1rem;
   color: #606057;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   line-height: 1.8;
 }
 
-.case-next-steps > .back-link {
-  white-space: normal;
+.case-section-copy .case-lede,
+.case-decision-summary {
+  color: #343a32;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.case-inline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1.5rem;
+}
+
+.case-inline-meta span {
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--line);
+  color: #62675e;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+}
+
+.case-decision-list {
+  display: grid;
+}
+
+.case-decision {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.9fr);
+  align-items: center;
+  gap: 2rem;
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.case-decision:first-child {
+  padding-top: 0;
+}
+
+.case-decision:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.case-decision-copy .case-eyebrow {
+  margin-bottom: 0.65rem;
+}
+
+.case-decision-copy h3,
+.case-tradeoff-grid h3 {
+  margin: 0 0 0.75rem;
+  color: #282d27;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.case-decision-copy .case-decision-summary,
+.case-tradeoff-grid .case-decision-summary {
+  color: #343a32;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.case-decision .case-image-placeholder {
+  min-height: 190px;
+}
+
+.case-bullet-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0 0 1.25rem;
+  padding-left: 1.1rem;
+  color: #606057;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.case-tradeoff-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+.case-tradeoff-grid article {
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.case-tradeoff-grid h3 {
+  font-size: 1.05rem;
 }
 
 .supplier-option-alert .supplier-alert-tooltip {
@@ -2479,23 +2763,18 @@ function toggleProductDropdown(sku, trigger) {
     font-size: clamp(3rem, 7vw, 4.4rem);
   }
 
-  .case-overview {
-    grid-template-columns: 0.45fr 1fr;
+  .case-study-section {
+    grid-template-columns: minmax(150px, 0.5fr) minmax(0, 1.5fr);
     gap: 1.5rem 5%;
   }
 
-  .overview-meta {
-    grid-column: 2;
-    grid-template-columns: repeat(3, 1fr);
+  .case-decision {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
   }
 
-  .case-next-steps {
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-
-  .case-next-steps > .back-link {
-    grid-column: 2;
+  .case-decision .case-image-placeholder {
+    min-height: 230px;
   }
 }
 
@@ -2558,36 +2837,32 @@ function toggleProductDropdown(sku, trigger) {
     font-size: clamp(2.65rem, 12vw, 4.8rem);
   }
 
-  .case-hero-art {
-    min-height: 315px;
+  .case-hero-image {
+    min-height: 240px;
   }
 
-  .material-swatch {
-    width: 25%;
-    height: 170px;
-  }
-
-  .case-overview {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    padding-block: 1.8rem;
-  }
-
-  .overview-meta {
-    grid-column: auto;
-    grid-template-columns: 1fr;
-    gap: 0.8rem;
-    padding-top: 0.5rem;
-  }
-
-  .case-next-steps {
+  .case-study-section {
     grid-template-columns: 1fr;
     gap: 1.5rem;
     padding-block: 2.5rem;
   }
 
-  .case-next-steps > .back-link {
-    grid-column: auto;
+  .case-decision {
+    gap: 0.75rem;
+    padding-block: 1.25rem;
+  }
+
+  .case-decision .case-image-placeholder {
+    min-height: 190px;
+  }
+
+  .case-tradeoff-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .case-tradeoff-grid article {
+    padding: 1rem;
   }
 
   .case-footer {
