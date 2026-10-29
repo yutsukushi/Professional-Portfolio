@@ -746,7 +746,7 @@ function openProductDropdown(id, trigger) {
                       type="text"
                       role="combobox"
                       aria-autocomplete="list"
-                      :aria-expanded="activeProductDropdownSku === row.id"
+                      :aria-expanded="activeProductDropdownSku === row.id && filteredDummyProducts(row).length > 0"
                       :aria-controls="`sku-products-${row.id}`"
                       :aria-label="`SKU for ${row.brand} product row`"
                       @input="setCustomSku(row, $event.target.value)"
@@ -760,7 +760,7 @@ function openProductDropdown(id, trigger) {
                   </div>
                   <Teleport to="body">
                     <div
-                      v-if="activeProductDropdownSku === row.id"
+                      v-if="activeProductDropdownSku === row.id && filteredDummyProducts(row).length > 0"
                       :id="`sku-products-${row.id}`"
                       class="sku-product-options"
                       :style="productDropdownPosition"
@@ -768,7 +768,7 @@ function openProductDropdown(id, trigger) {
                       aria-label="Products"
                     >
                       <div
-                        v-for="product in dummyProducts"
+                        v-for="product in filteredDummyProducts(row)"
                         :key="product.sku"
                         class="sku-product-option"
                         role="option"
@@ -979,7 +979,7 @@ function openProductDropdown(id, trigger) {
                       placeholder="Select or search for product"
                       role="combobox"
                       aria-autocomplete="list"
-                      :aria-expanded="activeEmptyProductDropdownId === row.id"
+                      :aria-expanded="activeEmptyProductDropdownId === row.id && filteredDummyProducts(row).length > 0"
                       :aria-controls="`empty-product-options-${row.id}`"
                       :aria-label="`SKU for new product row ${row.id}`"
                       @input="setCustomSku(row, $event.target.value)"
@@ -993,7 +993,7 @@ function openProductDropdown(id, trigger) {
                   </div>
                   <Teleport to="body">
                     <div
-                      v-if="activeEmptyProductDropdownId === row.id"
+                      v-if="activeEmptyProductDropdownId === row.id && filteredDummyProducts(row).length > 0"
                       :id="`empty-product-options-${row.id}`"
                       class="sku-product-options"
                       :style="productDropdownPosition"
