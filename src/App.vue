@@ -1,210 +1,190 @@
-<script setup>
-const projects = [
-  {
-    number: '01',
-    title: 'Material Procurement Workflow',
-    type: 'Product design · Interactive concept',
-    description:
-      'A clearer path from a project’s material needs to a reviewed and approved purchase.',
-    className: 'project-card--materials',
-    label: 'Procurement workspace',
-    metric: 'Request #1048',
-    metricLabel: 'ready for review · 3 items',
-    rows: ['Engineered oak flooring', 'Acoustic wall panels', 'Concrete mix'],
-    href: './material-procurement-workflow.html',
-  },
-  {
-    number: '02',
-    title: 'Self-Service ERP Data Translation',
-    type: 'Product design · Frontend engineering',
-    description:
-      'A configurable translation system that helps administrators shape procurement data for each client’s ERP.',
-    className: 'project-card--erp',
-    label: 'ERP export template',
-    metric: '4 fields mapped',
-    metricLabel: 'preview ready · validated',
-    rows: ['Project Number → Job Code', 'Date Format → MM/DD/YYYY', 'Overflow → Column B'],
-    href: './self-service-erp-data-translation.html',
-  },
-  {
-    number: '03',
-    title: 'Promotions Authoring System',
-    type: 'Product design · Frontend engineering',
-    description:
-      'A flexible authoring workspace for complex promotions, interconnected business rules, and performance tracking.',
-    className: 'project-card--promotions',
-    label: 'Promotion editor',
-    metric: '20% off',
-    metricLabel: 'spring collection · draft saved',
-    rows: ['Discount & duration', 'Assignments & eligibility', 'Messaging & rules'],
-    href: './promotions-authoring-system.html',
-  },
-]
-
-const skills = [
-  'Product strategy',
-  'User research',
-  'Product design',
-  'Prototyping',
-  'Frontend engineering',
-  'Design systems',
-]
-</script>
-
 <template>
-  <a class="skip-link" href="#main">Skip to content</a>
-
-  <div class="site-shell">
-    <header class="site-header">
-      <a class="wordmark" href="#top" aria-label="Alex Morgan, home">AM<span>.</span></a>
-      <nav aria-label="Main navigation">
-        <a href="#work">Work</a>
-        <a href="#about">About</a>
-        <a class="nav-contact" href="#contact">Let’s talk <span aria-hidden="true">↗</span></a>
-      </nav>
-    </header>
-
-    <main id="main">
-      <section id="top" class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="status-dot"></span> Product designer &amp; engineer</p>
-          <h1 id="hero-title">Thoughtful products, <em>beautifully built.</em></h1>
-          <p class="hero-intro">
-            Hi, I’m Alex. I bring design and engineering together to make digital
-            products feel clear, useful, and a little more human.
-          </p>
-          <a class="text-link" href="#work">Explore selected work <span aria-hidden="true">↓</span></a>
-        </div>
-
-        <div class="hero-art" aria-hidden="true">
-          <div class="dashboard-window">
-            <div class="dashboard-topbar">
-              <span class="dashboard-brand"><span class="dashboard-brand-mark">a</span> atlas</span>
-              <span class="dashboard-avatar">AM</span>
-            </div>
-            <div class="dashboard-body">
-              <div class="dashboard-greeting">
-                <span>MONDAY, OCTOBER 14</span>
-                <strong>Good morning, Alex<span>.</span></strong>
-              </div>
-              <div class="dashboard-stats">
-                <div><span>In progress</span><strong>08</strong></div>
-                <div><span>Completed</span><strong>24</strong></div>
-                <div><span>Focus time</span><strong>5.2h</strong></div>
-              </div>
-              <div class="dashboard-chart">
-                <div class="chart-heading"><strong>Your week</strong><span>Last 7 days</span></div>
-                <div class="chart-bars">
-                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-                </div>
-                <div class="chart-days"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
-              </div>
-            </div>
-          </div>
-          <span class="art-caption">A little more clarity, every day.</span>
-        </div>
-      </section>
-
-      <section id="work" class="work-section" aria-labelledby="work-title">
-        <div class="section-heading">
-          <div>
-              <p class="eyebrow">A few things I’ve made</p>
-              <h2 id="work-title">Selected work<span class="period">.</span></h2>
-          </div>
-          <span class="section-index">2022 — 2025</span>
-        </div>
-
-        <div class="project-grid">
-          <article
-            v-for="project in projects"
-            :key="project.number"
-            class="project-card"
-            :class="project.className"
-          >
-            <div class="project-art">
-              <div class="project-art-top">
-                <span>{{ project.label }}</span>
-                <span aria-hidden="true">↗</span>
-              </div>
-              <div class="product-preview" :class="`${project.className}__preview`">
-                <div class="preview-heading">
-                  <span class="preview-mark">{{ project.title.slice(0, 1) }}</span>
-                  <span class="preview-title">{{ project.title }}</span>
-                  <span class="preview-menu" aria-hidden="true">···</span>
-                </div>
-                <div class="preview-summary">
-                  <span>{{ project.metric }}</span>
-                  <small>{{ project.metricLabel }}</small>
-                </div>
-                <div class="preview-list">
-                  <div v-for="(row, index) in project.rows" :key="row" class="preview-row">
-                    <span class="preview-row-icon">{{ index === 0 ? '✓' : '○' }}</span>
-                    <span>{{ row }}</span>
-                    <span class="preview-row-arrow" aria-hidden="true">↗</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="project-meta">
-              <div>
-                <h3>
-                  <a v-if="project.href" :href="project.href">{{ project.title }}</a>
-                  <template v-else>{{ project.title }}</template>
-                </h3>
-                <p>{{ project.type }}</p>
-              </div>
-              <a
-                v-if="project.href"
-                class="project-arrow"
-                :href="project.href"
-                :aria-label="`View ${project.title} case study`"
-              >↗</a>
-              <span v-else class="project-arrow" aria-hidden="true">↗</span>
-            </div>
-            <p class="project-description">{{ project.description }}</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="about" class="about-section" aria-labelledby="about-title">
-        <div class="about-heading">
-          <p class="eyebrow">A little about me</p>
-          <h2 id="about-title">Good work starts with <em>good questions.</em></h2>
-        </div>
-        <div class="about-content">
-          <p>
-            I like being involved from the first messy question to the final
-            polished interaction. Working across research, interface design,
-            and frontend engineering helps me make considered ideas real, and
-            make the details work just as well as the big picture.
-          </p>
-          <div class="skills-block">
-            <h3>Across the product lifecycle</h3>
-            <ul class="skill-list">
-              <li v-for="skill in skills" :key="skill">{{ skill }}</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section id="contact" class="contact-section" aria-labelledby="contact-title">
-        <p class="eyebrow">Have a good one in mind?</p>
-        <h2 id="contact-title">Let’s make it <em>useful.</em></h2>
-        <a class="contact-link" href="mailto:hello@example.com">
-          hello@example.com <span aria-hidden="true">↗</span>
-        </a>
-        <p class="contact-note">Currently available for select projects.</p>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <a class="wordmark footer-wordmark" href="#top" aria-label="Back to top">AM<span>.</span></a>
-      <p>Made with care, wherever I am.</p>
-      <div class="social-links" aria-label="Social links">
-        <a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
-        <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram <span aria-hidden="true">↗</span></a>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div>
+        <h1 class="site-title">Hi, I'm Yukie!</h1>
+        <p class="site-title-helper">Frontend Designer/Developer</p>
+        <p class="site-title-helper">some fun blurb about me</p>
       </div>
-      <span class="copyright">© 2026 Alex Morgan</span>
-    </footer>
-  </div>
+      <nav class="site-nav">
+        <ul>
+          <li><a href="#work">Work</a></li>
+          <li><a href="#resume">Resume</a></li>
+          <li><a href="#about">About Me</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <section id="skills" class="skills-section" aria-labelledby="skills-title">
+      <div class="skills-list-group">
+        <h4 class="skills-eyebrow">Tech Stack</h4>
+        <ul class="skills-list">
+          <li>HTML5</li>
+          <li>CSS3</li>
+          <li>JavaScript</li>
+          <li>Vue.js</li>
+          <li>TypeScript</li>
+        </ul>
+      </div>
+      <div class="skills-list-group">
+        <h4 class="skills-eyebrow">Skills</h4>
+        <ul class="skills-list">
+          <li>Responsive Design</li>
+          <li>User Research</li>
+          <li>Prototyping</li>
+          <li>Requirements Gathering</li>
+          <li>UI/UX Design</li>
+          <li>Agile Development</li>
+          <li>AI-assisted Design & Development</li>
+        </ul>
+      </div>
+    </section>
+    <section id="work" class="projects-section" aria-labelledby="work-title">
+        <h4 class="eyebrow">Projects I've worked on</h4>
+        <ul class="projects-list">
+          <li class="project-card">
+            <a class="project-card-link" href="">
+              <div class="project-card-image"></div>
+            </a>
+          </li>
+          <li class="project-card">
+            <a class="project-card-link" href="">
+              <div class="project-card-image"></div>
+            </a>
+          </li>
+          <li class="project-card">
+            <a class="project-card-link" href="">
+              <div class="project-card-image"></div>
+            </a>
+          </li>
+        </ul>
+    </section>
+  </main>       
 </template>
+
+<style>
+  .site-header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    flex-flow: row wrap;
+  }
+  .site-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  .site-title-helper {
+    font-size: 1rem;
+    font-weight: normal;
+    margin: 0;
+  }
+  .site-nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 1rem;
+  }
+  .site-main {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 2rem;
+  }
+  .skills-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    flex-flow: row nowrap;
+  }
+  .skills-list-group {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+  }
+  .skills-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display:flex;
+    flex-flow: row wrap;
+    gap: .5rem;
+    font-size: .75rem;
+  }
+  .skills-list li {
+    background-color: #f0f0f0;
+    padding: .25rem .5rem;
+    border-radius: 4px;
+    display:flex;
+  }
+
+  .projects-section {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    width: 100%;
+  }
+
+  .projects-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: 1.25rem;
+    width: min(100%, 75rem);
+  }
+
+  .project-card {
+    min-width: 0;
+  }
+
+  .project-card-link {
+    display: block;
+    height: 100%;
+  }
+
+  .project-card-image {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    min-height: 12rem;
+    border-radius: 6px;
+    background-color: #b7b7b7;
+    transition: transform 180ms ease;
+  }
+
+  .project-card-link:hover .project-card-image {
+    transform: translateY(-3px);
+  }
+
+  .project-card-link:focus-visible {
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 600px) {
+    .site-header-inner {
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      gap: .75rem;
+    }
+
+    .site-nav ul {
+      justify-content: center;
+      margin: 0;
+    }
+
+    .skills-section {
+      flex-direction: column;
+    }
+
+    .skills-list-group {
+      width: 100%;
+    }
+  }
+</style>
