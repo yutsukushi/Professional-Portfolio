@@ -1,14 +1,18 @@
 <template>
   <header class="site-header">
     <div class="site-header-inner">
-      <div>
+      <div style="display:flex;gap:1rem;flex-flow:column;">
         <h1 class="site-title">Hi, I'm Yukie!</h1>
-        <p class="site-title-helper">Frontend Designer/Developer</p>
-        <p class="site-title-helper">some fun blurb about me</p>
+        <p class="site-title-meta">
+          <span>Frontend Designer/Developer</span>
+          <span class="site-title-meta-detail site-title-meta-separator">✦</span>
+          <span class="site-title-meta-detail site-title-meta-blurb">Collector of tiny trinkets &amp; exotic plants</span>
+        </p>
+        <p class="site-title-helper">I work in the overlap between design and code, turning complex user flows into clean, shipped products.</p>
       </div>
       <nav class="site-nav">
         <ul>
-          <li><a href="#work">Work</a></li>
+          <li><a href="#projects">Projects</a></li>
           <li><a href="#resume">Resume</a></li>
           <li><a href="#about">About Me</a></li>
         </ul>
@@ -17,6 +21,26 @@
   </header>
 
   <main class="site-main">
+    <section id="work" class="projects-section" aria-labelledby="work-title">
+        <h4 class="eyebrow">Projects I've worked on</h4>
+        <ul class="projects-list">
+          <li class="project-card">
+            <a class="project-card-link" href="">
+              <div class="project-card-image"></div>
+            </a>
+          </li>
+          <li class="project-card">
+            <a class="project-card-link" href="">
+              <div class="project-card-image"></div>
+            </a>
+          </li>
+          <li class="project-card">
+            <a class="project-card-link" href="">
+              <div class="project-card-image"></div>
+            </a>
+          </li>
+        </ul>
+    </section>
     <section id="skills" class="skills-section" aria-labelledby="skills-title">
       <div class="skills-list-group">
         <h4 class="skills-eyebrow">Tech Stack</h4>
@@ -41,40 +65,30 @@
         </ul>
       </div>
     </section>
-    <section id="work" class="projects-section" aria-labelledby="work-title">
-        <h4 class="eyebrow">Projects I've worked on</h4>
-        <ul class="projects-list">
-          <li class="project-card">
-            <a class="project-card-link" href="">
-              <div class="project-card-image"></div>
-            </a>
-          </li>
-          <li class="project-card">
-            <a class="project-card-link" href="">
-              <div class="project-card-image"></div>
-            </a>
-          </li>
-          <li class="project-card">
-            <a class="project-card-link" href="">
-              <div class="project-card-image"></div>
-            </a>
-          </li>
-        </ul>
-    </section>
+    
   </main>       
+  <footer class="site-footer">
+    <p>✦ Crafted with care ✦</p>
+  </footer>
 </template>
 
 <style>
+  .site-header {
+    margin-bottom: 1rem;
+  }
+
   .site-header-inner {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
     flex-flow: row wrap;
+    gap: 1rem;
   }
   .site-title {
     font-size: 2rem;
     font-weight: bold;
+    line-height: 1.2;
     margin: 0;
   }
   .site-title-helper {
@@ -82,16 +96,56 @@
     font-weight: normal;
     margin: 0;
   }
+  .site-title-meta {
+    display: flex;
+    flex-flow: row wrap;
+    gap: .5rem;
+    margin: 0;
+    align-items: center;
+  }
+  .site-title-meta-detail {
+    color: #636363;
+  }
   .site-nav ul {
     list-style: none;
     padding: 0;
+    margin: 0;
     display: flex;
     gap: 1rem;
+    line-height: 1.2;
   }
+
+  .site-nav {
+    margin-top: .6rem;
+  }
+
+  .site-nav a {
+    display: inline-block;
+    border-radius: 4px;
+    transition: color 180ms ease, text-shadow 180ms ease;
+  }
+
+  .site-nav a:hover,
+  .site-nav a:focus-visible {
+    color: var(--accent);
+    text-shadow: 0 0 12px rgb(200 93 64 / 35%);
+  }
+
   .site-main {
     display: flex;
     flex-flow: column nowrap;
     gap: 2rem;
+  }
+  .site-footer {
+    margin-top: auto;
+    padding: 1.5rem 0 .5rem;
+    text-align: center;
+  }
+  .site-footer p {
+    margin: 0;
+    color: var(--muted);
+    font-size: .75rem;
+    font-weight: 400;
   }
   .skills-section {
     display: flex;
@@ -111,10 +165,12 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    display:flex;
+    display: flex;
     flex-flow: row wrap;
+    justify-content: center;
     gap: .5rem;
     font-size: .75rem;
+    width: 100%;
   }
   .skills-list li {
     background-color: #f0f0f0;
@@ -165,18 +221,35 @@
   .project-card-link:focus-visible {
     outline-offset: 4px;
   }
-
+  
   @media (max-width: 600px) {
     .site-header-inner {
       flex-direction: column;
       justify-content: center;
+      align-items: center;
       text-align: center;
-      gap: .75rem;
+      gap: 2rem;
+    }
+
+    .site-title-meta {
+      justify-content: center;
+    }
+
+    .site-title-meta-separator {
+      display: none;
+    }
+
+    .site-title-meta-blurb {
+      font-size: .9rem;
     }
 
     .site-nav ul {
       justify-content: center;
       margin: 0;
+    }
+
+    .site-nav {
+      margin-top: 0;
     }
 
     .skills-section {
@@ -186,5 +259,6 @@
     .skills-list-group {
       width: 100%;
     }
+
   }
 </style>
