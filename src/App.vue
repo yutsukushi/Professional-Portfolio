@@ -184,15 +184,16 @@
   @media (max-width: 600px) {
     .site-header-inner {
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
+      justify-content: flex-start;
+      align-items: flex-start;
+      text-align: left;
       gap: 2rem;
     }
 
     .site-title-meta {
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
+      align-items: flex-start;
     }
 
     .site-title-meta-blurb {
@@ -200,12 +201,16 @@
     }
 
     .site-nav ul {
-      justify-content: center;
+      justify-content: flex-start;
       margin: 0;
     }
 
     .site-nav {
       margin-top: 0;
+    }
+
+    .site-footer {
+      text-align: center;
     }
 
     .skills-section {

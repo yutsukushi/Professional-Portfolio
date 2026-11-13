@@ -35,8 +35,8 @@ body {
   gap: 2rem;
   max-width: 1140px;
   margin: 0 auto;
-  min-height: calc(100vh - 2rem);
-  min-height: calc(100svh - 2rem);
+  min-height: calc(100vh - 4rem);
+  min-height: calc(100svh - 4rem);
 }
 
 body,
@@ -47,6 +47,11 @@ a {
 @media (max-width: 600px) {
   body {
     padding: 1rem;
+  }
+
+  #app {
+    min-height: calc(100vh - 2rem);
+    min-height: calc(100svh - 2rem);
   }
 }
 
