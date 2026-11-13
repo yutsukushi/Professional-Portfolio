@@ -6,8 +6,7 @@
           <h1 class="site-title">Hi, I'm Yukie!</h1>
           <p class="site-title-meta">
             <span style="font-weight: 800;">Frontend Designer / Developer</span>
-            <span class="site-title-meta-detail site-title-meta-separator">✦</span>
-            <span class="site-title-meta-detail site-title-meta-blurb">Collector of tiny trinkets &amp; exotic plants</span>
+            <span class="site-title-meta-detail site-title-meta-blurb">✦ Collector of tiny trinkets &amp; exotic plants</span>
           </p>
         </div>
         <p class="site-title-helper">I work in the overlap between design and code, turning complex user flows into clean, shipped products.</p>
@@ -168,7 +167,7 @@
     outline-offset: 4px;
   }
 
-  @media (min-width: 43.25rem) and (max-width: 65rem) {
+  @media (min-width: 48rem) {
     .projects-list {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -194,10 +193,6 @@
     .site-title-meta {
       flex-direction: column;
       justify-content: center;
-    }
-
-    .site-title-meta-separator {
-      display: none;
     }
 
     .site-title-meta-blurb {
