@@ -25,17 +25,17 @@
         <h4 class="eyebrow">Projects I've worked on</h4>
         <ul class="projects-list">
           <li class="project-card">
-            <a class="project-card-link" href="">
+            <a class="project-card-link" href="pages/material-procurement-workflow.html" aria-label="Material Procurement Workflow case study">
               <div class="project-card-image"></div>
             </a>
           </li>
           <li class="project-card">
-            <a class="project-card-link" href="">
+            <a class="project-card-link" href="pages/promotions-authoring-system.html" aria-label="Promotions Authoring System case study">
               <div class="project-card-image"></div>
             </a>
           </li>
           <li class="project-card">
-            <a class="project-card-link" href="">
+            <a class="project-card-link" href="pages/self-service-erp-data-translation.html" aria-label="Self-Service ERP Data Translation case study">
               <div class="project-card-image"></div>
             </a>
           </li>
@@ -232,6 +232,7 @@
     }
 
     .site-title-meta {
+      flex-direction: column;
       justify-content: center;
     }
 
