@@ -175,6 +175,10 @@
     .project-card:first-child {
       grid-column: 1 / -1;
     }
+
+    .project-card:first-child .project-card-image {
+      aspect-ratio: 2 / 1;
+    }
   }
 
   @media (max-width: 600px) {
