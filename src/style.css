@@ -44,6 +44,12 @@ a {
   color: var(--ink);
 }
 
+@media (max-width: 600px) {
+  body {
+    padding: 1rem;
+  }
+}
+
 a {
   text-decoration: none;
 }

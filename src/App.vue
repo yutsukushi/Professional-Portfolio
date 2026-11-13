@@ -154,8 +154,7 @@
 
   .project-card-image {
     width: 100%;
-    aspect-ratio: 16 / 10;
-    min-height: 18rem;
+    aspect-ratio: 16 / 9;
     border-radius: 6px;
     background-color: #b7b7b7;
     transition: transform 180ms ease;
