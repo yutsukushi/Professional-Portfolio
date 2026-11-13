@@ -50,7 +50,7 @@
 
 <style>
   .site-header {
-    margin: 2rem 0;
+    margin: 2rem 0 0;
   }
 
   .site-header-inner {
@@ -137,7 +137,7 @@
     padding: 0;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
     width: min(100%, 75rem);
   }
@@ -153,7 +153,7 @@
 
   .project-card-image {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 16 / 10;
     border-radius: 6px;
     background-color: #b7b7b7;
     transition: transform 180ms ease;
@@ -167,7 +167,7 @@
     outline-offset: 4px;
   }
 
-  @media (min-width: 48rem) {
+  @media (min-width: 64rem) {
     .projects-list {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -175,12 +175,8 @@
     .project-card:first-child {
       grid-column: 1 / -1;
     }
-
-    .project-card:first-child .project-card-image {
-      aspect-ratio: 16 / 5;
-    }
   }
-  
+
   @media (max-width: 600px) {
     .site-header-inner {
       flex-direction: column;
