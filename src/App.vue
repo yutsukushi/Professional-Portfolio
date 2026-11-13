@@ -1,18 +1,20 @@
 <template>
   <header class="site-header">
     <div class="site-header-inner">
-      <div style="display:flex;gap:1rem;flex-flow:column;">
-        <h1 class="site-title">Hi, I'm Yukie!</h1>
-        <p class="site-title-meta">
-          <span>Frontend Designer/Developer</span>
-          <span class="site-title-meta-detail site-title-meta-separator">✦</span>
-          <span class="site-title-meta-detail site-title-meta-blurb">Collector of tiny trinkets &amp; exotic plants</span>
-        </p>
+      <div style="display:flex;gap:1.25rem;flex-flow:column;">
+        <div>
+          <h1 class="site-title">Hi, I'm Yukie!</h1>
+          <p class="site-title-meta">
+            <span style="font-weight: 800;">Frontend Designer / Developer</span>
+            <span class="site-title-meta-detail site-title-meta-separator">✦</span>
+            <span class="site-title-meta-detail site-title-meta-blurb">Collector of tiny trinkets &amp; exotic plants</span>
+          </p>
+        </div>
         <p class="site-title-helper">I work in the overlap between design and code, turning complex user flows into clean, shipped products.</p>
       </div>
       <nav class="site-nav">
         <ul>
-          <li><a href="#projects">Projects</a></li>
+          <li><a href="#work">Work</a></li>
           <li><a href="#resume">Resume</a></li>
           <li><a href="#about">About Me</a></li>
         </ul>
@@ -22,7 +24,7 @@
 
   <main class="site-main">
     <section id="work" class="projects-section" aria-labelledby="work-title">
-        <h4 class="eyebrow">Projects I've worked on</h4>
+        <h4 class="eyebrow">Selected works</h4>
         <ul class="projects-list">
           <li class="project-card">
             <a class="project-card-link" href="pages/material-procurement-workflow.html" aria-label="Material Procurement Workflow case study">
@@ -41,31 +43,6 @@
           </li>
         </ul>
     </section>
-    <section id="skills" class="skills-section" aria-labelledby="skills-title">
-      <div class="skills-list-group">
-        <h4 class="skills-eyebrow">Tech Stack</h4>
-        <ul class="skills-list">
-          <li>HTML5</li>
-          <li>CSS3</li>
-          <li>JavaScript</li>
-          <li>Vue.js</li>
-          <li>TypeScript</li>
-        </ul>
-      </div>
-      <div class="skills-list-group">
-        <h4 class="skills-eyebrow">Skills</h4>
-        <ul class="skills-list">
-          <li>Responsive Design</li>
-          <li>User Research</li>
-          <li>Prototyping</li>
-          <li>Requirements Gathering</li>
-          <li>UI/UX Design</li>
-          <li>Agile Development</li>
-          <li>AI-assisted Design & Development</li>
-        </ul>
-      </div>
-    </section>
-    
   </main>       
   <footer class="site-footer">
     <p>✦ Crafted with care ✦</p>
@@ -74,7 +51,7 @@
 
 <style>
   .site-header {
-    margin-bottom: 1rem;
+    margin: 2rem 0;
   }
 
   .site-header-inner {
@@ -104,7 +81,7 @@
     align-items: center;
   }
   .site-title-meta-detail {
-    color: #636363;
+    color: #7d7d7d;
   }
   .site-nav ul {
     list-style: none;
@@ -147,43 +124,13 @@
     font-size: .75rem;
     font-weight: 400;
   }
-  .skills-section {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    width: 100%;
-    flex-flow: row nowrap;
-  }
-  .skills-list-group {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
-  }
-  .skills-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: center;
-    gap: .5rem;
-    font-size: .75rem;
-    width: 100%;
-  }
-  .skills-list li {
-    background-color: #f0f0f0;
-    padding: .25rem .5rem;
-    border-radius: 4px;
-    display:flex;
-  }
 
   .projects-section {
     display: flex;
     flex-flow: column nowrap;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
+    font-size:14px;
   }
 
   .projects-list {
@@ -208,7 +155,7 @@
   .project-card-image {
     width: 100%;
     aspect-ratio: 16 / 10;
-    min-height: 12rem;
+    min-height: 18rem;
     border-radius: 6px;
     background-color: #b7b7b7;
     transition: transform 180ms ease;
@@ -220,6 +167,20 @@
 
   .project-card-link:focus-visible {
     outline-offset: 4px;
+  }
+
+  @media (min-width: 43.25rem) and (max-width: 65rem) {
+    .projects-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .project-card:first-child {
+      grid-column: 1 / -1;
+    }
+
+    .project-card:first-child .project-card-image {
+      aspect-ratio: 16 / 5;
+    }
   }
   
   @media (max-width: 600px) {
