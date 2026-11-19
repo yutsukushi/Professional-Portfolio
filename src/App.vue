@@ -1,11 +1,11 @@
 <template>
   <header class="site-header">
     <div class="site-header-inner">
-      <div style="display:flex;gap:1.25rem;flex-flow:column;">
+      <div class="site-header-copy">
         <div>
           <h1 class="site-title">Hi, I'm Yukie!</h1>
           <p class="site-title-meta">
-            <span style="font-weight: 800;">Frontend Designer / Developer</span>
+            <span class="site-title-meta-item">Frontend Designer / Developer</span>
             <span class="site-title-meta-detail site-title-meta-blurb">✦ Collector of tiny trinkets &amp; exotic plants</span>
           </p>
         </div>
@@ -61,6 +61,13 @@
     flex-flow: row wrap;
     gap: 1rem;
   }
+
+  .site-header-copy {
+    display: flex;
+    gap: 1.25rem;
+    flex-flow: column;
+  }
+
   .site-title {
     font-size: 2rem;
     font-weight: bold;
@@ -78,6 +85,9 @@
     gap: .5rem;
     margin: 0;
     align-items: center;
+  }
+  .site-title-meta-item {
+    font-weight: 800;
   }
   .site-title-meta-detail {
     color: #7d7d7d;
