@@ -33,8 +33,8 @@ import SiteHeader from './components/SiteHeader.vue'
       <section>
           <h4>Problem</h4>
         <div class="erp-section-copy">
-          <p class="case-study-text">
-            Supporting customer-specific ERP files relied on manual, hard-coded export implementations that weren’t built to evolve alongside changing requirements.
+          <p class="case-study-text"><b>
+            Supporting customer-specific ERP files relied on manual, hard-coded export implementations that weren’t built to evolve alongside changing requirements.</b>
           </p>
           <p class="case-study-text">
             Organizations use a variety of accounting and ERP systems, each with different file formats, metadata requirements, naming conventions, and import processes. While hard-coded exports could support known ERP requirements, we knew new customer requests would quickly expose their limitations. Supporting new formats, business rules, and metadata requirements would increasingly require developer involvement, while users often resorted to manual spreadsheet adjustments before purchase orders could be imported into downstream systems.
@@ -49,7 +49,8 @@ import SiteHeader from './components/SiteHeader.vue'
         <h4>Opportunity</h4>
         <div class="erp-section-copy">
           <p class="case-study-text">
-            Turn ERP exports into something administrators could manage themselves instead of relying on developer support for every new requirement.
+            <b>
+            Turn ERP exports into something administrators could manage themselves instead of relying on developer support for every new requirement.</b>
           </p>
           <p class="case-study-text">
             Rather than building and maintaining customer-specific export behavior, we saw an opportunity to move export logic into reusable templates. This would allow organizations to adapt to changing file formats, metadata requirements, and business rules by updating configuration instead of requesting custom development.
@@ -61,7 +62,7 @@ import SiteHeader from './components/SiteHeader.vue'
         <h4>Key Design Challenge</h4>
         <div class="erp-section-copy">
           <p class="case-study-text">
-            ERP files are inherently complex because organizations often have unique formatting requirements, metadata mappings, and business rules.
+            <b>ERP files are inherently complex because organizations often have unique formatting requirements, metadata mappings, and business rules.</b>
           </p>
           <p class="case-study-text">
             To address this, the experience provided validation errors when configurations contained unsupported or incomplete rules, preventing invalid exports from being created. A built-in preview complemented this by showing how valid configurations would affect generated output, giving administrators confidence that exported files would meet downstream ERP requirements.
@@ -73,7 +74,7 @@ import SiteHeader from './components/SiteHeader.vue'
         <h4>Solution</h4>
         <div class="erp-section-copy">
           <p class="case-study-text">
-            We designed a template-driven export experience that moved export behavior out of code and into administrator-managed templates.
+            <b>We designed a template-driven export experience that moved export behavior out of code and into administrator-managed templates.</b>
           </p>
           <p class="case-study-text">
             Administrators could create, edit, replace, or remove their organization's default export template, allowing export behavior to evolve alongside changing business requirements. Templates defined file structure, purchase order field mappings, customer-specific metadata, file naming conventions, and export qualification rules.
@@ -90,11 +91,11 @@ import SiteHeader from './components/SiteHeader.vue'
       <section>
         <h4>Trade-Offs</h4>
         <div class="erp-section-copy">
-          <p class="case-study-text">
-            Delivering configurable exports before automating them.
+          <p class="case-study-text"><b>
+            Delivering configurable exports before automating them.</b>
           </p>
-          <p class="case-study-text">
-            We prioritized giving administrators control over export behavior before investing in scheduled automation.
+          <p class="case-study-text"><b>
+            We prioritized giving administrators control over export behavior before investing in scheduled automation.</b>
           </p>
           <p class="case-study-text">
             Scheduled exports were explored in the project but introduced additional complexity around job scheduling, monitoring, and delivery reliability. To meet delivery goals, we focused on solving the core challenges of configuration, validation, tracking, and delivery, requiring users to manually initiate exports while establishing a scalable foundation for future automation.
