@@ -11,11 +11,24 @@ const projectTableImages = [
     src: projectTableOld,
     alt: 'Project table - old design',
     fit: 'contain',
+    label: 'Before',
+    points: [
+      'Mostly uneditable product rows (Users have the ability to adjust quantity and add/remove tags)',
+      'Clicking on a product name redirects users to a product details page where they can edit product information',
+    ],
   },
   {
     src: projectTableNew,
     alt: 'Project table - new design',
     fit: 'cover',
+    label: 'After',
+    points: [
+      'Edit quantities, tags, supplier notes, and more in the table.',
+      'Switch between suppliers and brands without leaving the table.',
+      'Review supplier availability, lead times, pricing, and discounts alongside materials.',
+      'Replace a product row entirely by searching and selecting from the Item SKU cell',
+      'Manage catalog, non-catalog, and configurable products in the same workflow.',
+    ],
   },
 ]
 
@@ -67,17 +80,27 @@ function closeImage() {
       <p class="case-study-text"><b>Project tables already existed throughout the ecosystem, but they were primarily designed for tracking materials rather than managing them.</b></p>
       <p class="case-study-text">I saw an opportunity to build on an existing project table pattern and expand it where users could edit project-specific product information and evaluate purchasing decisions without leaving the page.</p>
       <div class="project-table-gallery">
-        <button
+        <figure
           v-for="image in projectTableImages"
           :key="image.src"
-          class="project-table-image-button"
-          :class="`project-table-image-button--${image.fit}`"
-          type="button"
-          :aria-label="`View full-size image: ${image.alt}`"
-          @click="openImage(image)"
+          class="project-table-gallery-item"
         >
-          <img :src="image.src" :alt="image.alt" />
-        </button>
+          <button
+            class="project-table-image-button"
+            :class="`project-table-image-button--${image.fit}`"
+            type="button"
+            :aria-label="`View full-size image: ${image.alt}`"
+            @click="openImage(image)"
+          >
+            <img :src="image.src" :alt="image.alt" />
+          </button>
+          <figcaption class="project-table-gallery-caption">
+            <h5 class="case-study-label">{{ image.label }}</h5>
+            <ul class="case-study-text">
+              <li v-for="point in image.points" :key="point">{{ point }}</li>
+            </ul>
+          </figcaption>
+        </figure>
       </div>
     </section>
     <section>
@@ -136,6 +159,16 @@ function closeImage() {
   margin-top: 1.5rem;
 }
 
+.project-table-gallery-item {
+  min-width: 0;
+  margin: 0;
+}
+
+.project-table-gallery-caption ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
 .project-table-image-button {
   width: 100%;
   aspect-ratio: 16 / 10;
@@ -145,6 +178,12 @@ function closeImage() {
   border-radius: 6px;
   background: transparent;
   cursor: zoom-in;
+  transition: transform 180ms ease;
+}
+
+.project-table-image-button:hover,
+.project-table-image-button:focus-visible {
+  transform: translateY(-3px);
 }
 
 .project-table-image-button img {
@@ -190,5 +229,17 @@ function closeImage() {
   max-height: 82vh;
   object-fit: contain;
   cursor: zoom-out;
+}
+
+@media (max-width: 600px) {
+  .project-table-gallery {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-table-image-button {
+    transition: none;
+  }
 }
 </style>
