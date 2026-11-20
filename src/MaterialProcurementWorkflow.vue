@@ -78,17 +78,4 @@ import SiteHeader from './components/SiteHeader.vue'
 </template>
 
 <style scoped>
-.case-study-details {
-  display: flex;
-  gap: 1rem;
-}
-
-.case-study-label {
-  margin-bottom: 0.25rem;
-}
-
-.case-study-text,
-.case-study-subheading {
-  font-size: 14px;
-}
 </style>
