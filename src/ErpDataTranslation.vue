@@ -31,31 +31,27 @@ import SiteHeader from './components/SiteHeader.vue'
       </section>
 
       <section>
-          <h4>Problem</h4>
-        <div class="erp-section-copy">
-          <p class="case-study-text"><b>
-            Supporting customer-specific ERP files relied on manual, hard-coded export implementations that weren’t built to evolve alongside changing requirements.</b>
-          </p>
-          <p class="case-study-text">
-            Organizations use a variety of accounting and ERP systems, each with different file formats, metadata requirements, naming conventions, and import processes. While hard-coded exports could support known ERP requirements, we knew new customer requests would quickly expose their limitations. Supporting new formats, business rules, and metadata requirements would increasingly require developer involvement, while users often resorted to manual spreadsheet adjustments before purchase orders could be imported into downstream systems.
-          </p>
-          <p class="case-study-text">
-            The process created friction for administrators responsible for managing exports while making it difficult to adapt to changing customer requirements. Users also lacked visibility into which purchase orders had already been exported, forcing teams to manually track what had been processed.
-          </p>
-        </div>
+        <h4>Problem</h4>
+        <p class="case-study-text"><b>
+          Supporting customer-specific ERP files relied on manual, hard-coded export implementations that weren’t built to evolve alongside changing requirements.</b>
+        </p>
+        <p class="case-study-text">
+          Organizations use a variety of accounting and ERP systems, each with different file formats, metadata requirements, naming conventions, and import processes. While hard-coded exports could support known ERP requirements, we knew new customer requests would quickly expose their limitations. Supporting new formats, business rules, and metadata requirements would increasingly require developer involvement, while users often resorted to manual spreadsheet adjustments before purchase orders could be imported into downstream systems.
+        </p>
+        <p class="case-study-text">
+          The process created friction for administrators responsible for managing exports while making it difficult to adapt to changing customer requirements. Users also lacked visibility into which purchase orders had already been exported, forcing teams to manually track what had been processed.
+        </p>
       </section>
 
       <section>
         <h4>Opportunity</h4>
-        <div class="erp-section-copy">
-          <p class="case-study-text">
-            <b>
-            Turn ERP exports into something administrators could manage themselves instead of relying on developer support for every new requirement.</b>
-          </p>
-          <p class="case-study-text">
-            Rather than building and maintaining customer-specific export behavior, we saw an opportunity to move export logic into reusable templates. This would allow organizations to adapt to changing file formats, metadata requirements, and business rules by updating configuration instead of requesting custom development.
-          </p>
-        </div>
+        <p class="case-study-text">
+          <b>
+          Turn ERP exports into something administrators could manage themselves instead of relying on developer support for every new requirement.</b>
+        </p>
+        <p class="case-study-text">
+          Rather than building and maintaining customer-specific export behavior, we saw an opportunity to move export logic into reusable templates. This would allow organizations to adapt to changing file formats, metadata requirements, and business rules by updating configuration instead of requesting custom development.
+        </p>
       </section>
 
       <section>

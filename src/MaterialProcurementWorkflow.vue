@@ -38,6 +38,10 @@ import SiteHeader from './components/SiteHeader.vue'
       <h4>Opportunity</h4>
       <p class="case-study-text"><b>Project tables already existed throughout the ecosystem, but they were primarily designed for tracking materials rather than managing them.</b></p>
       <p class="case-study-text">I saw an opportunity to build on an existing project table pattern and expand it where users could edit project-specific product information and evaluate purchasing decisions without leaving the page.</p>
+      <div>
+        <img style="max-height:40rem;" class="case-study-image" src="../assets/images/projecttable_old.png" alt="Project Table - Old Design" />
+        <img style="max-height:40rem;max-width: 80rem;" class="case-study-image" src="../assets/images/projecttable_new.png" alt="Project Table - New Design" />
+      </div>
     </section>
     <section>
       <h4>Solution</h4>
@@ -61,13 +65,13 @@ import SiteHeader from './components/SiteHeader.vue'
     <section>
       <h4>Impact</h4>
       <h4 class="case-study-subheading">Workflow Impact</h4>
-      <ul>
+      <ul class="case-study-text">
         <li>Enabled users to edit project-specific product information directly within the table.</li>
         <li>Surfaced purchasing context alongside project materials, allowing sourcing decisions to happen earlier in the workflow.</li>
         <li>Supported catalog, non-catalog, and configurable products within a consistent experience.</li>
       </ul>
       <h4 class="case-study-subheading">Technical/Workflow Impact</h4>
-      <ul>
+      <ul class="case-study-text">
         <li>Expanded an existing project table pattern into a more capable material management workspace.</li>
         <li>Established support for editable project-level product data independent of source product data.</li>
         <li>Created a reusable table framework that could support future procurement capabilities.</li>

@@ -9,7 +9,7 @@ import SiteHeader from './components/SiteHeader.vue'
     <SiteHeader variant="case-study" />
 
     <main>
-        <h1>Promotions Authoring System</h1>
+      <h1>Promotions Authoring System</h1>
       <section class="case-study-details" aria-label="Project details">
         <div>
           <h5 class="case-study-label">My Role</h5>
@@ -43,6 +43,7 @@ import SiteHeader from './components/SiteHeader.vue'
         <p class="case-study-text">The flexibility of the promotion engine was valuable, but it also introduced complexity. Discounts, audience targeting, eligibility requirements, and business rules all had to work together for a promotion to behave correctly.</p>
         <p class="case-study-text">The opportunity was to improve both promotion creation and promotion management. Rather than treating configuration and oversight as separate workflows, users could create promotions from a centralized workspace and monitor performance through a dedicated management dashboard.</p>
         <p class="case-study-text">This would make promotion configuration easier to understand while giving teams better visibility into promotion activity after launch.</p>
+        
       </section>
 
       <section>

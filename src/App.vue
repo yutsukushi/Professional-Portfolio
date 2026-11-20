@@ -8,21 +8,34 @@ import SiteHeader from './components/SiteHeader.vue'
 
   <main class="site-main">
     <section id="work" class="projects-section" aria-labelledby="work-title">
-        <h4 class="eyebrow">Selected works</h4>
+        <h4 id="work-title" class="eyebrow">Selected works</h4>
         <ul class="projects-list">
           <li class="project-card">
             <a class="project-card-link" href="case-studies/material-procurement-workflow.html" aria-label="Material Procurement Workflow case study">
-              <div class="project-card-image"></div>
+              <div class="project-card-image">
+                <img class="case-study-image" src="../assets/images/Frame 20(7).png" alt="Material Procurement Workflow" />
+                <span class="project-card-overlay">
+                  <span class="project-card-title">Turning a Project Table into a Material Workspace</span>
+                </span>
+              </div>
             </a>
           </li>
           <li class="project-card">
             <a class="project-card-link" href="case-studies/promotions-authoring-system.html" aria-label="Promotions Authoring System case study">
-              <div class="project-card-image"></div>
+              <div class="project-card-image">
+                <span class="project-card-overlay">
+                  <span class="project-card-title">Promotions Authoring System</span>
+                </span>
+              </div>
             </a>
           </li>
           <li class="project-card">
             <a class="project-card-link" href="case-studies/self-service-erp-data-translation.html" aria-label="Self-Service ERP Data Translation case study">
-              <div class="project-card-image"></div>
+              <div class="project-card-image">
+                <span class="project-card-overlay">
+                  <span class="project-card-title">Self-Service ERP Data Translation</span>
+                </span>
+              </div>
             </a>
           </li>
         </ul>
@@ -65,19 +78,78 @@ import SiteHeader from './components/SiteHeader.vue'
   }
 
   .project-card-image {
+    position: relative;
     width: 100%;
     aspect-ratio: 16 / 10;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 6px;
-    background-color: #b7b7b7;
+    background-color: #eef1e9;
     transition: transform 180ms ease;
+  }
+
+  .case-study-image {
+    width: 82%;
+    height: 82%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+  }
+
+  .project-card-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgb(32 39 32 / 82%) 0%,
+      rgb(32 39 32 / 80%) 18%,
+      rgb(32 39 32 / 76%) 35%,
+      rgb(32 39 32 / 72%) 40%,
+      rgb(32 39 32 / 54%) 50%,
+      rgb(32 39 32 / 34%) 65%,
+      rgb(32 39 32 / 17%) 80%,
+      rgb(32 39 32 / 5%) 92%,
+      rgb(32 39 32 / 0%) 100%
+    );
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+
+  .project-card-title {
+    position: absolute;
+    top: 25%;
+    right: 1.5rem;
+    left: 1.5rem;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: clamp(1.1rem, 2vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
   }
 
   .project-card-link:hover .project-card-image {
     transform: translateY(-3px);
   }
 
+  .project-card-link:hover .project-card-overlay,
+  .project-card-link:focus-visible .project-card-overlay {
+    opacity: 1;
+  }
+
   .project-card-link:focus-visible {
+    outline: 3px solid var(--accent);
     outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project-card-image,
+    .project-card-overlay {
+      transition: none;
+    }
   }
 
   @media (min-width: 64rem) {
