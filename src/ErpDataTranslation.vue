@@ -1,16 +1,13 @@
+<script setup>
+import SiteFooter from './components/SiteFooter.vue'
+import SiteHeader from './components/SiteHeader.vue'
+</script>
+
 <template>
   <a class="skip-link" href="#main">Skip to content</a>
 
   <div class="erp-page">
-    <header class="erp-header">
-      <a class="erp-wordmark" href="./index.html" aria-label="Yukie Kushibiki, home">YK<span>.</span></a>
-      <nav aria-label="Case study navigation">
-        <a href="./index.html#work">Selected work</a>
-        <a class="erp-contact-link" href="./index.html#contact">
-          Let’s talk <span aria-hidden="true">↗</span>
-        </a>
-      </nav>
-    </header>
+    <SiteHeader variant="case-study" />
 
     <main id="main">
       <section class="erp-hero" aria-labelledby="case-title">
@@ -304,13 +301,8 @@
         </div>
       </section>
     </main>
-
-    <footer class="erp-footer">
-      <a class="erp-wordmark" href="./index.html" aria-label="Back to portfolio">YK<span>.</span></a>
-      <a href="./index.html#work">Explore more work <span aria-hidden="true">↗</span></a>
-      <span>© 2026 Yukie Kushibiki</span>
-    </footer>
   </div>
+  <SiteFooter />
 </template>
 
 <style scoped>
@@ -320,17 +312,10 @@
   color: var(--ink);
 }
 
-.erp-header,
-.erp-header nav,
 .erp-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.erp-header {
-  height: 92px;
-  border-bottom: 1px solid var(--line);
 }
 
 .erp-wordmark {
@@ -343,28 +328,12 @@
   color: var(--accent);
 }
 
-.erp-header nav {
-  gap: clamp(1.5rem, 4vw, 3.5rem);
-  font-size: 0.83rem;
-}
-
-.erp-header nav a,
 .erp-footer a:not(.erp-wordmark) {
   transition: color 160ms ease;
 }
 
-.erp-header nav a:hover,
 .erp-footer a:not(.erp-wordmark):hover {
   color: var(--accent);
-}
-
-.erp-contact-link {
-  padding-block: 0.7rem;
-  border-bottom: 1px solid var(--accent);
-}
-
-.erp-contact-link span {
-  margin-left: 0.35rem;
 }
 
 .erp-back-link {
@@ -1487,19 +1456,6 @@
 @media (max-width: 650px) {
   .erp-page {
     width: min(100% - 36px, 480px);
-  }
-
-  .erp-header {
-    height: 74px;
-  }
-
-  .erp-header nav {
-    gap: 1.2rem;
-    font-size: 0.73rem;
-  }
-
-  .erp-contact-link {
-    padding-block: 0.55rem;
   }
 
   .erp-hero {

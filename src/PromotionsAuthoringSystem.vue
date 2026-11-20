@@ -1,4 +1,7 @@
 <script setup>
+import SiteFooter from './components/SiteFooter.vue'
+import SiteHeader from './components/SiteHeader.vue'
+
 const decisions = [
   {
     number: '01',
@@ -93,15 +96,7 @@ const reflectionAreas = [
   <a class="skip-link" href="#main">Skip to content</a>
 
   <div class="promotions-page">
-    <header class="promotions-header">
-      <a class="promotions-wordmark" href="./index.html" aria-label="Yukie Kushibiki, home">YK<span>.</span></a>
-      <nav aria-label="Case study navigation">
-        <a href="./index.html#work">Selected work</a>
-        <a class="promotions-contact-link" href="./index.html#contact">
-          Let’s talk <span aria-hidden="true">↗</span>
-        </a>
-      </nav>
-    </header>
+    <SiteHeader variant="case-study" />
 
     <main id="main">
       <section class="promotions-hero" aria-labelledby="case-title">
@@ -272,13 +267,8 @@ const reflectionAreas = [
         </div>
       </section>
     </main>
-
-    <footer class="promotions-footer">
-      <a class="promotions-wordmark" href="./index.html" aria-label="Back to portfolio">YK<span>.</span></a>
-      <a href="./index.html#work">Explore more work <span aria-hidden="true">↗</span></a>
-      <span>© 2026 Yukie Kushibiki</span>
-    </footer>
   </div>
+  <SiteFooter />
 </template>
 
 <style scoped>
@@ -288,17 +278,10 @@ const reflectionAreas = [
   color: var(--ink);
 }
 
-.promotions-header,
-.promotions-header nav,
 .promotions-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.promotions-header {
-  height: 92px;
-  border-bottom: 1px solid var(--line);
 }
 
 .promotions-wordmark {
@@ -311,28 +294,12 @@ const reflectionAreas = [
   color: var(--accent);
 }
 
-.promotions-header nav {
-  gap: clamp(1.5rem, 4vw, 3.5rem);
-  font-size: 0.83rem;
-}
-
-.promotions-header nav a,
 .promotions-footer a:not(.promotions-wordmark) {
   transition: color 160ms ease;
 }
 
-.promotions-header nav a:hover,
 .promotions-footer a:not(.promotions-wordmark):hover {
   color: var(--accent);
-}
-
-.promotions-contact-link {
-  padding-block: 0.7rem;
-  border-bottom: 1px solid var(--accent);
-}
-
-.promotions-contact-link span {
-  margin-left: 0.35rem;
 }
 
 .promotions-back-link {
@@ -893,19 +860,6 @@ const reflectionAreas = [
 @media (max-width: 650px) {
   .promotions-page {
     width: min(100% - 36px, 480px);
-  }
-
-  .promotions-header {
-    height: 74px;
-  }
-
-  .promotions-header nav {
-    gap: 1.2rem;
-    font-size: 0.73rem;
-  }
-
-  .promotions-contact-link {
-    padding-block: 0.55rem;
   }
 
   .promotions-hero {
