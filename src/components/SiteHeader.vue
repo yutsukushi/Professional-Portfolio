@@ -6,15 +6,19 @@ defineProps({
   },
   homeHref: {
     type: String,
-    default: './index.html',
+    default: '../index.html',
   },
   workHref: {
     type: String,
-    default: './index.html#work',
+    default: '../index.html#work',
   },
-  contactHref: {
+  resumeHref: {
     type: String,
-    default: './index.html#contact',
+    default: '../index.html#resume',
+  },
+  aboutHref: {
+    type: String,
+    default: '../index.html#about',
   },
 })
 </script>
@@ -45,10 +49,9 @@ defineProps({
   <header v-else class="site-header site-header--case-study">
     <a class="site-header-wordmark" :href="homeHref" aria-label="Yukie Kushibiki, home">YK<span>.</span></a>
     <nav aria-label="Case study navigation">
-      <a :href="workHref">Selected work</a>
-      <a class="site-header-contact-link" :href="contactHref">
-        Let’s talk <span aria-hidden="true">↗</span>
-      </a>
+      <a :href="workHref">Work</a>
+      <a :href="resumeHref">Resume</a>
+      <a :href="aboutHref">About Me</a>
     </nav>
   </header>
 </template>
@@ -136,7 +139,6 @@ defineProps({
 
 .site-header--case-study {
   height: 92px;
-  border-bottom: 1px solid var(--line);
 }
 
 .site-header-wordmark {
@@ -162,15 +164,6 @@ defineProps({
   color: var(--accent);
 }
 
-.site-header-contact-link {
-  padding-block: 0.7rem;
-  border-bottom: 1px solid var(--accent);
-}
-
-.site-header-contact-link span {
-  margin-left: 0.35rem;
-}
-
 @media (max-width: 650px) {
   .site-header--case-study {
     height: 74px;
@@ -181,9 +174,6 @@ defineProps({
     font-size: 0.73rem;
   }
 
-  .site-header-contact-link {
-    padding-block: 0.55rem;
-  }
 }
 
 @media (max-width: 600px) {
