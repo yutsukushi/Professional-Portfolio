@@ -618,6 +618,7 @@ function openEmptyProductDropdown(row, trigger) {
 
 <template>
       <section class="procurement-table-section" aria-labelledby="procurement-table-title">
+      <p style="font-size: 14px;">Partial demo to capture the essence of the Material Procurement workflow.</p>
         <div class="procurement-table-scroll" tabindex="0" role="region" aria-label="Material schedule table, scroll horizontally to see more columns">
           <table class="procurement-table" aria-label="Harbor House material schedule">
             <colgroup>
@@ -997,7 +998,7 @@ function openEmptyProductDropdown(row, trigger) {
 }
 
 .procurement-table-section {
-  padding-block: 2.6rem 3.5rem;
+  padding-block: 1.25rem;
 }
 
 .table-heading {
