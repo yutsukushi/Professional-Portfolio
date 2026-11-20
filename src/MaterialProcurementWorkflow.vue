@@ -1,7 +1,35 @@
 <script setup>
+import { ref } from 'vue'
+import projectTableNew from '../assets/images/projecttable_new.png'
+import projectTableOld from '../assets/images/projecttable_old2.png'
 import MaterialProcurementDemo from './components/MaterialProcurementDemo.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
+
+const projectTableImages = [
+  {
+    src: projectTableOld,
+    alt: 'Project table - old design',
+    fit: 'contain',
+  },
+  {
+    src: projectTableNew,
+    alt: 'Project table - new design',
+    fit: 'cover',
+  },
+]
+
+const imageDialog = ref(null)
+const selectedImage = ref(null)
+
+function openImage(image) {
+  selectedImage.value = image
+  imageDialog.value.showModal()
+}
+
+function closeImage() {
+  imageDialog.value.close()
+}
 </script>
 
 <template>
@@ -38,9 +66,18 @@ import SiteHeader from './components/SiteHeader.vue'
       <h4>Opportunity</h4>
       <p class="case-study-text"><b>Project tables already existed throughout the ecosystem, but they were primarily designed for tracking materials rather than managing them.</b></p>
       <p class="case-study-text">I saw an opportunity to build on an existing project table pattern and expand it where users could edit project-specific product information and evaluate purchasing decisions without leaving the page.</p>
-      <div>
-        <img style="max-height:40rem;" class="case-study-image" src="../assets/images/projecttable_old.png" alt="Project Table - Old Design" />
-        <img style="max-height:40rem;max-width: 80rem;" class="case-study-image" src="../assets/images/projecttable_new.png" alt="Project Table - New Design" />
+      <div class="project-table-gallery">
+        <button
+          v-for="image in projectTableImages"
+          :key="image.src"
+          class="project-table-image-button"
+          :class="`project-table-image-button--${image.fit}`"
+          type="button"
+          :aria-label="`View full-size image: ${image.alt}`"
+          @click="openImage(image)"
+        >
+          <img :src="image.src" :alt="image.alt" />
+        </button>
       </div>
     </section>
     <section>
@@ -77,9 +114,81 @@ import SiteHeader from './components/SiteHeader.vue'
         <li>Created a reusable table framework that could support future procurement capabilities.</li>
       </ul>
     </section>
+    <dialog
+      ref="imageDialog"
+      class="project-image-dialog"
+      aria-label="Full-size project table image"
+      @click="closeImage"
+      @close="selectedImage = null"
+    >
+      <img v-if="selectedImage" :src="selectedImage.src" :alt="selectedImage.alt" />
+    </dialog>
     <SiteFooter />
   </main>
 </template>
 
 <style scoped>
+.project-table-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.project-table-image-button {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.project-table-image-button img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.project-table-image-button--contain img {
+  object-fit: contain;
+}
+
+.project-table-image-button--cover img {
+  object-position: 9% center;
+}
+
+.project-table-image-button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.project-image-dialog {
+  position: fixed;
+  width: fit-content;
+  max-width: 96vw;
+  max-height: 96vh;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.project-image-dialog::backdrop {
+  background: rgb(20 24 20 / 82%);
+}
+
+.project-image-dialog > img {
+  display: block;
+  max-width: min(92vw, 90rem);
+  max-height: 82vh;
+  object-fit: contain;
+  cursor: zoom-out;
+}
 </style>
