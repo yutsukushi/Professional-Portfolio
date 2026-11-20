@@ -1,7 +1,8 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import ProductPicker from './ProductPicker.vue'
 
-const procurementRows = reactive([
+const initialProcurementRows = [
   {
     id: 'procurement-1',
     sku: 'F-1100-2IN-BRONZE',
@@ -87,13 +88,8 @@ const procurementRows = reactive([
       { supplier: 'Beacon Supply', brand: 'Apex', productType: 'Flat', unitCost: 6.5, stockStatus: 'backordered', stockQuantity: 0, alerts: ['Expected restock: Nov 18'] },
     ],
   },
-])
-
-const initialProductDetails = procurementRows.map(({ sku, brand, productType }) => ({
-  sku,
-  brand,
-  productType,
-}))
+]
+const procurementRows = reactive(structuredClone(initialProcurementRows))
 
 const dummyProducts = [
   {
@@ -138,34 +134,28 @@ const configurationFields = [
   { label: 'Wiring Connection', options: ['1/2 in NPT, Jacketed Cable With 1/2 in Conduit Adapter', 'Terminal Block', 'M12 Connector'] },
 ]
 
-const selectedSkus = ref([])
+const selectedRowIds = ref([])
 const selectedSuppliers = ref({})
 const emptyProductRows = ref([])
 const maxNewProductRows = 3
 const selectedEmptyProductRows = ref([])
-const activeSupplierPopoverSku = ref(null)
-const pinnedSupplierPopoverSku = ref(null)
-const activeSupplierDropdownSku = ref(null)
-const activeProductDropdownSku = ref(null)
-const activeEmptyProductDropdownId = ref(null)
+const activeSupplierPopoverRowId = ref(null)
+const pinnedSupplierPopoverRowId = ref(null)
+const activeDropdown = ref(null)
 const productConfiguration = ref(null)
 const configurationDraft = ref({})
 const savedProductConfigurations = ref({})
 const configurationDialog = ref(null)
 const configurationReturnFocus = ref(null)
 const supplierPopoverPosition = ref({})
-const supplierDropdownPosition = ref({})
-const productDropdownPosition = ref({})
-const supplierTriggerElements = new Map()
-const supplierDropdownTriggerElements = new Map()
-const productDropdownTriggerElements = new Map()
-const emptyProductDropdownTriggerElements = new Map()
+const dropdownPosition = ref({})
+const triggerElements = new Map()
 let supplierPopoverCloseTimeout
 let nextEmptyProductRowId = 1
 const allRowsSelected = computed(
   () =>
     procurementRows.length > 0 &&
-    procurementRows.every((row) => selectedSkus.value.includes(row.sku)),
+    procurementRows.every((row) => selectedRowIds.value.includes(row.id)),
 )
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
@@ -190,7 +180,7 @@ function productDisplayName(row) {
 }
 
 function supplierName(row) {
-  return selectedSuppliers.value[row.sku] || row.supplier
+  return selectedSuppliers.value[row.id] || row.supplier
 }
 
 function supplierOffer(row, supplier = supplierName(row)) {
@@ -218,55 +208,40 @@ function supplierSavings(row) {
   )
 }
 
-function switchSupplier(sku) {
-  selectedSuppliers.value = { ...selectedSuppliers.value, [sku]: 'Beacon Supply' }
-  activeSupplierDropdownSku.value = null
-  closeSupplierPopover(sku)
+function switchSupplier(row) {
+  selectedSuppliers.value = { ...selectedSuppliers.value, [row.id]: 'Beacon Supply' }
+  closeDropdown('supplier', row.id)
+  closeSupplierPopover(row.id)
 }
 
 function selectSupplier(row, supplier) {
-  selectedSuppliers.value = { ...selectedSuppliers.value, [row.sku]: supplier }
-  activeSupplierDropdownSku.value = null
+  selectedSuppliers.value = { ...selectedSuppliers.value, [row.id]: supplier }
+  closeDropdown('supplier', row.id)
 }
 
-function setSupplierTriggerElement(sku, element) {
+function triggerKey(type, id) {
+  return `${type}:${id}`
+}
+
+function setTriggerElement(type, id, element) {
+  const key = triggerKey(type, id)
   if (element) {
-    supplierTriggerElements.set(sku, element)
+    triggerElements.set(key, element)
   } else {
-    supplierTriggerElements.delete(sku)
+    triggerElements.delete(key)
   }
 }
 
-function setSupplierDropdownTriggerElement(sku, element) {
-  if (element) {
-    supplierDropdownTriggerElements.set(sku, element)
-  } else {
-    supplierDropdownTriggerElements.delete(sku)
-  }
+function getTriggerElement(type, id) {
+  return triggerElements.get(triggerKey(type, id))
 }
 
-function setProductDropdownTriggerElement(id, element) {
-  if (element) {
-    productDropdownTriggerElements.set(id, element)
-  } else {
-    productDropdownTriggerElements.delete(id)
-  }
-}
-
-function setEmptyProductDropdownTriggerElement(id, element) {
-  if (element) {
-    emptyProductDropdownTriggerElements.set(id, element)
-  } else {
-    emptyProductDropdownTriggerElements.delete(id)
-  }
-}
-
-function positionProductDropdown(trigger, dropdown) {
+function positionDropdown(trigger, dropdown, estimatedHeight) {
   const bounds = trigger.getBoundingClientRect()
   const viewportPadding = 12
   const dropdownGap = 6
   const dropdownWidth = Math.min(320, window.innerWidth - viewportPadding * 2)
-  const dropdownHeight = dropdown?.getBoundingClientRect().height || 220
+  const dropdownHeight = dropdown?.getBoundingClientRect().height || estimatedHeight
   const spaceBelow = Math.max(
     0,
     window.innerHeight - bounds.bottom - dropdownGap - viewportPadding,
@@ -282,36 +257,7 @@ function positionProductDropdown(trigger, dropdown) {
     Math.min(bounds.left, window.innerWidth - dropdownWidth - viewportPadding),
   )
 
-  productDropdownPosition.value = {
-    left: `${left}px`,
-    top: `${top}px`,
-    width: `${dropdownWidth}px`,
-    maxHeight: `${availableHeight}px`,
-  }
-}
-
-function positionSupplierDropdown(trigger, dropdown) {
-  const bounds = trigger.getBoundingClientRect()
-  const viewportPadding = 12
-  const dropdownGap = 6
-  const dropdownWidth = Math.min(320, window.innerWidth - viewportPadding * 2)
-  const left = Math.max(
-    viewportPadding,
-    Math.min(bounds.left, window.innerWidth - dropdownWidth - viewportPadding),
-  )
-  const dropdownHeight = dropdown?.getBoundingClientRect().height || 280
-  const spaceBelow = Math.max(
-    0,
-    window.innerHeight - bounds.bottom - dropdownGap - viewportPadding,
-  )
-  const spaceAbove = Math.max(0, bounds.top - dropdownGap - viewportPadding)
-  const openBelow = dropdownHeight <= spaceBelow || spaceBelow >= spaceAbove
-  const availableHeight = openBelow ? spaceBelow : spaceAbove
-  const top = openBelow
-    ? bounds.bottom + dropdownGap
-    : Math.max(viewportPadding, bounds.top - Math.min(dropdownHeight, availableHeight) - dropdownGap)
-
-  supplierDropdownPosition.value = {
+  dropdownPosition.value = {
     left: `${left}px`,
     top: `${top}px`,
     width: `${dropdownWidth}px`,
@@ -347,99 +293,104 @@ function positionSupplierPopover(trigger) {
   }
 }
 
-function showSupplierPopover(sku, trigger) {
-  closeProductDropdown()
+function showSupplierPopover(rowId, trigger) {
+  closeActiveDropdown()
   window.clearTimeout(supplierPopoverCloseTimeout)
-  activeSupplierPopoverSku.value = sku
+  activeSupplierPopoverRowId.value = rowId
   positionSupplierPopover(trigger)
 }
 
-function scheduleSupplierPopoverClose(sku) {
+function scheduleSupplierPopoverClose(rowId) {
   window.clearTimeout(supplierPopoverCloseTimeout)
   supplierPopoverCloseTimeout = window.setTimeout(() => {
-    if (pinnedSupplierPopoverSku.value !== sku) {
-      closeSupplierPopover(sku)
+    if (pinnedSupplierPopoverRowId.value !== rowId) {
+      closeSupplierPopover(rowId)
     }
   }, 140)
 }
 
-function closeSupplierPopover(sku = activeSupplierPopoverSku.value) {
-  if (activeSupplierPopoverSku.value === sku) {
-    activeSupplierPopoverSku.value = null
-    pinnedSupplierPopoverSku.value = null
+function closeSupplierPopover(rowId = activeSupplierPopoverRowId.value) {
+  if (activeSupplierPopoverRowId.value === rowId) {
+    activeSupplierPopoverRowId.value = null
+    pinnedSupplierPopoverRowId.value = null
   }
   window.clearTimeout(supplierPopoverCloseTimeout)
 }
 
-function toggleSupplierPopover(sku, trigger) {
-  if (pinnedSupplierPopoverSku.value === sku) {
-    closeSupplierPopover(sku)
+function toggleSupplierPopover(rowId, trigger) {
+  if (pinnedSupplierPopoverRowId.value === rowId) {
+    closeSupplierPopover(rowId)
     return
   }
-  pinnedSupplierPopoverSku.value = sku
-  showSupplierPopover(sku, trigger)
+  pinnedSupplierPopoverRowId.value = rowId
+  showSupplierPopover(rowId, trigger)
 }
 
 function closeSupplierPopoverOutside(event) {
-  if (!event.target.closest('.supplier-cell-content, .supplier-options, .supplier-save-pill, .supplier-popover')) {
-    closeSupplierPopover()
-    activeSupplierDropdownSku.value = null
+  const target = event.target
+  if (!(target instanceof Element)) {
+    return
   }
-  if (!event.target.closest('.sku-cell-input, .empty-product-sku-input, .sku-product-options')) {
-    closeProductDropdown()
-    activeEmptyProductDropdownId.value = null
+
+  if (!target.closest('.supplier-cell-content, .supplier-options, .supplier-save-pill, .supplier-popover')) {
+    closeSupplierPopover()
+  }
+
+  const dropdown = activeDropdown.value
+  if (!dropdown) {
+    return
+  }
+  const clickedInsideDropdown = dropdown.type === 'supplier'
+    ? target.closest('.supplier-cell-content, .supplier-options')
+    : target.closest('.sku-entry, .sku-product-options')
+  if (!clickedInsideDropdown) {
+    closeActiveDropdown()
   }
 }
 
-function repositionActiveSupplierPopover() {
-  const productSku = activeProductDropdownSku.value
-  const productTrigger = productSku && productDropdownTriggerElements.get(productSku)
-  if (productTrigger) {
-    const dropdown = document.getElementById(`sku-products-${productSku}`)
-    positionProductDropdown(productTrigger, dropdown)
+function repositionActiveOverlays() {
+  const dropdown = activeDropdown.value
+  if (dropdown) {
+    const trigger = getTriggerElement(dropdown.type, dropdown.id)
+    const dropdownElement = document.getElementById(dropdown.domId)
+    if (trigger) {
+      positionDropdown(
+        trigger,
+        dropdownElement,
+        dropdown.type === 'supplier' ? 280 : 220,
+      )
+    }
   }
 
-  const emptyProductId = activeEmptyProductDropdownId.value
-  const emptyProductTrigger = emptyProductId && emptyProductDropdownTriggerElements.get(emptyProductId)
-  if (emptyProductTrigger) {
-    const dropdown = document.getElementById(`empty-product-options-${emptyProductId}`)
-    positionProductDropdown(emptyProductTrigger, dropdown)
-  }
-
-  const dropdownSku = activeSupplierDropdownSku.value
-  const dropdownTrigger = dropdownSku && supplierDropdownTriggerElements.get(dropdownSku)
-  if (dropdownTrigger) {
-    const dropdown = document.getElementById(`supplier-options-${dropdownSku}`)
-    positionSupplierDropdown(dropdownTrigger, dropdown)
-  }
-
-  const sku = activeSupplierPopoverSku.value
-  const trigger = sku && supplierTriggerElements.get(sku)
+  const rowId = activeSupplierPopoverRowId.value
+  const trigger = rowId && getTriggerElement('supplier-popover', rowId)
   if (trigger) {
     positionSupplierPopover(trigger)
   }
 }
 
 function closeDropdownsOnScroll() {
-  closeProductDropdown()
-  activeEmptyProductDropdownId.value = null
-  activeSupplierDropdownSku.value = null
-  repositionActiveSupplierPopover()
+  closeActiveDropdown()
+  repositionActiveOverlays()
 }
 
 onMounted(() => {
+  window.addEventListener('click', closeSupplierPopoverOutside)
+  window.addEventListener('resize', repositionActiveOverlays, { passive: true })
   window.addEventListener('scroll', closeDropdownsOnScroll, true)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('click', closeSupplierPopoverOutside)
+  window.removeEventListener('resize', repositionActiveOverlays)
   window.removeEventListener('scroll', closeDropdownsOnScroll, true)
 })
 
 function toggleAllRows(event) {
   if (event.target.checked) {
-    selectedSkus.value = procurementRows.map((row) => row.sku)
+    selectedRowIds.value = procurementRows.map((row) => row.id)
   } else {
-    selectedSkus.value = []
+    selectedRowIds.value = []
   }
 }
 
@@ -463,52 +414,82 @@ function addProductRow() {
 }
 
 function resetDemo() {
-  procurementRows.forEach((row, index) => Object.assign(row, initialProductDetails[index]))
-  selectedSkus.value = []
+  procurementRows.splice(0, procurementRows.length, ...structuredClone(initialProcurementRows))
+  selectedRowIds.value = []
   selectedSuppliers.value = {}
   emptyProductRows.value = []
   selectedEmptyProductRows.value = []
-  activeSupplierPopoverSku.value = null
-  pinnedSupplierPopoverSku.value = null
-  activeSupplierDropdownSku.value = null
-  activeProductDropdownSku.value = null
-  activeEmptyProductDropdownId.value = null
+  activeSupplierPopoverRowId.value = null
+  pinnedSupplierPopoverRowId.value = null
+  activeDropdown.value = null
   productConfiguration.value = null
   configurationDraft.value = {}
   savedProductConfigurations.value = {}
   configurationReturnFocus.value = null
   supplierPopoverPosition.value = {}
-  supplierDropdownPosition.value = {}
-  productDropdownPosition.value = {}
+  dropdownPosition.value = {}
   nextEmptyProductRowId = 1
   window.clearTimeout(supplierPopoverCloseTimeout)
 }
 
-function openDropdown(sku) {
-  closeProductDropdown()
-  activeEmptyProductDropdownId.value = null
-  if (activeSupplierDropdownSku.value === sku) {
-    activeSupplierDropdownSku.value = null
-  } else {
-    activeSupplierDropdownSku.value = sku
-    closeSupplierPopover(sku)
-    const trigger = supplierDropdownTriggerElements.get(sku)
-    if (trigger) {
-      positionSupplierDropdown(trigger)
-      nextTick(() => {
-        if (activeSupplierDropdownSku.value === sku) {
-          const dropdown = document.getElementById(`supplier-options-${sku}`)
-          positionSupplierDropdown(trigger, dropdown)
-        }
-      })
-    }
+function dropdownDomId(type, id) {
+  const prefixes = {
+    product: 'sku-products',
+    'new-product': 'empty-product-options',
+    supplier: 'supplier-options',
+  }
+  return `${prefixes[type]}-${id}`
+}
+
+function closeActiveDropdown() {
+  activeDropdown.value = null
+  dropdownPosition.value = {}
+}
+
+function closeDropdown(type, id) {
+  if (activeDropdown.value?.type === type && activeDropdown.value.id === id) {
+    closeActiveDropdown()
   }
 }
 
-function closeProductDropdown(sku = activeProductDropdownSku.value) {
-  if (activeProductDropdownSku.value === sku) {
-    activeProductDropdownSku.value = null
+function openDropdown(type, id, trigger) {
+  if (type !== 'supplier') {
+    closeSupplierPopover()
   }
+
+  if (activeDropdown.value?.type === type && activeDropdown.value.id === id) {
+    if (trigger) {
+      positionDropdown(
+        trigger,
+        document.getElementById(activeDropdown.value.domId),
+        type === 'supplier' ? 280 : 220,
+      )
+    }
+    return
+  }
+
+  const dropdown = { type, id, domId: dropdownDomId(type, id) }
+  activeDropdown.value = dropdown
+  if (trigger) {
+    positionDropdown(trigger, null, type === 'supplier' ? 280 : 220)
+  }
+  nextTick(() => {
+    if (trigger && activeDropdown.value?.type === type && activeDropdown.value.id === id) {
+      positionDropdown(
+        trigger,
+        document.getElementById(dropdown.domId),
+        type === 'supplier' ? 280 : 220,
+      )
+    }
+  })
+}
+
+function toggleSupplierDropdown(rowId) {
+  if (activeDropdown.value?.type === 'supplier' && activeDropdown.value.id === rowId) {
+    closeActiveDropdown()
+    return
+  }
+  openDropdown('supplier', rowId, getTriggerElement('supplier', rowId))
 }
 
 function defaultConfiguration() {
@@ -516,11 +497,11 @@ function defaultConfiguration() {
 }
 
 function openProductConfiguration(row, product, isNewProduct = false) {
-  closeProductDropdown()
-  activeEmptyProductDropdownId.value = null
-  configurationReturnFocus.value = isNewProduct
-    ? emptyProductDropdownTriggerElements.get(row.id)
-    : productDropdownTriggerElements.get(row.id)
+  closeActiveDropdown()
+  configurationReturnFocus.value = getTriggerElement(
+    isNewProduct ? 'new-product' : 'product',
+    row.id,
+  )
   productConfiguration.value = { row, product, isNewProduct }
   configurationDraft.value = {
     ...defaultConfiguration(),
@@ -536,16 +517,6 @@ function updateRowSku(row, sku) {
   }
 
   row.sku = sku
-  selectedSkus.value = selectedSkus.value.map((selectedSku) =>
-    selectedSku === previousSku ? sku : selectedSku,
-  )
-
-  const selectedSupplier = selectedSuppliers.value[previousSku]
-  if (selectedSupplier) {
-    const updatedSuppliers = { ...selectedSuppliers.value, [sku]: selectedSupplier }
-    delete updatedSuppliers[previousSku]
-    selectedSuppliers.value = updatedSuppliers
-  }
 }
 
 function setCustomSku(row, sku) {
@@ -566,7 +537,7 @@ function chooseProduct(row, product) {
   }
 
   applyProductSelection(row, product)
-  closeProductDropdown()
+  closeDropdown('product', row.id)
 }
 
 function chooseEmptyProduct(row, product) {
@@ -580,13 +551,14 @@ function chooseEmptyProduct(row, product) {
 
 function closeProductConfiguration(restoreFocus = true, closeEmptyDropdownAfterFocus = false) {
   const returnFocus = configurationReturnFocus.value
+  const rowId = productConfiguration.value?.row.id
   productConfiguration.value = null
   configurationReturnFocus.value = null
   if (restoreFocus && returnFocus) {
     nextTick(() => {
       returnFocus.focus()
       if (closeEmptyDropdownAfterFocus) {
-        activeEmptyProductDropdownId.value = null
+        closeDropdown('new-product', rowId)
       }
     })
   }
@@ -622,20 +594,6 @@ function filteredDummyProducts(row) {
   )
 }
 
-function openEmptyProductDropdown(row, trigger) {
-  closeProductDropdown()
-  closeSupplierPopover()
-  activeSupplierDropdownSku.value = null
-  activeEmptyProductDropdownId.value = row.id
-  positionProductDropdown(trigger)
-  nextTick(() => {
-    if (activeEmptyProductDropdownId.value === row.id) {
-      const dropdown = document.getElementById(`empty-product-options-${row.id}`)
-      positionProductDropdown(trigger, dropdown)
-    }
-  })
-}
-
 function selectDummyProduct(row, product) {
   Object.assign(row, {
     sku: product.configuredSku,
@@ -646,31 +604,20 @@ function selectDummyProduct(row, product) {
     orderedQty: 1,
     unitCost: product.unitCost,
   })
-  activeEmptyProductDropdownId.value = null
+  closeDropdown('new-product', row.id)
 }
 
 function openProductDropdown(id, trigger) {
-  closeSupplierPopover()
-  activeSupplierDropdownSku.value = null
-  activeEmptyProductDropdownId.value = null
-  activeProductDropdownSku.value = id
-  positionProductDropdown(trigger)
-  nextTick(() => {
-    if (activeProductDropdownSku.value === id) {
-      const dropdown = document.getElementById(`sku-products-${id}`)
-      positionProductDropdown(trigger, dropdown)
-    }
-  })
+  openDropdown('product', id, trigger)
+}
+
+function openEmptyProductDropdown(row, trigger) {
+  openDropdown('new-product', row.id, trigger)
 }
 </script>
 
 <template>
-      <section
-        class="procurement-table-section"
-        aria-labelledby="procurement-table-title"
-        @click.window="closeSupplierPopoverOutside"
-        @resize.passive.window="repositionActiveSupplierPopover"
-      >
+      <section class="procurement-table-section" aria-labelledby="procurement-table-title">
         <div class="table-heading">
           <div>
             <h2 id="procurement-table-title">Material Procurement Workflow</h2>
@@ -716,107 +663,64 @@ function openProductDropdown(id, trigger) {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in procurementRows" :key="row.id" :class="{ 'is-selected': selectedSkus.includes(row.sku) }">
+              <tr v-for="row in procurementRows" :key="row.id" :class="{ 'is-selected': selectedRowIds.includes(row.id) }">
                 <td class="select-cell">
                   <input
-                    v-model="selectedSkus"
+                    v-model="selectedRowIds"
                     type="checkbox"
-                    :value="row.sku"
+                    :value="row.id"
                     :aria-label="`Select ${row.sku}`"
                   />
                 </td>
                 <th scope="row" class="sku-cell">
-                  <div class="sku-entry">
-                    <input
-                      :ref="(element) => setProductDropdownTriggerElement(row.id, element)"
-                      :value="productDisplayName(row)"
-                      class="sku-cell-input"
-                      type="text"
-                      role="combobox"
-                      aria-autocomplete="list"
-                      :aria-expanded="activeProductDropdownSku === row.id && filteredDummyProducts(row).length > 0"
-                      :aria-controls="`sku-products-${row.id}`"
-                      :aria-label="`SKU for ${row.brand} product row`"
-                      @input="setCustomSku(row, $event.target.value)"
-                      @focus="openProductDropdown(row.id, $event.currentTarget)"
-                      @click.stop="openProductDropdown(row.id, $event.currentTarget)"
-                      @keydown.esc="closeProductDropdown(row.id)"
-                    />
-                    <span v-if="row.productType === 'NCP'" class="sku-nugget sku-nugget--ncp">
-                      <b>NCP</b>
-                    </span>
-                  </div>
-                  <Teleport to="body">
-                    <div
-                      v-if="activeProductDropdownSku === row.id && filteredDummyProducts(row).length > 0"
-                      :id="`sku-products-${row.id}`"
-                      class="sku-product-options"
-                      :style="productDropdownPosition"
-                      role="listbox"
-                      aria-label="Products"
-                    >
-                      <div
-                        v-for="product in filteredDummyProducts(row)"
-                        :key="product.sku"
-                        class="sku-product-option"
-                        role="option"
-                        :aria-selected="row.sku === product.configuredSku"
-                        tabindex="0"
-                        @mousedown.prevent
-                        @click.stop="chooseProduct(row, product)"
-                        @keydown.enter.stop="chooseProduct(row, product)"
-                        @keydown.space.prevent.stop="chooseProduct(row, product)"
-                      >
-                        <div class="supplier-option-description">
-                          <div class="supplier-option-heading">
-                            <span><b>{{ product.sku }}</b></span>
-                            <span
-                              v-if="product.productType === 'Configurable'"
-                              class="supplier-option-badge supplier-option-badge--configurable"
-                            ><b>Configurable</b></span>
-                          </div>
-                          <div class="supplier-option-meta">
-                            <span class="supplier-option-brand">{{ product.brand }}</span>
-                            <span class="supplier-option-separator" aria-hidden="true"></span>
-                            <span class="sku-product-supplier">{{ product.supplier }}</span>
-                          </div>
-                        </div>
-                        <div class="supplier-option-price">
-                          <span><b>{{ formatCurrency(product.unitCost) }}</b></span>
-                        </div>
-                      </div>
-                    </div>
-                  </Teleport>
+                  <ProductPicker
+                    :id="`sku-products-${row.id}`"
+                    :model-value="productDisplayName(row)"
+                    :selected-sku="row.sku"
+                    :products="filteredDummyProducts(row)"
+                    :active="activeDropdown?.type === 'product' && activeDropdown.id === row.id"
+                    :position="dropdownPosition"
+                    input-class="sku-cell-input"
+                    :aria-label="`SKU for ${row.brand} product row`"
+                    list-label="Products"
+                    :show-ncp-badge="row.productType === 'NCP'"
+                    show-configurable-badge
+                    @trigger-change="setTriggerElement('product', row.id, $event)"
+                    @update:model-value="setCustomSku(row, $event)"
+                    @open="openProductDropdown(row.id, $event)"
+                    @close="closeDropdown('product', row.id)"
+                    @select="chooseProduct(row, $event)"
+                  />
                 </th>
                 <td>{{ row.brand }}</td>
                 <td class="supplier-cell">
                   <div
-                    :ref="(element) => setSupplierDropdownTriggerElement(row.sku, element)"
+                    :ref="(element) => setTriggerElement('supplier', row.id, element)"
                     class="supplier-cell-content"
-                    @click.stop="openDropdown(row.sku)"
+                    @click.stop="toggleSupplierDropdown(row.id)"
                   >
                     <button
                       class="supplier-name"
                       type="button"
                       aria-haspopup="listbox"
-                      :aria-expanded="activeSupplierDropdownSku === row.sku"
-                      :aria-controls="`supplier-options-${row.sku}`"
+                      :aria-expanded="activeDropdown?.type === 'supplier' && activeDropdown.id === row.id"
+                      :aria-controls="`supplier-options-${row.id}`"
                     >
                       {{ supplierName(row) }}
                     </button>
                     <button
                       v-if="row.productType !== 'NCP' && supplierName(row) !== 'Beacon Supply' && supplierSavings(row) > 0"
-                      :ref="(element) => setSupplierTriggerElement(row.sku, element)"
+                      :ref="(element) => setTriggerElement('supplier-popover', row.id, element)"
                       class="supplier-save-pill"
                       type="button"
                       aria-haspopup="dialog"
-                      :aria-expanded="activeSupplierPopoverSku === row.sku"
-                      @mouseenter="showSupplierPopover(row.sku, $event.currentTarget)"
-                      @mouseleave="scheduleSupplierPopoverClose(row.sku)"
-                      @focus="showSupplierPopover(row.sku, $event.currentTarget)"
-                      @blur="scheduleSupplierPopoverClose(row.sku)"
-                      @click.stop="toggleSupplierPopover(row.sku, $event.currentTarget)"
-                      @keydown.esc="closeSupplierPopover(row.sku)"
+                      :aria-expanded="activeSupplierPopoverRowId === row.id"
+                      @mouseenter="showSupplierPopover(row.id, $event.currentTarget)"
+                      @mouseleave="scheduleSupplierPopoverClose(row.id)"
+                      @focus="showSupplierPopover(row.id, $event.currentTarget)"
+                      @blur="scheduleSupplierPopoverClose(row.id)"
+                      @click.stop="toggleSupplierPopover(row.id, $event.currentTarget)"
+                      @keydown.esc="closeSupplierPopover(row.id)"
                     >Switch & save {{ formatCurrency(supplierSavings(row)) }}
                       <svg aria-hidden="true" viewBox="0 0 16 16" fill="none">
                         <circle cx="8" cy="8" r="6.25" />
@@ -825,10 +729,10 @@ function openProductDropdown(id, trigger) {
                     </button>
                     <Teleport to="body">
                       <div
-                        v-if="activeSupplierDropdownSku === row.sku"
-                        :id="`supplier-options-${row.sku}`"
+                        v-if="activeDropdown?.type === 'supplier' && activeDropdown.id === row.id"
+                        :id="`supplier-options-${row.id}`"
                         class="supplier-options"
-                        :style="supplierDropdownPosition"
+                        :style="dropdownPosition"
                         role="listbox"
                         :aria-label="`Available suppliers for ${row.sku}`"
                       >
@@ -899,16 +803,16 @@ function openProductDropdown(id, trigger) {
                   </div>
                   <Teleport to="body">
                     <div
-                      v-if="activeSupplierPopoverSku === row.sku && row.productType !== 'NCP'"
+                      v-if="activeSupplierPopoverRowId === row.id && row.productType !== 'NCP'"
                       class="supplier-popover"
                       :style="supplierPopoverPosition"
                       role="dialog"
                       :aria-label="`Supplier comparison for ${row.sku}`"
-                      @mouseenter="showSupplierPopover(row.sku, supplierTriggerElements.get(row.sku))"
-                      @mouseleave="scheduleSupplierPopoverClose(row.sku)"
-                      @focusin="showSupplierPopover(row.sku, supplierTriggerElements.get(row.sku))"
-                      @focusout="scheduleSupplierPopoverClose(row.sku)"
-                      @keydown.esc="closeSupplierPopover(row.sku)"
+                      @mouseenter="showSupplierPopover(row.id, getTriggerElement('supplier-popover', row.id))"
+                      @mouseleave="scheduleSupplierPopoverClose(row.id)"
+                      @focusin="showSupplierPopover(row.id, getTriggerElement('supplier-popover', row.id))"
+                      @focusout="scheduleSupplierPopoverClose(row.id)"
+                      @keydown.esc="closeSupplierPopover(row.id)"
                     >
                       <div class="supplier-popover-header">
                         <p class="supplier-popover-title"><b>Save {{ formatCurrency(supplierSavings(row)) }} with Beacon Supply</b>
@@ -933,7 +837,7 @@ function openProductDropdown(id, trigger) {
                           class="supplier-switch-button"
                           type="button"
                           :disabled="supplierName(row) === 'Beacon Supply'"
-                          @click="switchSupplier(row.sku)"
+                          @click="switchSupplier(row)"
                         >
                           {{ supplierName(row) === 'Beacon Supply' ? 'Beacon Supply selected' : 'Switch to Beacon Supply' }}
                         </button>
@@ -958,64 +862,24 @@ function openProductDropdown(id, trigger) {
                   />
                 </td>
                 <th scope="row" class="sku-cell">
-                  <div class="sku-entry">
-                    <input
-                      :ref="(element) => setEmptyProductDropdownTriggerElement(row.id, element)"
-                      :value="row.sku"
-                      class="empty-product-sku-input"
-                      type="text"
-                      placeholder="Select or search for product"
-                      role="combobox"
-                      aria-autocomplete="list"
-                      :aria-expanded="activeEmptyProductDropdownId === row.id && filteredDummyProducts(row).length > 0"
-                      :aria-controls="`empty-product-options-${row.id}`"
-                      :aria-label="`SKU for new product row ${row.id}`"
-                      @input="setCustomSku(row, $event.target.value)"
-                      @focus="openEmptyProductDropdown(row, $event.currentTarget)"
-                      @click.stop="openEmptyProductDropdown(row, $event.currentTarget)"
-                      @keydown.esc="activeEmptyProductDropdownId = null"
-                    />
-                    <span v-if="row.productType === 'NCP'" class="sku-nugget sku-nugget--ncp">
-                      <b>NCP</b>
-                    </span>
-                  </div>
-                  <Teleport to="body">
-                    <div
-                      v-if="activeEmptyProductDropdownId === row.id && filteredDummyProducts(row).length > 0"
-                      :id="`empty-product-options-${row.id}`"
-                      class="sku-product-options"
-                      :style="productDropdownPosition"
-                      role="listbox"
-                      aria-label="Dummy products"
-                    >
-                      <div
-                        v-for="product in filteredDummyProducts(row)"
-                        :key="product.sku"
-                        class="sku-product-option"
-                        role="option"
-                        :aria-selected="product.configuredSku === row.sku"
-                        tabindex="0"
-                        @mousedown.prevent
-                        @click.stop="chooseEmptyProduct(row, product)"
-                        @keydown.enter.stop="chooseEmptyProduct(row, product)"
-                        @keydown.space.prevent.stop="chooseEmptyProduct(row, product)"
-                      >
-                        <div class="supplier-option-description">
-                          <div class="supplier-option-heading">
-                            <span><b>{{ product.sku }}</b></span>
-                          </div>
-                          <div class="supplier-option-meta">
-                            <span class="supplier-option-brand">{{ product.brand }}</span>
-                            <span class="supplier-option-separator" aria-hidden="true"></span>
-                            <span class="sku-product-supplier">{{ product.supplier }}</span>
-                          </div>
-                        </div>
-                        <div class="supplier-option-price">
-                          <span><b>{{ formatCurrency(product.unitCost) }}</b></span>
-                        </div>
-                      </div>
-                    </div>
-                  </Teleport>
+                  <ProductPicker
+                    :id="`empty-product-options-${row.id}`"
+                    :model-value="row.sku"
+                    :selected-sku="row.sku"
+                    :products="filteredDummyProducts(row)"
+                    :active="activeDropdown?.type === 'new-product' && activeDropdown.id === row.id"
+                    :position="dropdownPosition"
+                    input-class="empty-product-sku-input"
+                    placeholder="Select or search for product"
+                    :aria-label="`SKU for new product row ${row.id}`"
+                    list-label="Dummy products"
+                    :show-ncp-badge="row.productType === 'NCP'"
+                    @trigger-change="setTriggerElement('new-product', row.id, $event)"
+                    @update:model-value="setCustomSku(row, $event)"
+                    @open="openEmptyProductDropdown(row, $event)"
+                    @close="closeDropdown('new-product', row.id)"
+                    @select="chooseEmptyProduct(row, $event)"
+                  />
                 </th>
                 <td>{{ row.brand || (row.unitCost == null ? '-' : '') }}</td>
                 <td>
@@ -1331,16 +1195,6 @@ function openProductDropdown(id, trigger) {
   font-weight: 600;
 }
 
-.sku-entry {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 0.35rem;
-  min-width: 0;
-}
-
-.sku-cell-input,
-.empty-product-sku-input,
 .empty-product-supplier-input {
   display: block;
   flex: 1 1 auto;
@@ -1368,47 +1222,10 @@ function openProductDropdown(id, trigger) {
   outline-offset: -2px;
 }
 
-.sku-cell-input:focus-visible,
-.empty-product-sku-input:focus-visible,
 .empty-product-supplier-input:focus-visible {
   outline: none;
 }
 
-.sku-value {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sku-nugget {
-  flex: 0 0 auto;
-  padding: 0.12rem 0.3rem;
-  white-space: nowrap;
-  border-radius: 3px;
-  background: #f0f1ed;
-  color: #5d6258;
-  font-size: 0.52rem;
-  font-weight: 600;
-}
-
-.sku-nugget--flat {
-  background: #f0f1ed;
-  color: #5d6258;
-}
-
-.sku-nugget--configurable {
-  background: #e7f0f5;
-  color: #315d78;
-}
-
-.sku-nugget--ncp {
-  background: #e8e9ff;
-  color: #4b4edb;
-}
-
-.sku-product-options,
 .supplier-options {
   position: fixed;
   z-index: 1100;
@@ -1457,7 +1274,6 @@ function openProductDropdown(id, trigger) {
   text-overflow: ellipsis;
 }
 
-.sku-cell-input:focus,
 .supplier-name:focus {
   outline: none;
   box-shadow: none;
@@ -1473,7 +1289,6 @@ function openProductDropdown(id, trigger) {
   stroke-width: 1.5;
 }
 
-.sku-product-option:focus-visible,
 .supplier-option:focus-visible {
   border-radius: 3px;
   outline: 2px solid #7550c8;
@@ -1482,11 +1297,6 @@ function openProductDropdown(id, trigger) {
 
 .supplier-options {
   display: grid;
-}
-
-.sku-product-options {
-  display: grid;
-  overflow-x: hidden;
 }
 
 .configuration-modal-backdrop {
@@ -1623,7 +1433,6 @@ function openProductDropdown(id, trigger) {
   color: #fff;
 }
 
-.sku-product-option,
 .supplier-option {
   display: flex;
   min-width: 0;
@@ -1642,47 +1451,9 @@ function openProductDropdown(id, trigger) {
   white-space: nowrap;
 }
 
-.sku-product-option .supplier-option-price {
-  align-self: flex-start;
-}
-
-.sku-product-option .supplier-option-description {
-  flex: 1 1 auto;
-  overflow: hidden;
-}
-
-.sku-product-option .supplier-option-heading {
-  min-width: 0;
-  overflow: hidden;
-  flex-wrap: nowrap;
-}
-
-.sku-product-option .supplier-option-heading > span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sku-product-option .supplier-option-heading > .supplier-option-badge {
-  flex: 0 0 auto;
-  overflow: visible;
-  text-overflow: clip;
-}
-
-.sku-product-option .supplier-option-price {
-  margin-left: 0;
-}
-
-.sku-product-option:hover,
-.sku-product-option[aria-selected='true'],
 .supplier-option:hover,
 .supplier-option[aria-selected='true'] {
   background: #f0f4ef;
-}
-
-.sku-product-supplier {
-  color: #60665f;
-  font-size: 0.6rem;
 }
 
 .supplier-option-layout {
