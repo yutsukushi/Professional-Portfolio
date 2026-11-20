@@ -618,15 +618,6 @@ function openEmptyProductDropdown(row, trigger) {
 
 <template>
       <section class="procurement-table-section" aria-labelledby="procurement-table-title">
-        <div class="table-heading">
-          <div>
-            <h2 id="procurement-table-title">Material Procurement Workflow</h2>
-            <p class="table-intro">One familiar spreadsheet view for the details that keep a project moving.</p>
-          </div>
-          <!-- <span class="table-project-label">HARBOR HOUSE <strong>· 04</strong></span> -->
-        </div>
-
-        <!-- <div class="table-scroll-hint"><span aria-hidden="true">↔</span> Scroll to see all material details</div> -->
         <div class="procurement-table-scroll" tabindex="0" role="region" aria-label="Material schedule table, scroll horizontally to see more columns">
           <table class="procurement-table" aria-label="Harbor House material schedule">
             <colgroup>
