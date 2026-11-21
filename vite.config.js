@@ -11,15 +11,15 @@ export default defineConfig({
         portfolio: resolve(process.cwd(), 'index.html'),
         materialProcurementWorkflow: resolve(
           process.cwd(),
-          'pages/material-procurement-workflow.html',
+          'case-studies/material-procurement-workflow.html',
         ),
         erpDataTranslation: resolve(
           process.cwd(),
-          'pages/self-service-erp-data-translation.html',
+          'case-studies/self-service-erp-data-translation.html',
         ),
         promotionsAuthoringSystem: resolve(
           process.cwd(),
-          'pages/promotions-authoring-system.html',
+          'case-studies/promotions-authoring-system.html',
         ),
       },
     },
