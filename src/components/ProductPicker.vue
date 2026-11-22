@@ -8,6 +8,10 @@ defineProps({
     type: String,
     default: '',
   },
+  title: {
+    type: String,
+    default: '',
+  },
   selectedSku: {
     type: String,
     default: '',
@@ -67,6 +71,7 @@ function setInputElement(element) {
       :ref="setInputElement"
       :value="modelValue"
       :class="inputClass"
+      :title="title"
       type="text"
       :placeholder="placeholder"
       role="combobox"

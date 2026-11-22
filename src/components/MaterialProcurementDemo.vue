@@ -5,7 +5,7 @@ import ProductPicker from './ProductPicker.vue'
 const initialProcurementRows = [
   {
     id: 'procurement-1',
-    sku: 'F-1100-2IN-BRONZE',
+    sku: 'FS-2400-2IN-BRONZE',
     productType: 'Configurable',
     brand: 'Acme',
     supplier: 'Central Supply',
@@ -93,8 +93,8 @@ const procurementRows = reactive(structuredClone(initialProcurementRows))
 
 const dummyProducts = [
   {
-    sku: 'F-1100####################',
-    configuredSku: 'F-1100-2IN-BRONZE',
+    sku: 'FS-2400####################',
+    configuredSku: 'FS-2400-2IN-BRONZE',
     productType: 'Configurable',
     brand: 'Northstar Instruments',
     supplier: 'Summit Supply',
@@ -127,11 +127,11 @@ const dummyProducts = [
 ]
 
 const configurationFields = [
-  { label: 'Output', options: ['Frequency & Scaled Pulse Dry Contact Output', 'Analog 4–20 mA Output', 'Pulse Output'] },
-  { label: 'Flow Size Range', options: ['1/2–2.5 in', '1/2–1.5 in', '2–4 in'] },
-  { label: 'Wetted Material', options: ['Nickel Plated Brass', 'Stainless Steel', 'Bronze'] },
-  { label: 'Enclosure', options: ['NEMA 4 Weatherproof Enclosure', 'NEMA 1 Indoor Enclosure', 'NEMA 4X Corrosion Resistant'] },
-  { label: 'Wiring Connection', options: ['1/2 in NPT, Jacketed Cable With 1/2 in Conduit Adapter', 'Terminal Block', 'M12 Connector'] },
+  { label: 'Output Signal', options: ['Pulse', 'Analog (4–20 mA)', 'Modbus RTU'] },
+  { label: 'Pipe Size', options: ['2 in', '1 in', '3 in', '4 in'] },
+  { label: 'Sensor Material', options: ['Bronze', 'Stainless Steel', 'Composite'] },
+  { label: 'Connection Type', options: ['NPT threaded', 'Flanged', 'Grooved'] },
+  { label: 'Cable Length', options: ['10 ft', '3 ft', '20 ft'] },
 ]
 
 const selectedRowIds = ref([])
@@ -618,7 +618,7 @@ function openEmptyProductDropdown(row, trigger) {
 
 <template>
       <section class="procurement-table-section" aria-labelledby="procurement-table-title">
-      <p style="font-size: 14px;">Partial demo to capture the essence of the Material Procurement workflow.</p>
+      <p style="font-size: 14px;">A simplified walkthrough of the material procurement experience.</p>
         <div class="procurement-table-scroll" tabindex="0" role="region" aria-label="Material schedule table, scroll horizontally to see more columns">
           <table class="procurement-table" aria-label="Harbor House material schedule">
             <colgroup>
@@ -670,6 +670,7 @@ function openEmptyProductDropdown(row, trigger) {
                   <ProductPicker
                     :id="`sku-products-${row.id}`"
                     :model-value="productDisplayName(row)"
+                    :title="row.sku"
                     :selected-sku="row.sku"
                     :products="filteredDummyProducts(row)"
                     :active="activeDropdown?.type === 'product' && activeDropdown.id === row.id"
@@ -870,6 +871,7 @@ function openEmptyProductDropdown(row, trigger) {
                   <ProductPicker
                     :id="`empty-product-options-${row.id}`"
                     :model-value="row.sku"
+                    :title="row.sku"
                     :selected-sku="row.sku"
                     :products="filteredDummyProducts(row)"
                     :active="activeDropdown?.type === 'new-product' && activeDropdown.id === row.id"
@@ -918,10 +920,6 @@ function openEmptyProductDropdown(row, trigger) {
           >
             <span aria-hidden="true">+</span> Add Product
           </button>
-        </div>
-        <div class="table-footer">
-          <!-- <span><span class="table-footer-dot"></span> Project material list</span> -->
-          <span>Costs shown in USD · Sample data</span>
           <button class="reset-demo-button" type="button" @click="resetDemo">Reset demo</button>
         </div>
       </section>
@@ -1258,20 +1256,17 @@ function openEmptyProductDropdown(row, trigger) {
 .supplier-availability-pill {
   border: 1px solid #9de5c4;
   background: #effbf5;
-  color: #087f5b;
 }
 
 .supplier-availability-pill--low-stock {
   border-color: #f2d394;
   background: #fff8e9;
-  color: #8a5c14;
 }
 
 .supplier-availability-pill--backordered,
 .supplier-availability-pill--out-of-stock {
   border-color: #ffb1b8;
   background: #fff5f5;
-  color: #c63f4b;
 }
 
 .supplier-availability-dot {
@@ -1279,7 +1274,6 @@ function openEmptyProductDropdown(row, trigger) {
   height: 6px;
   flex: 0 0 auto;
   border-radius: 50%;
-  background: currentColor;
 }
 
 .supplier-availability-empty {
@@ -1580,26 +1574,7 @@ function openEmptyProductDropdown(row, trigger) {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #286238;
   font-size: 0.625rem;
-}
-
-.supplier-option-stock--low-stock {
-  color: #9a6a25;
-}
-
-.supplier-option-stock--low-stock .supplier-option-stock-dot {
-  background: #c48742;
-}
-
-.supplier-option-stock--backordered,
-.supplier-option-stock--out-of-stock {
-  color: #a34a3f;
-}
-
-.supplier-option-stock--backordered .supplier-option-stock-dot,
-.supplier-option-stock--out-of-stock .supplier-option-stock-dot {
-  background: #c65e51;
 }
 
 .supplier-option-stock-dot {
@@ -1607,6 +1582,39 @@ function openEmptyProductDropdown(row, trigger) {
   height: 5px;
   flex: 0 0 auto;
   border-radius: 50%;
+}
+
+.supplier-option-stock,
+.supplier-availability-pill {
+  color: #286238;
+}
+
+.supplier-option-stock--low-stock,
+.supplier-availability-pill--low-stock {
+  color: #9a6a25;
+}
+
+.supplier-option-stock--low-stock .supplier-option-stock-dot,
+.supplier-availability-pill--low-stock .supplier-availability-dot {
+  background: #c48742;
+}
+
+.supplier-option-stock--backordered,
+.supplier-option-stock--out-of-stock,
+.supplier-availability-pill--backordered,
+.supplier-availability-pill--out-of-stock {
+  color: #a34a3f;
+}
+
+.supplier-option-stock--backordered .supplier-option-stock-dot,
+.supplier-option-stock--out-of-stock .supplier-option-stock-dot,
+.supplier-availability-pill--backordered .supplier-availability-dot,
+.supplier-availability-pill--out-of-stock .supplier-availability-dot {
+  background: #c65e51;
+}
+
+.supplier-option-stock-dot,
+.supplier-availability-dot {
   background: #278148;
 }
 
@@ -1872,24 +1880,10 @@ function openEmptyProductDropdown(row, trigger) {
   color: #282a32;
 }
 
-.table-footer {
-  display: flex;
-  min-height: 40px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-inline: 0.7rem;
-  border: 1px solid #e0e3dc;
-  border-top: 0;
-  background: #fff;
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 0.51rem;
-}
-
 .table-actions {
   display: flex;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
   padding: 0.55rem 0.7rem;
   border: 1px solid #e0e3dc;
   border-top: 0;
@@ -1934,12 +1928,6 @@ function openEmptyProductDropdown(row, trigger) {
   line-height: 1;
 }
 
-.table-footer > span:first-child {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
 .reset-demo-button {
   padding: 0;
   border: 0;
@@ -1947,6 +1935,7 @@ function openEmptyProductDropdown(row, trigger) {
   color: #315d78;
   cursor: pointer;
   font: inherit;
+  font-size: 0.65rem;
   white-space: nowrap;
 }
 
@@ -1960,10 +1949,4 @@ function openEmptyProductDropdown(row, trigger) {
   outline-offset: 3px;
 }
 
-.table-footer-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #7a9b77;
-}
 </style>

@@ -2,6 +2,10 @@
 import { ref } from 'vue'
 import projectTableNew from '../assets/images/table-visuals/table-new.png'
 import projectTableOld from '../assets/images/table-visuals/table-old.png'
+import productSearchInteraction from '../assets/images/table-visuals/Frame 70.png'
+import supplierOffersInteraction from '../assets/images/table-visuals/Frame 71.png'
+import supplierSavingsInteraction from '../assets/images/table-visuals/Frame 72.png'
+import supplierAvailabilityInteraction from '../assets/images/table-visuals/Frame 75.png'
 import MaterialProcurementDemo from './components/MaterialProcurementDemo.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
@@ -11,24 +15,51 @@ const projectTableImages = [
     src: projectTableOld,
     alt: 'Project table - old design',
     fit: 'contain',
-    label: 'Before',
+    label: 'Before: Tracking Materials',
     points: [
-      'Mostly uneditable product rows (Users have the ability to adjust quantity and add/remove tags)',
-      'Clicking on a product name redirects users to a product details page where they can edit product information',
+      'Limited editing within the project table',
+      'Product changes required navigating to separate workflows',
+      'Procurement information was disconnected from the material management'
     ],
   },
   {
     src: projectTableNew,
     alt: 'Project table - new design',
     fit: 'cover',
-    label: 'After',
+    prominent: true,
+    label: 'After: Managing Materials',
     points: [
-      'Edit quantities, tags, supplier notes, and more in the table.',
-      'Switch between suppliers and brands without leaving the table.',
-      'Review supplier availability, lead times, pricing, and discounts alongside materials.',
-      'Replace a product row entirely by searching and selecting from the Item SKU cell',
-      'Manage catalog, non-catalog, and configurable products in the same workflow.',
+      'Edit and manage materials directly in the table',
+      'Compare suppliers, pricing and availaibility in context',
+      'Replace products without leaving the workflow',
+      'Manage catalog, non-catalog, and configurable products in a consistent experience'
     ],
+  },
+]
+
+const keyInteractionDiagram = {
+  src: supplierAvailabilityInteraction,
+  alt: 'Material row with arrows pointing to three key interaction examples',
+}
+
+const keyInteractions = [
+  {
+    title: 'Search and configure products',
+    description: 'Manage catalog, non-catalog, and configurable products from a single workflow without leaving the workspace.',
+    src: productSearchInteraction,
+    alt: 'Product search results with configurable catalog items',
+  },
+  {
+    title: 'Compare supplier offers',
+    description: 'Compare supplier pricing, availability, and product alerts without leaving the table.',
+    src: supplierOffersInteraction,
+    alt: 'Supplier offer list showing stock, alerts, prices, and savings',
+  },
+  {
+    title: 'Review savings before switching',
+    description: 'Review recommended supplier substitutions and switch instantly when savings opportunities are identified.',
+    src: supplierSavingsInteraction,
+    alt: 'Supplier comparison popover with price, stock, alerts, and switch action',
   },
 ]
 
@@ -62,7 +93,7 @@ function closeImage() {
       </div>
       <div>
         <h5 class="case-study-label">Responsibilities</h5>
-        <ul class="case-study-text">
+        <ul class="case-study-text case-study-responsibilities" role="list">
           <li>UX/UI Design</li>
           <li>Frontend Development</li>
           <li>API and data modeling</li>
@@ -106,12 +137,18 @@ function closeImage() {
         >
           <button
             class="project-table-image-button"
-            :class="`project-table-image-button--${image.fit}`"
+            :class="[
+              `project-table-image-button--${image.fit}`,
+              { 'project-table-image-button--prominent': image.prominent },
+            ]"
             type="button"
             :aria-label="`View full-size image: ${image.alt}`"
             @click="openImage(image)"
           >
-            <img :src="image.src" :alt="image.alt" />
+            <span class="project-table-image-frame">
+              <img :src="image.src" :alt="image.alt" />
+              <span class="project-table-image-helper" aria-hidden="true">Click to view full image</span>
+            </span>
           </button>
           <figcaption class="project-table-gallery-caption">
             <h5 class="case-study-label">{{ image.label }}</h5>
@@ -121,6 +158,45 @@ function closeImage() {
           </figcaption>
         </figure>
       </div>
+      <section class="key-interactions" aria-labelledby="key-interactions-title">
+        <h4 id="key-interactions-title" class="case-study-subheading">Key Interactions</h4>
+        <p class="case-study-text">Procurement workflows were embedded directly into each material row, allowing users to source products, compare suppliers, and act on cost-saving opportunities without leaving the workspace.</p>
+        <div
+          class="key-interactions-scroll"
+          tabindex="0"
+          role="region"
+          aria-label="Key interactions diagram. Scroll horizontally to view all three interaction examples."
+        >
+          <div class="key-interaction-diagram">
+            <button
+              class="key-interaction-source-button"
+              type="button"
+              :aria-label="`View full-size image: ${keyInteractionDiagram.alt}`"
+              @click="openImage(keyInteractionDiagram)"
+            >
+              <img :src="keyInteractionDiagram.src" :alt="keyInteractionDiagram.alt" />
+            </button>
+            <div class="key-interactions-grid">
+              <article
+                v-for="interaction in keyInteractions"
+                :key="interaction.title"
+                class="key-interaction-card"
+              >
+                <button
+                  class="key-interaction-image-button"
+                  type="button"
+                  :aria-label="`View full-size image: ${interaction.alt}`"
+                  @click="openImage(interaction)"
+                >
+                  <img :src="interaction.src" :alt="interaction.alt" />
+                </button>
+                <h5 class="case-study-label">{{ interaction.title }}</h5>
+                <p class="case-study-text">{{ interaction.description }}</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
     </section>
     <section class="case-study-section">
       <h4>Trade-offs</h4>
@@ -153,7 +229,7 @@ function closeImage() {
     <dialog
       ref="imageDialog"
       class="project-image-dialog"
-      aria-label="Full-size project table image"
+      aria-label="Full-size project image"
       @click="closeImage"
       @close="selectedImage = null"
     >
@@ -177,7 +253,7 @@ function closeImage() {
 .project-table-gallery {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 4rem;
   width: 100%;
   margin: 3rem 0;
 }
@@ -187,25 +263,156 @@ function closeImage() {
   margin: 0;
 }
 
-.project-table-gallery-caption ul {
-  margin: 0;
-  padding-left: 1.25rem;
+.key-interactions {
+  margin-top: 3rem;
 }
 
-.project-table-image-button {
+.key-interactions-scroll {
+  overflow-x: auto;
+}
+
+.key-interaction-diagram {
+  padding: 0.65rem;
+  border: 1px solid #dfe3dc;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgb(32 39 32 / 8%);
+}
+
+.key-interaction-source-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.key-interaction-source-button img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.key-interactions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.key-interaction-card {
+  min-width: 0;
+}
+
+.key-interaction-card .case-study-label {
+  margin-top: 0.75rem;
+}
+
+.key-interaction-card .case-study-text {
+  margin: 0;
+}
+
+.key-interaction-image-button {
+  display: block;
   width: 100%;
   aspect-ratio: 16 / 10;
   padding: 0;
   overflow: hidden;
-  border: 0;
+  border: 1px solid #dfe3dc;
   border-radius: 6px;
-  background: transparent;
+  background: #fff;
+  box-shadow: 0 2px 8px rgb(32 39 32 / 8%);
   cursor: zoom-in;
-  transition: transform 180ms ease;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.key-interaction-image-button img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.key-interaction-image-button:hover,
+.key-interaction-image-button:focus-visible {
+  box-shadow: 0 5px 14px rgb(32 39 32 / 12%);
+  transform: translateY(-3px);
+}
+
+.key-interaction-image-button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+ul.case-study-text {
+  padding-inline-start: 1.25rem;
+}
+
+ul.case-study-text.case-study-responsibilities {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.case-study-responsibilities li + li::before {
+  margin: 0 0.45rem;
+  color: var(--muted);
+  content: '·';
+}
+
+.project-table-gallery-caption ul {
+  margin: 0;
+}
+
+.project-table-image-button {
+  display: block;
+  width: 100%;
+  padding: 0.65rem;
+  border: 1px solid #dfe3dc;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgb(32 39 32 / 8%);
+  cursor: zoom-in;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.project-table-image-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.project-table-image-button--prominent {
+  border-color: #c3d0c4;
+  background: #f1f7f3;
+  box-shadow: 0 3px 10px rgb(32 39 32 / 12%);
+}
+
+.project-table-image-helper {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 4px;
+  background: rgb(32 39 32 / 85%);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  pointer-events: none;
 }
 
 .project-table-image-button:hover,
 .project-table-image-button:focus-visible {
+  box-shadow: 0 5px 14px rgb(32 39 32 / 12%);
   transform: translateY(-3px);
 }
 
@@ -215,6 +422,7 @@ function closeImage() {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  transform: scale(1.15);
 }
 
 .project-table-image-button--contain img {
@@ -223,6 +431,7 @@ function closeImage() {
 
 .project-table-image-button--cover img {
   object-position: 9% center;
+  transform-origin: 9% center;
 }
 
 .project-table-image-button:focus-visible {
@@ -239,7 +448,7 @@ function closeImage() {
   overflow: auto;
   border: 0;
   border-radius: 0;
-  background: transparent;
+  background: white;
 }
 
 .project-image-dialog::backdrop {
@@ -258,10 +467,15 @@ function closeImage() {
   .project-table-gallery {
     grid-template-columns: 1fr;
   }
+
+  .key-interaction-diagram {
+    min-width: 720px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .project-table-image-button {
+  .project-table-image-button,
+  .key-interaction-image-button {
     transition: none;
   }
 }
