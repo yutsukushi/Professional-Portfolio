@@ -31,17 +31,22 @@ defineProps({
   </header>
 
   <header v-else class="site-header site-header--case-study">
-    <RouterLink class="site-header-wordmark" to="/" aria-label="Yukie Kushibiki, home">YK<span>.</span></RouterLink>
-    <nav aria-label="Case study navigation">
-      <RouterLink :to="{ path: '/', hash: '#work' }">Work</RouterLink>
-      <RouterLink :to="{ path: '/', hash: '#resume' }">Resume</RouterLink>
-      <RouterLink :to="{ path: '/', hash: '#about' }">About Me</RouterLink>
-    </nav>
+    <div class="site-header-inner">
+      <RouterLink class="site-header-wordmark" to="/" aria-label="Yukie Kushibiki, home">Yukie Kushibiki<span>.</span></RouterLink>
+      <nav class="site-nav" aria-label="Case study navigation">
+        <ul>
+          <li><RouterLink :to="{ path: '/', hash: '#work' }">Work</RouterLink></li>
+          <li><RouterLink :to="{ path: '/', hash: '#resume' }">Resume</RouterLink></li>
+          <li><RouterLink :to="{ path: '/', hash: '#about' }">About Me</RouterLink></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 </template>
 
 <style scoped>
-.site-header--home {
+.site-header--home,
+.site-header--case-study {
   margin: 2rem 0 0;
 }
 
@@ -114,50 +119,14 @@ defineProps({
   text-shadow: 0 0 12px rgb(200 93 64 / 35%);
 }
 
-.site-header--case-study,
-.site-header--case-study nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.site-header--case-study {
-  height: 92px;
-}
-
 .site-header-wordmark {
   font-size: 1.4rem;
   font-weight: 700;
-  letter-spacing: -0.08em;
+  /* letter-spacing: -0.08em; */
 }
 
 .site-header-wordmark span {
   color: var(--accent);
-}
-
-.site-header--case-study nav {
-  gap: clamp(1.5rem, 4vw, 3.5rem);
-  font-size: 0.83rem;
-}
-
-.site-header--case-study nav a {
-  transition: color 160ms ease;
-}
-
-.site-header--case-study nav a:hover {
-  color: var(--accent);
-}
-
-@media (max-width: 650px) {
-  .site-header--case-study {
-    height: 74px;
-  }
-
-  .site-header--case-study nav {
-    gap: 1.2rem;
-    font-size: 0.73rem;
-  }
-
 }
 
 @media (max-width: 600px) {
