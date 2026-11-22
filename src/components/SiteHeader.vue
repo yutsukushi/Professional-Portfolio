@@ -4,22 +4,6 @@ defineProps({
     type: String,
     default: 'home',
   },
-  homeHref: {
-    type: String,
-    default: '../index.html',
-  },
-  workHref: {
-    type: String,
-    default: '../index.html#work',
-  },
-  resumeHref: {
-    type: String,
-    default: '../index.html#resume',
-  },
-  aboutHref: {
-    type: String,
-    default: '../index.html#about',
-  },
 })
 </script>
 
@@ -38,20 +22,20 @@ defineProps({
       </div>
       <nav class="site-nav" aria-label="Primary navigation">
         <ul>
-          <li><a href="#work">Work</a></li>
-          <li><a href="#resume">Resume</a></li>
-          <li><a href="#about">About Me</a></li>
+          <li><RouterLink :to="{ path: '/', hash: '#work' }">Work</RouterLink></li>
+          <li><RouterLink :to="{ path: '/', hash: '#resume' }">Resume</RouterLink></li>
+          <li><RouterLink :to="{ path: '/', hash: '#about' }">About Me</RouterLink></li>
         </ul>
       </nav>
     </div>
   </header>
 
   <header v-else class="site-header site-header--case-study">
-    <a class="site-header-wordmark" :href="homeHref" aria-label="Yukie Kushibiki, home">YK<span>.</span></a>
+    <RouterLink class="site-header-wordmark" to="/" aria-label="Yukie Kushibiki, home">YK<span>.</span></RouterLink>
     <nav aria-label="Case study navigation">
-      <a :href="workHref">Work</a>
-      <a :href="resumeHref">Resume</a>
-      <a :href="aboutHref">About Me</a>
+      <RouterLink :to="{ path: '/', hash: '#work' }">Work</RouterLink>
+      <RouterLink :to="{ path: '/', hash: '#resume' }">Resume</RouterLink>
+      <RouterLink :to="{ path: '/', hash: '#about' }">About Me</RouterLink>
     </nav>
   </header>
 </template>

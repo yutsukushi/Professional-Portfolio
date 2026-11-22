@@ -1,6 +1,34 @@
 <script setup>
+import { ref } from 'vue'
+import bulkExportImage from '../assets/images/erp-visuals/bulk-export.png'
+import templateEditorImage from '../assets/images/erp-visuals/template-editor-errors.png'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
+
+const erpSolutionImages = [
+  {
+    src: bulkExportImage,
+    alt: 'ERP bulk export workflow showing purchase orders and export history',
+    label: 'Bulk Export',
+  },
+  {
+    src: templateEditorImage,
+    alt: 'ERP template editor with field mapping and validation errors',
+    label: 'Template Editor',
+  },
+]
+
+const imageDialog = ref(null)
+const selectedImage = ref(null)
+
+function openImage(image) {
+  selectedImage.value = image
+  imageDialog.value.showModal()
+}
+
+function closeImage() {
+  imageDialog.value.close()
+}
 </script>
 
 <template>
@@ -82,6 +110,25 @@ import SiteHeader from './components/SiteHeader.vue'
             To improve visibility, exported purchase orders were tracked within the application, making it easier to identify what had already been processed. Generated files could then be downloaded directly or delivered through SFTP integrations based on organizational needs.
           </p>
         </div>
+        <div class="erp-solution-gallery">
+          <figure
+            v-for="image in erpSolutionImages"
+            :key="image.src"
+            class="erp-solution-gallery-item"
+          >
+            <button
+              class="erp-solution-image-button"
+              type="button"
+              :aria-label="`View full-size image: ${image.alt}`"
+              @click="openImage(image)"
+            >
+              <img :src="image.src" :alt="image.alt" />
+            </button>
+            <figcaption class="erp-solution-gallery-caption">
+              <h5 class="case-study-label">{{ image.label }}</h5>
+            </figcaption>
+          </figure>
+        </div>
       </section>
 
       <section>
@@ -99,9 +146,93 @@ import SiteHeader from './components/SiteHeader.vue'
         </div>
       </section>
     </main>
+    <dialog
+      ref="imageDialog"
+      class="erp-image-dialog"
+      aria-label="Full-size ERP solution image"
+      @click="closeImage"
+      @close="selectedImage = null"
+    >
+      <img v-if="selectedImage" :src="selectedImage.src" :alt="selectedImage.alt" />
+    </dialog>
   </div>
   <SiteFooter />
 </template>
 
 <style scoped>
+.erp-solution-gallery {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  width: 100%;
+  margin: 3rem 0;
+}
+
+.erp-solution-gallery-item {
+  min-width: 0;
+  margin: 0;
+}
+
+.erp-solution-gallery-caption {
+  margin-top: 0.5rem;
+}
+
+.erp-solution-image-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: zoom-in;
+  transition: transform 180ms ease;
+}
+
+.erp-solution-image-button:hover,
+.erp-solution-image-button:focus-visible {
+  transform: translateY(-3px);
+}
+
+.erp-solution-image-button img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.erp-solution-image-button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.erp-image-dialog {
+  position: fixed;
+  width: fit-content;
+  max-width: 96vw;
+  max-height: 96vh;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.erp-image-dialog::backdrop {
+  background: rgb(20 24 20 / 82%);
+}
+
+.erp-image-dialog > img {
+  display: block;
+  max-width: min(92vw, 90rem);
+  max-height: 82vh;
+  object-fit: contain;
+  cursor: zoom-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .erp-solution-image-button {
+    transition: none;
+  }
+}
 </style>

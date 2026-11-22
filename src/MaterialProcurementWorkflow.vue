@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import projectTableNew from '../assets/images/projecttable_new.png'
-import projectTableOld from '../assets/images/projecttable_old2.png'
+import projectTableNew from '../assets/images/table-visuals/table-new.png'
+import projectTableOld from '../assets/images/table-visuals/table-old.png'
 import MaterialProcurementDemo from './components/MaterialProcurementDemo.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
@@ -82,7 +82,7 @@ function closeImage() {
     </section>
     <section class="case-study-section">
       <h4>Design Exploration</h4>
-      <img class="design-exploration-image" src="../assets/images/interaction-concept.png" alt="Project table design exploration" />
+      <img class="design-exploration-image" src="../assets/images/table-visuals/interaction-concept.png" alt="Project table design exploration" />
       <p class="case-study-text"><b>Early exploration of the project table design focused on creating a unified experience instead of forcing users into separate pages.</b></p>
       <p class="case-study-text"><b>Key areas explored:</b></p>
       <ul class="case-study-text">

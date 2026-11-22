@@ -24,6 +24,7 @@ npm run preview
 - Update the Material Procurement Workflow case study in `src/MaterialProcurementWorkflow.vue`; its spreadsheet-style table and interactive request demo use sample material and supplier data.
 - Update the Self-Service ERP Data Translation case study in `src/ErpDataTranslation.vue`.
 - Update the Promotions Authoring System case study in `src/PromotionsAuthoringSystem.vue`.
+- Update Vue Router routes and page titles in `src/main.js`.
 - Update the page title and description in `index.html`.
 - Adjust colors, typography, and responsive layouts in `src/style.css`.
 
@@ -33,4 +34,4 @@ npm run preview
 2. In the repository, open **Settings → Pages** and set the build and deployment source to **GitHub Actions**.
 3. The workflow in `.github/workflows/deploy.yml` builds the site and deploys it when changes are pushed to `main`. You can also start it manually from the **Actions** tab.
 
-Vite is configured with `base: './'`, so generated assets use relative paths and work both on a user/organization site and under a repository path. No repository name needs to be configured.
+Vite and Vue Router use `/Professional-Portfolio/` during GitHub Actions builds and `/` for local development. If published to a custom domain or a different repository name, update `base` in `vite.config.js` and `public/404.html`.
