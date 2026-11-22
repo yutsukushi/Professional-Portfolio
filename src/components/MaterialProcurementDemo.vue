@@ -626,6 +626,7 @@ function openEmptyProductDropdown(row, trigger) {
               <col class="sku-col" />
               <col class="brand-col" />
               <col class="supplier-col" />
+              <col class="supplier-avail" />
               <col class="quantity-col" />
               <col class="quantity-col" />
               <col class="cost-col" />
@@ -646,6 +647,7 @@ function openEmptyProductDropdown(row, trigger) {
                 <th>SKU</th>
                 <th>Brand</th>
                 <th>Supplier</th>
+                <th>Supplier<br />Availability</th>
                 <th>Planned<br />Qty</th>
                 <th>Ordered<br />Qty</th>
                 <th>Unit<br />Cost</th>
@@ -837,6 +839,17 @@ function openEmptyProductDropdown(row, trigger) {
                     </div>
                   </Teleport>
                 </td>
+                <td class="supplier-availability-cell">
+                  <span
+                    v-if="row.productType !== 'NCP'"
+                    class="supplier-availability-pill"
+                    :class="`supplier-availability-pill--${supplierOffer(row).stockStatus}`"
+                  >
+                    <span class="supplier-availability-dot" aria-hidden="true"></span>
+                    {{ stockLabel(supplierOffer(row)) }}
+                  </span>
+                  <span v-else class="supplier-availability-empty">-</span>
+                </td>
                 <td>{{ row.plannedQty }}</td>
                 <td>{{ row.orderedQty }}</td>
                 <td>{{ formatCurrency(displayedRowTotal(row) / row.orderedQty) }}</td>
@@ -883,6 +896,7 @@ function openEmptyProductDropdown(row, trigger) {
                     :aria-label="`Supplier for new product row ${row.id}`"
                   />
                 </td>
+                <td class="supplier-availability-cell"><span class="supplier-availability-empty">-</span></td>
                 <td>{{ row.plannedQty ?? (row.unitCost == null ? '-' : '') }}</td>
                 <td>{{ row.orderedQty ?? (row.unitCost == null ? '-' : '') }}</td>
                 <td>{{ row.unitCost == null ? '-' : formatCurrency(row.unitCost) }}</td>
@@ -1091,7 +1105,7 @@ function openEmptyProductDropdown(row, trigger) {
 
 .procurement-table {
   width: 100%;
-  min-width: 1340px;
+  min-width: 1420px;
   border-collapse: separate;
   border-spacing: 0;
   table-layout: fixed;
@@ -1102,6 +1116,7 @@ function openEmptyProductDropdown(row, trigger) {
 .procurement-table .sku-col { width: 135px; }
 .procurement-table .brand-col { width: 120px; }
 .procurement-table .supplier-col { width: 16rem; }
+.procurement-table .supplier-avail { width: 150px; }
 .procurement-table .quantity-col { width: 112px; }
 .procurement-table .cost-col { width: 125px; }
 .procurement-table .phase-col { width: 112px; }
@@ -1234,6 +1249,41 @@ function openEmptyProductDropdown(row, trigger) {
   position: relative;
   vertical-align: middle;
   overflow: visible;
+}
+
+.supplier-availability-cell {
+  vertical-align: middle;
+}
+
+.supplier-availability-pill {
+  border: 1px solid #9de5c4;
+  background: #effbf5;
+  color: #087f5b;
+}
+
+.supplier-availability-pill--low-stock {
+  border-color: #f2d394;
+  background: #fff8e9;
+  color: #8a5c14;
+}
+
+.supplier-availability-pill--backordered,
+.supplier-availability-pill--out-of-stock {
+  border-color: #ffb1b8;
+  background: #fff5f5;
+  color: #c63f4b;
+}
+
+.supplier-availability-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.supplier-availability-empty {
+  color: #7185a5;
 }
 
 .supplier-cell-content {
@@ -1593,21 +1643,25 @@ function openEmptyProductDropdown(row, trigger) {
 
 .supplier-save-pill {
   position: relative;
-  display: inline-flex;
   flex: 0 0 auto;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.16rem 0.4rem;
   border: 1px solid #ead8b9;
-  border-radius: 999px;
   background: #fbf1dd;
   color: #a95f2b;
   cursor: pointer;
+  font-family: inherit;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.supplier-save-pill,
+.supplier-availability-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.16rem 0.4rem;
+  border-radius: 999px;
   font-size: 0.6rem;
   font-weight: 500;
-  font-family: inherit;
   line-height: 1.2;
-  transition: background-color 140ms ease, border-color 140ms ease;
   height: 1rem;
 }
 

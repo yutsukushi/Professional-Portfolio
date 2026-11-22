@@ -48,8 +48,8 @@ function closeImage() {
 <template>
   <SiteHeader variant="case-study" />
   <main>
-    <h2>Turning a Project Table into a Material Workspace</h2>
-    <p class="case-study-text">Material Procurement Table - Peregrin by eParts Services LLC.</p>
+    <h2 style="margin-bottom: .5rem;">Turning a Project Table into a Material Workspace</h2>
+    <p class="case-study-text" style="margin: 0;color: #6b7169;">For a procurement and material management platform used by construction contractors.</p>
     <MaterialProcurementDemo />
     <section class="case-study-details case-study-section">
       <div>
