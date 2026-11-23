@@ -1,22 +1,30 @@
 <script setup>
 import { ref } from 'vue'
-import bulkExportImage from '../assets/images/erp-visuals/browser-bulk-export.png'
+import browserBulkExportImage from '../assets/images/erp-visuals/browser-bulk-export.png'
+import bulkExportImage from '../assets/images/erp-visuals/bulk-export.png'
 import erpFileImage from '../assets/images/erp-visuals/erp-file.png'
-import templateEditorImage from '../assets/images/erp-visuals/browser-template-editor.png'
-import workflowDiagramImage from '../assets/images/erp-visuals/workflow-diagram-bg2.png'
+import templateFiltersImage from '../assets/images/erp-visuals/filters-filename.png'
+import templateEditorImage from '../assets/images/erp-visuals/template-editor-errors.png'
+import browserTemplateEditorImage from '../assets/images/erp-visuals/browser-template-editor.png'
+import browserWorkflowDiagramImage from '../assets/images/erp-visuals/workflow-diagram-bg2.png'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
 
 const erpSolutionImages = [
+  {
+    src: templateEditorImage,
+    alt: 'ERP template editor with field mapping and validation errors',
+    label: 'Template Editor',
+  },
   {
     src: bulkExportImage,
     alt: 'ERP bulk export workflow showing purchase orders and export history',
     label: 'Bulk Export',
   },
   {
-    src: templateEditorImage,
-    alt: 'ERP template editor with field mapping and validation errors',
-    label: 'Template Editor',
+    src: templateFiltersImage,
+    alt: 'ERP template filters showing filename-based filtering options',
+    label: 'Template Filters',
   },
 ]
 
@@ -44,7 +52,7 @@ function closeImage() {
         <figure class="erp-hero-step">
           <img
             class="erp-hero-image"
-            :src="templateEditorImage"
+            :src="browserTemplateEditorImage"
             alt="ERP template editor showing field mappings and validation errors"
           />
           <figcaption>Configure Export Template</figcaption>
@@ -57,7 +65,7 @@ function closeImage() {
         <figure class="erp-hero-step">
           <img
             class="erp-hero-image"
-            :src="bulkExportImage"
+            :src="browserBulkExportImage"
             alt="ERP bulk export screen showing purchase orders and export history"
           />
           <figcaption>Run Bulk Export</figcaption>
@@ -111,7 +119,7 @@ function closeImage() {
         <div class="erp-problem-diagram-frame">
           <img
             class="erp-problem-diagram"
-            :src="workflowDiagramImage"
+            :src="browserWorkflowDiagramImage"
             alt="Different customer data fields are consolidated by a template-driven export system into an ERP-ready deliverable"
           />
         </div>
@@ -162,6 +170,9 @@ function closeImage() {
             :key="image.src"
             class="erp-solution-gallery-item"
           >
+            <figcaption class="erp-solution-gallery-caption">
+              <h5 class="case-study-label">{{ image.label }}</h5>
+            </figcaption>
             <button
               class="erp-solution-image-button"
               type="button"
@@ -170,9 +181,6 @@ function closeImage() {
             >
               <img :src="image.src" :alt="image.alt" />
             </button>
-            <figcaption class="erp-solution-gallery-caption">
-              <h5 class="case-study-label">{{ image.label }}</h5>
-            </figcaption>
           </figure>
         </div>
       </section>
