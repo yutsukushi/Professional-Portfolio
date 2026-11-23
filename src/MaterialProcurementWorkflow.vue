@@ -288,7 +288,7 @@ function closeImage() {
   border: 1px solid #dfe3dc;
   border-radius: 8px;
   background: #fff;
-  box-shadow: 0 2px 8px rgb(32 39 32 / 8%);
+  /* box-shadow: 0 2px 8px rgb(32 39 32 / 8%); */
 }
 
 .key-interaction-source {
@@ -368,7 +368,7 @@ ul.case-study-text {
   border: 1px solid #dfe3dc;
   border-radius: 8px;
   background: #fff;
-  box-shadow: 0 2px 8px rgb(32 39 32 / 8%);
+  /* box-shadow: 0 2px 8px rgb(32 39 32 / 8%); */
   cursor: zoom-in;
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
@@ -386,7 +386,7 @@ ul.case-study-text {
 .project-table-image-button--prominent {
   border-color: #c3d0c4;
   background: #f1f7f3;
-  box-shadow: 0 3px 10px rgb(32 39 32 / 12%);
+  /* box-shadow: 0 3px 10px rgb(32 39 32 / 12%); */
 }
 
 .project-table-image-helper {
@@ -406,7 +406,7 @@ ul.case-study-text {
 
 .project-table-image-button:hover,
 .project-table-image-button:focus-visible {
-  box-shadow: 0 5px 14px rgb(32 39 32 / 12%);
+  /* box-shadow: 0 5px 14px rgb(32 39 32 / 12%); */
   transform: translateY(-3px);
 }
 

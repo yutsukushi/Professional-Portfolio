@@ -68,6 +68,12 @@ a:focus-visible {
   gap: 1rem;
 }
 
+@media (max-width: 768px) {
+  .case-study-details {
+    flex-direction: column;
+  }
+}
+
 .case-study-label {
   margin-bottom: 0.25rem;
   font-size: 14px;
