@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import bulkExportImage from '../assets/images/erp-visuals/bulk-export.png'
-import templateEditorImage from '../assets/images/erp-visuals/template-editor-errors.png'
+import bulkExportImage from '../assets/images/erp-visuals/browser-bulk-export.png'
+import templateEditorImage from '../assets/images/erp-visuals/browser-template-editor.png'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
 
@@ -37,6 +37,18 @@ function closeImage() {
 
     <main>
       <h1>Self-Service ERP Data Translation</h1>
+      <div class="erp-hero" role="group" aria-label="ERP bulk export and template editor screens">
+        <img
+          class="erp-hero-image erp-hero-image--bulk"
+          :src="bulkExportImage"
+          alt="ERP bulk export screen showing purchase orders and export history"
+        />
+        <img
+          class="erp-hero-image erp-hero-image--template"
+          :src="templateEditorImage"
+          alt="ERP template editor showing field mappings and validation errors"
+        />
+      </div>
       <section class="case-study-details">
         <div>
           <h5 class="case-study-label">My Role</h5>
@@ -160,6 +172,35 @@ function closeImage() {
 </template>
 
 <style scoped>
+.erp-hero {
+  position: relative;
+  width: min(100%, 860px);
+  aspect-ratio: 859 / 626;
+  margin: 2rem auto 3rem;
+}
+
+.erp-hero-image {
+  position: absolute;
+  display: block;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgb(0 0 0 / 22%);
+}
+
+.erp-hero-image--bulk {
+  z-index: 1;
+  top: 8%;
+  left: 7%;
+  width: 54%;
+}
+
+.erp-hero-image--template {
+  z-index: 2;
+  top: 29%;
+  left: 36%;
+  width: 57%;
+}
+
 .erp-solution-gallery {
   display: grid;
   grid-template-columns: 1fr;

@@ -1,4 +1,6 @@
 <script setup>
+import bulkExportImage from '../assets/images/erp-visuals/browser-bulk-export.png'
+import templateEditorImage from '../assets/images/erp-visuals/browser-template-editor.png'
 import tableNewBrowser from '../assets/images/table-visuals/table-new-browser.png'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
@@ -17,7 +19,7 @@ import SiteHeader from './components/SiteHeader.vue'
             to="/case-studies/material-procurement-workflow"
             aria-label="Material Procurement Workflow case study"
           >
-            <div class="project-card-image">
+            <div class="project-card-image project-card-image--materials">
               <img class="case-study-image" :src="tableNewBrowser" alt="Material Procurement Workflow" />
               <span class="project-card-overlay">
                 <span class="project-card-title">Turning a Project Table into a Material Workspace</span>
@@ -31,7 +33,7 @@ import SiteHeader from './components/SiteHeader.vue'
             to="/case-studies/promotions-authoring-system"
             aria-label="Promotions Authoring System case study"
           >
-            <div class="project-card-image">
+            <div class="project-card-image project-card-image--promotions">
               <span class="project-card-overlay">
                 <span class="project-card-title">Promotions Authoring System</span>
               </span>
@@ -44,7 +46,11 @@ import SiteHeader from './components/SiteHeader.vue'
             to="/case-studies/self-service-erp-data-translation"
             aria-label="Self-Service ERP Data Translation case study"
           >
-            <div class="project-card-image">
+            <div class="project-card-image project-card-image--erp">
+              <div class="erp-thumbnail" aria-hidden="true">
+                <img class="erp-thumbnail-image erp-thumbnail-image--bulk" :src="bulkExportImage" alt="" />
+                <img class="erp-thumbnail-image erp-thumbnail-image--template" :src="templateEditorImage" alt="" />
+              </div>
               <span class="project-card-overlay">
                 <span class="project-card-title">Self-Service ERP Data Translation</span>
               </span>
@@ -98,6 +104,15 @@ import SiteHeader from './components/SiteHeader.vue'
   background-color: #eef1e9;
   transition: transform 180ms ease;
 }
+.project-card-image--materials {
+  background-color: #f5e8df;
+}
+.project-card-image--promotions {
+  background-color: #ede8f5;
+}
+.project-card-image--erp {
+  background-color: #e7efe8;
+}
 .case-study-image {
   width: 82%;
   height: 82%;
@@ -105,8 +120,34 @@ import SiteHeader from './components/SiteHeader.vue'
   object-position: center;
   display: block;
 }
+.erp-thumbnail {
+  position: relative;
+  width: 85%;
+  aspect-ratio: 859 / 626;
+  transform: translateY(-2%);
+}
+.erp-thumbnail-image {
+  position: absolute;
+  display: block;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 6px 14px rgb(0 0 0 / 22%);
+}
+.erp-thumbnail-image--bulk {
+  z-index: 1;
+  top: 8%;
+  left: 7%;
+  width: 54%;
+}
+.erp-thumbnail-image--template {
+  z-index: 2;
+  top: 29%;
+  left: 36%;
+  width: 57%;
+}
 .project-card-overlay {
   position: absolute;
+  z-index: 3;
   inset: 0;
   pointer-events: none;
   background: linear-gradient(
