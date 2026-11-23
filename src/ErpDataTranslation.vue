@@ -81,7 +81,7 @@ function closeImage() {
 
     <main>
       <h1 class="erp-title">Scaling ERP Exports Through Templates and Automation</h1>
-      <p class="case-study-text" style="margin: 0;color: #6b7169;">Replaced hard-coded ERP export implementations with a template-driven system that scales across customer-specific requirements.</p>
+      <p class="case-study-text case-study-summary">Replaced hard-coded ERP export implementations with a template-driven system that scales across customer-specific requirements.</p>
       <div class="erp-hero" role="group" aria-label="ERP export process from template configuration to deliverable">
         <figure class="erp-hero-step">
           <img
@@ -218,7 +218,7 @@ function closeImage() {
                 </button>
               </div>
               <div>
-              <h5 class="case-study-label" style="margin: 2rem 0">{{ group.label }}</h5>
+              <h5 class="case-study-label erp-solution-group-label">{{ group.label }}</h5>
               <ul class="erp-solution-callouts" :aria-label="`Callouts for ${group.label}`">
                 <li v-for="callout in group.callouts" :key="callout.number" class="erp-solution-callout">
                   <span class="erp-solution-callout-number" aria-hidden="true">{{ callout.number }}</span>
@@ -425,6 +425,10 @@ function closeImage() {
 .erp-solution-callout-copy strong {
   display: block;
   margin-bottom: 0.2rem;
+}
+
+.erp-solution-group-label {
+  margin: 2rem 0;
 }
 
 .erp-solution-image-button {

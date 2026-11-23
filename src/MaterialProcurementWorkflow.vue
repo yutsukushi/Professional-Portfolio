@@ -81,8 +81,8 @@ function closeImage() {
 <template>
   <SiteHeader variant="case-study" />
   <main>
-    <h2 style="margin-bottom: .5rem;">Turning a Project Table into a Material Workspace</h2>
-    <p class="case-study-text" style="margin: 0;color: #6b7169;">For a procurement and material management platform used by construction contractors.</p>
+    <h2 class="material-workspace-title">Turning a Project Table into a Material Workspace</h2>
+    <p class="case-study-text case-study-summary">For a procurement and material management platform used by construction contractors.</p>
     <MaterialProcurementDemo />
     <section class="case-study-details case-study-section">
       <div>
@@ -156,21 +156,19 @@ function closeImage() {
           </figcaption>
         </figure>
       </div>
-      <section style="margin: 4rem 0;">
+      <section class="material-workflow-spaced-section">
         <h4 class="case-study-subheading">From Static Material Rows to Procurement Workflows</h4>
         <p>A material row originally functioned as a record of project materials. Procurement activities such as supplier comparison, product replacement, and pricing review required navigating to separate workflows.</p>
-<section style="margin: 4rem 0;">
-        <h4 class="case-study-subheading">Legacy Material Row</h4>
-        <img
-          class="design-exploration-image"
-          :src="procurementWorkflowExample"
-          alt="Material row displaying product details, supplier information, and procurement values"
-        />
-        <p class="case-study-text" style="margin: 16px 0;">The redesigned row became the entry point for managing materials, suppliers, and purchasing decisions in context.</p></section>
+        <section class="material-workflow-spaced-section">
+          <h4 class="case-study-subheading">Legacy Material Row</h4>
+          <img
+            class="design-exploration-image"
+            :src="procurementWorkflowExample"
+            alt="Material row displaying product details, supplier information, and procurement values"
+          />
+          <p class="case-study-text material-row-description">The redesigned row became the entry point for managing materials, suppliers, and purchasing decisions in context.</p>
         </section>
-        <!-- <section style="margin: 8px 0;"> -->
-        
-      <!-- </section> -->
+        </section>
       <section class="key-interactions" aria-labelledby="key-interactions-title">
         <h4 id="key-interactions-title" class="case-study-subheading">Key Interactions</h4>
         <p class="case-study-text">Procurement workflows were embedded directly into each material row, allowing users to source products, compare suppliers, and act on cost-saving opportunities without leaving the workspace.</p>
@@ -252,6 +250,18 @@ function closeImage() {
 </template>
 
 <style scoped>
+.material-workspace-title {
+  margin-bottom: 0.5rem;
+}
+
+.material-workflow-spaced-section {
+  margin: 4rem 0;
+}
+
+.material-row-description {
+  margin: 16px 0;
+}
+
 .design-exploration-image {
   width: 100%;
   max-width: 90rem;

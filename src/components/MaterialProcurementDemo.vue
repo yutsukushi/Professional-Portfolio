@@ -742,7 +742,7 @@ function openEmptySupplierDropdown(row, trigger) {
 
 <template>
       <section class="procurement-table-section" aria-labelledby="procurement-table-title">
-      <p style="font-size: 14px;">Try selecting a supplier, adding a product, or reviewing a savings recommendation.</p>
+      <p class="case-study-text">Try selecting a supplier, adding a product, or reviewing a savings recommendation.</p>
         <div class="procurement-table-scroll" tabindex="0" role="region" aria-label="Material schedule table, scroll horizontally to see more columns">
           <table class="procurement-table" aria-label="Harbor House material schedule">
             <colgroup>
