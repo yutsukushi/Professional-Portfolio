@@ -195,8 +195,48 @@ function supplierOffer(row, supplier = supplierName(row)) {
   return row.offers.find((offer) => offer.supplier === supplier)
 }
 
+function isEmptyProductRow(row) {
+  return emptyProductRows.value.some((emptyRow) => emptyRow.id === row.id)
+}
+
+function catalogSourceOffer(row) {
+  if (
+    !isEmptyProductRow(row) ||
+    !row.catalogSupplier ||
+    row.catalogUnitCost == null ||
+    row.offers.some((offer) => offer.supplier === row.catalogSupplier)
+  ) {
+    return null
+  }
+
+  return {
+    supplier: row.catalogSupplier,
+    brand: row.brand,
+    productType: row.productType,
+    unitCost: row.catalogUnitCost,
+    alerts: [],
+    isCatalogSource: true,
+  }
+}
+
+function supplierOffers(row) {
+  const catalogOffer = catalogSourceOffer(row)
+  return catalogOffer ? [catalogOffer, ...row.offers] : row.offers
+}
+
+function currentSupplierOffer(row) {
+  return supplierOffer(row) || (row.supplier === row.catalogSupplier ? catalogSourceOffer(row) : null)
+}
+
+function recommendedSupplierOffer(row) {
+  return supplierOffers(row).reduce(
+    (lowestOffer, offer) => (!lowestOffer || offer.unitCost < lowestOffer.unitCost ? offer : lowestOffer),
+    null,
+  )
+}
+
 function lowestOfferPrice(row) {
-  return Math.min(...row.offers.map((offer) => offer.unitCost))
+  return recommendedSupplierOffer(row)?.unitCost
 }
 
 function stockLabel(offer) {
@@ -210,15 +250,32 @@ function stockLabel(offer) {
 }
 
 function supplierSavings(row) {
-  return Math.max(
-    0,
-    (supplierOffer(row).unitCost - supplierOffer(row, 'Beacon Supply').unitCost) * row.orderedQty,
-  )
+  const currentOffer = currentSupplierOffer(row)
+  const recommendedOffer = recommendedSupplierOffer(row)
+  if (!currentOffer || !recommendedOffer) {
+    return 0
+  }
+
+  const quantity = row.orderedQty || 1
+  return Math.max(0, (currentOffer.unitCost - recommendedOffer.unitCost) * quantity)
 }
 
-function switchSupplier(row) {
-  selectedSuppliers.value = { ...selectedSuppliers.value, [row.id]: 'Beacon Supply' }
-  closeDropdown('supplier', row.id)
+function switchSupplier(row, supplier = recommendedSupplierOffer(row)?.supplier) {
+  if (!supplier) {
+    return
+  }
+
+  if (isEmptyProductRow(row)) {
+    row.supplier = supplier
+    const offer = row.offers.find((item) => item.supplier === supplier)
+    if (offer || supplier === row.catalogSupplier) {
+      row.unitCost = offer?.unitCost ?? row.catalogUnitCost
+    }
+    closeDropdown('new-supplier', row.id)
+  } else {
+    selectedSuppliers.value = { ...selectedSuppliers.value, [row.id]: supplier }
+    closeDropdown('supplier', row.id)
+  }
   closeSupplierPopover(row.id)
 }
 
@@ -239,19 +296,8 @@ function filteredSupplierOptions(row) {
   if (!row.offers.length) {
     return filteredSuppliers(query)
   }
-  const hasCatalogSource = row.supplier && !row.offers.some((offer) => offer.supplier === row.supplier)
-  const catalogSource = hasCatalogSource
-    ? [{
-        supplier: row.supplier,
-        brand: row.brand,
-        productType: row.productType,
-        unitCost: row.unitCost,
-        alerts: [],
-        isCatalogSource: true,
-      }]
-    : []
 
-  return [...catalogSource, ...row.offers].filter((option) =>
+  return supplierOffers(row).filter((option) =>
     `${option.supplier} ${option.brand} ${option.productType}`.toLowerCase().includes(query),
   )
 }
@@ -266,8 +312,8 @@ function setEmptySupplierSearchQuery(row, query) {
 function selectEmptyProductSupplier(row, supplier) {
   row.supplier = supplier
   const offer = row.offers.find((item) => item.supplier === supplier)
-  if (offer) {
-    row.unitCost = offer.unitCost
+  if (offer || supplier === row.catalogSupplier) {
+    row.unitCost = offer?.unitCost ?? row.catalogUnitCost
   }
   closeDropdown('new-supplier', row.id)
 }
@@ -461,6 +507,8 @@ function addProductRow() {
     sku: '',
     brand: '',
     supplier: '',
+    catalogSupplier: '',
+    catalogUnitCost: null,
     offers: [],
     plannedQty: null,
     orderedQty: null,
@@ -584,6 +632,8 @@ function setCustomSku(row, sku) {
   row.productType = sku.trim() ? 'NCP' : ''
   if (emptyProductRows.value.some((emptyRow) => emptyRow.id === row.id)) {
     row.offers = []
+    row.catalogSupplier = ''
+    row.catalogUnitCost = null
   }
 }
 
@@ -666,6 +716,8 @@ function selectDummyProduct(row, product) {
     brand: product.brand,
     productType: product.productType,
     supplier: product.supplier,
+    catalogSupplier: product.supplier,
+    catalogUnitCost: product.unitCost,
     offers: sourceRow?.offers || [],
     plannedQty: 1,
     orderedQty: 1,
@@ -776,7 +828,7 @@ function openEmptySupplierDropdown(row, trigger) {
                       {{ supplierName(row) }}
                     </button>
                     <button
-                      v-if="row.productType !== 'NCP' && supplierName(row) !== 'Beacon Supply' && supplierSavings(row) > 0"
+                      v-if="row.productType !== 'NCP' && recommendedSupplierOffer(row) && supplierName(row) !== recommendedSupplierOffer(row).supplier && supplierSavings(row) > 0"
                       :ref="(element) => setTriggerElement('supplier-popover', row.id, element)"
                       class="supplier-save-pill"
                       type="button"
@@ -882,31 +934,48 @@ function openEmptySupplierDropdown(row, trigger) {
                       @keydown.esc="closeSupplierPopover(row.id)"
                     >
                       <div class="supplier-popover-header">
-                        <p class="supplier-popover-title"><b>Save {{ formatCurrency(supplierSavings(row)) }} with Beacon Supply</b>
+                        <p class="supplier-popover-title"><b>Save {{ formatCurrency(supplierSavings(row)) }} with {{ recommendedSupplierOffer(row).supplier }}</b>
                         </p>
                       </div>
                       <div class="supplier-popover-content">
                         <div class="supplier-comparison">
                           <span></span>
                           <span>{{ supplierName(row) }}</span>
-                          <strong>Beacon Supply</strong>
+                          <strong>{{ recommendedSupplierOffer(row).supplier }}</strong>
                           <span>Price</span>
                           <span>{{ formatCurrency(supplierOffer(row).unitCost * row.orderedQty) }}</span>
-                          <strong>{{ formatCurrency(supplierOffer(row, 'Beacon Supply').unitCost * row.orderedQty) }}</strong>
+                          <strong>{{ formatCurrency(recommendedSupplierOffer(row).unitCost * row.orderedQty) }}</strong>
                           <span>Stock</span>
                           <span>{{ stockLabel(supplierOffer(row)) }}</span>
-                          <span>{{ stockLabel(supplierOffer(row, 'Beacon Supply')) }}</span>
+                          <span>{{ stockLabel(recommendedSupplierOffer(row)) }}</span>
                           <span>Alerts</span>
-                          <span>{{ supplierOffer(row).alerts.length || 'None' }}</span>
-                          <span>{{ supplierOffer(row, 'Beacon Supply').alerts.length || 'None' }}</span>
+                          <template v-for="offer in [supplierOffer(row), recommendedSupplierOffer(row)]" :key="offer.supplier">
+                            <button
+                              v-if="offer.alerts.length"
+                              class="supplier-alert-trigger supplier-alert-beacon"
+                              type="button"
+                              :aria-label="`${offer.alerts.length} product alert${offer.alerts.length === 1 ? '' : 's'} from ${offer.supplier}`"
+                              @click.stop
+                            >
+                              {{ offer.alerts.length }} product alert{{ offer.alerts.length === 1 ? '' : 's' }}
+                              <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="6.25" />
+                                <path d="M8 7.25v3.5M8 5.25h.01" />
+                              </svg>
+                              <span class="supplier-alert-tooltip" role="tooltip">
+                                <span v-for="alert in offer.alerts" :key="alert">{{ alert }}</span>
+                              </span>
+                            </button>
+                            <span v-else>None</span>
+                          </template>
                         </div>
                         <button
                           class="supplier-switch-button"
                           type="button"
-                          :disabled="supplierName(row) === 'Beacon Supply'"
-                          @click="switchSupplier(row)"
+                          :disabled="supplierName(row) === recommendedSupplierOffer(row).supplier"
+                          @click="switchSupplier(row, recommendedSupplierOffer(row).supplier)"
                         >
-                          {{ supplierName(row) === 'Beacon Supply' ? 'Beacon Supply selected' : 'Switch to Beacon Supply' }}
+                          {{ supplierName(row) === recommendedSupplierOffer(row).supplier ? `${recommendedSupplierOffer(row).supplier} selected` : `Switch to ${recommendedSupplierOffer(row).supplier}` }}
                         </button>
                       </div>
                     </div>
@@ -962,23 +1031,44 @@ function openEmptySupplierDropdown(row, trigger) {
                 </th>
                 <td>{{ row.brand || (row.unitCost == null ? '-' : '') }}</td>
                 <td class="supplier-cell">
-                  <input
-                    :ref="(element) => setTriggerElement('new-supplier', row.id, element)"
-                    v-model="row.supplier"
-                    class="empty-product-supplier-input"
-                    type="text"
-                    placeholder="Type or select supplier"
-                    role="combobox"
-                    aria-autocomplete="list"
-                    aria-haspopup="listbox"
-                    :aria-expanded="activeDropdown?.type === 'new-supplier' && activeDropdown.id === row.id && filteredSupplierOptions(row).length > 0"
-                    :aria-controls="`empty-supplier-options-${row.id}`"
-                    :aria-label="`Supplier for new product row ${row.id}`"
-                    @focus="openEmptySupplierDropdown(row, $event.currentTarget)"
-                    @click.stop="openEmptySupplierDropdown(row, $event.currentTarget)"
-                    @input="setEmptySupplierSearchQuery(row, $event.target.value)"
-                    @keydown.esc="closeDropdown('new-supplier', row.id)"
-                  />
+                  <div class="supplier-cell-content">
+                    <input
+                      :ref="(element) => setTriggerElement('new-supplier', row.id, element)"
+                      v-model="row.supplier"
+                      class="empty-product-supplier-input"
+                      type="text"
+                      placeholder="Type or select supplier"
+                      role="combobox"
+                      aria-autocomplete="list"
+                      aria-haspopup="listbox"
+                      :aria-expanded="activeDropdown?.type === 'new-supplier' && activeDropdown.id === row.id && filteredSupplierOptions(row).length > 0"
+                      :aria-controls="`empty-supplier-options-${row.id}`"
+                      :aria-label="`Supplier for new product row ${row.id}`"
+                      @focus="openEmptySupplierDropdown(row, $event.currentTarget)"
+                      @click.stop="openEmptySupplierDropdown(row, $event.currentTarget)"
+                      @input="setEmptySupplierSearchQuery(row, $event.target.value)"
+                      @keydown.esc="closeDropdown('new-supplier', row.id)"
+                    />
+                    <button
+                      v-if="row.productType !== 'NCP' && recommendedSupplierOffer(row) && row.supplier !== recommendedSupplierOffer(row).supplier && supplierSavings(row) > 0"
+                      :ref="(element) => setTriggerElement('supplier-popover', row.id, element)"
+                      class="supplier-save-pill"
+                      type="button"
+                      aria-haspopup="dialog"
+                      :aria-expanded="activeSupplierPopoverRowId === row.id"
+                      @mouseenter="showSupplierPopover(row.id, $event.currentTarget)"
+                      @mouseleave="scheduleSupplierPopoverClose(row.id)"
+                      @focus="showSupplierPopover(row.id, $event.currentTarget)"
+                      @blur="scheduleSupplierPopoverClose(row.id)"
+                      @click.stop="toggleSupplierPopover(row.id, $event.currentTarget)"
+                      @keydown.esc="closeSupplierPopover(row.id)"
+                    >Switch & save {{ formatCurrency(supplierSavings(row)) }}
+                      <svg aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                        <circle cx="8" cy="8" r="6.25" />
+                        <path d="M8 7.25v3.5M8 5.25h.01" />
+                      </svg>
+                    </button>
+                  </div>
                   <Teleport to="body">
                     <div
                       v-if="activeDropdown?.type === 'new-supplier' && activeDropdown.id === row.id && filteredSupplierOptions(row).length"
@@ -1006,7 +1096,7 @@ function openEmptySupplierDropdown(row, trigger) {
                               <div class="supplier-option-heading">
                                 <span><b>{{ option.supplier }}</b></span>
                                 <span
-                                  v-if="row.productType !== 'NCP' && !option.isCatalogSource && option.unitCost === lowestOfferPrice(row)"
+                                  v-if="row.productType !== 'NCP' && option.unitCost === lowestOfferPrice(row)"
                                   class="supplier-option-badge supplier-option-badge--price"
                                 ><b>Lowest price</b></span>
                                 <span
@@ -1062,6 +1152,66 @@ function openEmptySupplierDropdown(row, trigger) {
                             </span>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  </Teleport>
+                  <Teleport to="body">
+                    <div
+                      v-if="activeSupplierPopoverRowId === row.id && row.productType !== 'NCP' && recommendedSupplierOffer(row)"
+                      class="supplier-popover"
+                      :style="supplierPopoverPosition"
+                      role="dialog"
+                      :aria-label="`Supplier comparison for ${row.sku}`"
+                      @mouseenter="showSupplierPopover(row.id, getTriggerElement('supplier-popover', row.id))"
+                      @mouseleave="scheduleSupplierPopoverClose(row.id)"
+                      @focusin="showSupplierPopover(row.id, getTriggerElement('supplier-popover', row.id))"
+                      @focusout="scheduleSupplierPopoverClose(row.id)"
+                      @keydown.esc="closeSupplierPopover(row.id)"
+                    >
+                      <div class="supplier-popover-header">
+                        <p class="supplier-popover-title">
+                          <b>Save {{ formatCurrency(supplierSavings(row)) }} with {{ recommendedSupplierOffer(row).supplier }}</b>
+                        </p>
+                      </div>
+                      <div class="supplier-popover-content">
+                        <div class="supplier-comparison">
+                          <span></span>
+                          <span>{{ row.supplier }}</span>
+                          <strong>{{ recommendedSupplierOffer(row).supplier }}</strong>
+                          <span>Price</span>
+                          <span>{{ formatCurrency(row.unitCost * (row.orderedQty || 1)) }}</span>
+                          <strong>{{ formatCurrency(recommendedSupplierOffer(row).unitCost * (row.orderedQty || 1)) }}</strong>
+                          <span>Stock</span>
+                          <span>{{ currentSupplierOffer(row)?.stockStatus ? stockLabel(currentSupplierOffer(row)) : '-' }}</span>
+                          <span>{{ recommendedSupplierOffer(row).stockStatus ? stockLabel(recommendedSupplierOffer(row)) : '-' }}</span>
+                          <span>Alerts</span>
+                          <template v-for="offer in [currentSupplierOffer(row), recommendedSupplierOffer(row)]" :key="offer.supplier">
+                            <button
+                              v-if="offer.alerts.length"
+                              class="supplier-alert-trigger supplier-alert-beacon"
+                              type="button"
+                              :aria-label="`${offer.alerts.length} product alert${offer.alerts.length === 1 ? '' : 's'} from ${offer.supplier}`"
+                              @click.stop
+                            >
+                              {{ offer.alerts.length }} product alert{{ offer.alerts.length === 1 ? '' : 's' }}
+                              <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="6.25" />
+                                <path d="M8 7.25v3.5M8 5.25h.01" />
+                              </svg>
+                              <span class="supplier-alert-tooltip" role="tooltip">
+                                <span v-for="alert in offer.alerts" :key="alert">{{ alert }}</span>
+                              </span>
+                            </button>
+                            <span v-else>None</span>
+                          </template>
+                        </div>
+                        <button
+                          class="supplier-switch-button"
+                          type="button"
+                          @click="switchSupplier(row, recommendedSupplierOffer(row).supplier)"
+                        >
+                          Switch to {{ recommendedSupplierOffer(row).supplier }}
+                        </button>
                       </div>
                     </div>
                   </Teleport>
