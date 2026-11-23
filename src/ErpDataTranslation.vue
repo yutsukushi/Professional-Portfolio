@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import bulkExportImage from '../assets/images/erp-visuals/browser-bulk-export.png'
+import erpFileImage from '../assets/images/erp-visuals/erp-file.png'
 import templateEditorImage from '../assets/images/erp-visuals/browser-template-editor.png'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
@@ -36,18 +37,43 @@ function closeImage() {
     <SiteHeader variant="case-study" />
 
     <main>
-      <h1>Self-Service ERP Data Translation</h1>
-      <div class="erp-hero" role="group" aria-label="ERP bulk export and template editor screens">
-        <img
-          class="erp-hero-image erp-hero-image--bulk"
-          :src="bulkExportImage"
-          alt="ERP bulk export screen showing purchase orders and export history"
-        />
-        <img
-          class="erp-hero-image erp-hero-image--template"
-          :src="templateEditorImage"
-          alt="ERP template editor showing field mappings and validation errors"
-        />
+      <h1 class="erp-title">Scaling ERP Exports Through Templates and Automation</h1>
+      <p class="case-study-text" style="margin: 0;color: #6b7169;">Replaced hard-coded ERP export implementations with a template-driven system that scales across customer-specific requirements.</p>
+      <div class="erp-hero" role="group" aria-label="ERP export process from template configuration to deliverable">
+        <figure class="erp-hero-step">
+          <img
+            class="erp-hero-image"
+            :src="templateEditorImage"
+            alt="ERP template editor showing field mappings and validation errors"
+          />
+          <figcaption>Configure Export Template</figcaption>
+        </figure>
+        <span class="erp-hero-arrow" aria-hidden="true">
+          <svg viewBox="0 0 34 20" fill="none">
+            <path d="M2 10h27m-7-7 7 7-7 7" />
+          </svg>
+        </span>
+        <figure class="erp-hero-step">
+          <img
+            class="erp-hero-image"
+            :src="bulkExportImage"
+            alt="ERP bulk export screen showing purchase orders and export history"
+          />
+          <figcaption>Run Bulk Export</figcaption>
+        </figure>
+        <span class="erp-hero-arrow" aria-hidden="true">
+          <svg viewBox="0 0 34 20" fill="none">
+            <path d="M2 10h27m-7-7 7 7-7 7" />
+          </svg>
+        </span>
+        <figure class="erp-hero-step">
+          <img
+            class="erp-hero-image erp-hero-image--file"
+            :src="erpFileImage"
+            alt="ERP-ready deliverable spreadsheet"
+          />
+          <figcaption>ERP-Ready Deliverable</figcaption>
+        </figure>
       </div>
       <section class="case-study-details">
         <div>
@@ -172,33 +198,86 @@ function closeImage() {
 </template>
 
 <style scoped>
+.erp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.erp-title {
+  margin-block: 0.83em 0.5rem;
+  font-size: 1.5em;
+}
+
 .erp-hero {
-  position: relative;
-  width: min(100%, 860px);
-  aspect-ratio: 859 / 626;
-  margin: 2rem auto 3rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) 2rem minmax(0, 0.9fr) 2rem minmax(0, 1.15fr);
+  align-items: center;
+  gap: clamp(0.75rem, 1.8vw, 1.5rem);
+  width: 100%;
+  margin: 5rem 0;
+}
+
+.erp-hero-step {
+  min-width: 0;
+  margin: 0;
+  text-align: center;
 }
 
 .erp-hero-image {
-  position: absolute;
   display: block;
+  width: 100%;
+  height: clamp(150px, 22vw, 245px);
+  object-fit: contain;
+  transform: scale(1.1);
+}
+
+.erp-hero-image--file {
+  transform: scale(0.9);
+}
+
+.erp-hero-step figcaption {
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.erp-hero-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+}
+
+.erp-hero-arrow svg {
+  display: block;
+  width: 100%;
+  max-width: 2.5rem;
   height: auto;
-  border-radius: 8px;
-  box-shadow: 0 8px 18px rgb(0 0 0 / 22%);
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.erp-hero-image--bulk {
-  z-index: 1;
-  top: 8%;
-  left: 7%;
-  width: 54%;
-}
+@media (max-width: 768px) {
+  .erp-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
 
-.erp-hero-image--template {
-  z-index: 2;
-  top: 29%;
-  left: 36%;
-  width: 57%;
+  .erp-hero-image {
+    height: clamp(160px, 45vw, 220px);
+  }
+
+  .erp-hero-arrow {
+    height: 1.5rem;
+  }
+
+  .erp-hero-arrow svg {
+    width: 1.5rem;
+    transform: rotate(90deg);
+  }
 }
 
 .erp-solution-gallery {

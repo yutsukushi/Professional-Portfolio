@@ -53,7 +53,7 @@ defineProps({
 .site-header-inner {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   width: 100%;
   flex-flow: row wrap;
   gap: 1rem;
@@ -103,9 +103,9 @@ defineProps({
   line-height: 1.2;
 }
 
-.site-nav {
+/* .site-nav {
   margin-top: 0.6rem;
-}
+} */
 
 .site-nav a {
   display: inline-block;
@@ -135,7 +135,6 @@ defineProps({
     justify-content: flex-start;
     align-items: flex-start;
     text-align: left;
-    gap: 2rem;
   }
 
   .site-title-meta {
