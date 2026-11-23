@@ -238,6 +238,8 @@ function getTriggerElement(type, id) {
 
 function positionDropdown(trigger, dropdown, estimatedHeight) {
   const bounds = trigger.getBoundingClientRect()
+  const horizontalAnchorLeft =
+    trigger.closest('.supplier-cell, .sku-cell')?.getBoundingClientRect().left ?? bounds.left
   const viewportPadding = 12
   const dropdownGap = 6
   const dropdownWidth = Math.min(320, window.innerWidth - viewportPadding * 2)
@@ -254,7 +256,7 @@ function positionDropdown(trigger, dropdown, estimatedHeight) {
     : Math.max(viewportPadding, bounds.top - Math.min(dropdownHeight, availableHeight) - dropdownGap)
   const left = Math.max(
     viewportPadding,
-    Math.min(bounds.left, window.innerWidth - dropdownWidth - viewportPadding),
+    Math.min(horizontalAnchorLeft, window.innerWidth - dropdownWidth - viewportPadding),
   )
 
   dropdownPosition.value = {
@@ -1111,10 +1113,10 @@ function openEmptyProductDropdown(row, trigger) {
 }
 
 .procurement-table .select-col { width: 42px; }
-.procurement-table .sku-col { width: 135px; }
+.procurement-table .sku-col { width: 200px; }
 .procurement-table .brand-col { width: 120px; }
 .procurement-table .supplier-col { width: 16rem; }
-.procurement-table .supplier-avail { width: 150px; }
+.procurement-table .supplier-avail { width: 120px; }
 .procurement-table .quantity-col { width: 112px; }
 .procurement-table .cost-col { width: 125px; }
 .procurement-table .phase-col { width: 112px; }
@@ -1795,6 +1797,11 @@ function openEmptyProductDropdown(row, trigger) {
   visibility: hidden;
   background-color: #c76b25;
   color: #fff;
+}
+
+.supplier-option:first-child .supplier-alert-tooltip {
+  top: calc(100% + 5px);
+  bottom: auto;
 }
 
 .supplier-alert-beacon .supplier-alert-tooltip {
