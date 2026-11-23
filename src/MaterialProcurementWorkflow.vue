@@ -6,6 +6,7 @@ import productSearchInteraction from '../assets/images/table-visuals/Frame 70.pn
 import supplierOffersInteraction from '../assets/images/table-visuals/Frame 71.png'
 import supplierSavingsInteraction from '../assets/images/table-visuals/Frame 72.png'
 import supplierAvailabilityInteraction from '../assets/images/table-visuals/Frame 75.png'
+import procurementWorkflowExample from '../assets/images/table-visuals/Group 65.png'
 import MaterialProcurementDemo from './components/MaterialProcurementDemo.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
@@ -93,11 +94,7 @@ function closeImage() {
       </div>
       <div>
         <h5 class="case-study-label">Responsibilities</h5>
-        <ul class="case-study-text case-study-responsibilities" role="list">
-          <li>UX/UI Design</li>
-          <li>Frontend Development</li>
-          <li>API and data modeling</li>
-        </ul>
+        <p class="case-study-text">UX/UI Design, Frontend Development, API and data modeling</p>
       </div>
     </section>
     <section class="case-study-section">
@@ -158,6 +155,21 @@ function closeImage() {
           </figcaption>
         </figure>
       </div>
+      <section style="margin: 4rem 0;">
+        <h4 class="case-study-subheading">From Static Material Rows to Procurement Workflows</h4>
+        <p>A material row originally functioned as a record of project materials. Procurement activities such as supplier comparison, product replacement, and pricing review required navigating to separate workflows.</p>
+<section style="margin: 4rem 0;">
+        <h4 class="case-study-subheading">Legacy Material Row</h4>
+        <img
+          class="design-exploration-image"
+          :src="procurementWorkflowExample"
+          alt="Material row displaying product details, supplier information, and procurement values"
+        />
+        <p class="case-study-text" style="margin: 16px 0;">The redesigned row became the entry point for managing materials, suppliers, and purchasing decisions in context.</p></section>
+        </section>
+        <!-- <section style="margin: 8px 0;"> -->
+        
+      <!-- </section> -->
       <section class="key-interactions" aria-labelledby="key-interactions-title">
         <h4 id="key-interactions-title" class="case-study-subheading">Key Interactions</h4>
         <p class="case-study-text">Procurement workflows were embedded directly into each material row, allowing users to source products, compare suppliers, and act on cost-saving opportunities without leaving the workspace.</p>
@@ -168,28 +180,22 @@ function closeImage() {
           aria-label="Key interactions diagram. Scroll horizontally to view all three interaction examples."
         >
           <div class="key-interaction-diagram">
-            <button
-              class="key-interaction-source-button"
-              type="button"
-              :aria-label="`View full-size image: ${keyInteractionDiagram.alt}`"
-              @click="openImage(keyInteractionDiagram)"
-            >
-              <img :src="keyInteractionDiagram.src" :alt="keyInteractionDiagram.alt" />
-            </button>
+            <img
+              class="key-interaction-source-image"
+              :src="keyInteractionDiagram.src"
+              :alt="keyInteractionDiagram.alt"
+            />
             <div class="key-interactions-grid">
               <article
                 v-for="interaction in keyInteractions"
                 :key="interaction.title"
                 class="key-interaction-card"
               >
-                <button
-                  class="key-interaction-image-button"
-                  type="button"
-                  :aria-label="`View full-size image: ${interaction.alt}`"
-                  @click="openImage(interaction)"
-                >
-                  <img :src="interaction.src" :alt="interaction.alt" />
-                </button>
+                <img
+                  class="key-interaction-image"
+                  :src="interaction.src"
+                  :alt="interaction.alt"
+                />
                 <h5 class="case-study-label">{{ interaction.title }}</h5>
                 <p class="case-study-text">{{ interaction.description }}</p>
               </article>
@@ -272,23 +278,14 @@ function closeImage() {
 }
 
 .key-interaction-diagram {
-  padding: 0.65rem;
+  padding: 1.25rem;
   border: 1px solid #dfe3dc;
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 2px 8px rgb(32 39 32 / 8%);
 }
 
-.key-interaction-source-button {
-  display: block;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: zoom-in;
-}
-
-.key-interaction-source-button img {
+.key-interaction-source-image {
   display: block;
   width: 100%;
   height: auto;
@@ -313,55 +310,33 @@ function closeImage() {
   margin: 0;
 }
 
-.key-interaction-image-button {
+.key-interaction-image {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 10;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid #dfe3dc;
-  border-radius: 6px;
+  aspect-ratio: 16 / 10;  /* border: 1px solid #dfe3dc; */
+  /* border-radius: 6px; */
   background: #fff;
-  box-shadow: 0 2px 8px rgb(32 39 32 / 8%);
-  cursor: zoom-in;
-  transition: transform 180ms ease, box-shadow 180ms ease;
-}
-
-.key-interaction-image-button img {
-  display: block;
-  width: 100%;
-  height: 100%;
+  margin-bottom: 1.25rem;
   object-fit: contain;
-}
-
-.key-interaction-image-button:hover,
-.key-interaction-image-button:focus-visible {
-  box-shadow: 0 5px 14px rgb(32 39 32 / 12%);
-  transform: translateY(-3px);
-}
-
-.key-interaction-image-button:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 3px;
 }
 
 ul.case-study-text {
   padding-inline-start: 1.25rem;
 }
 
-ul.case-study-text.case-study-responsibilities {
+/* ul.case-study-text.case-study-responsibilities {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   padding-inline-start: 0;
   list-style: none;
-}
+} */
 
-.case-study-responsibilities li + li::before {
+/* .case-study-responsibilities li + li::before {
   margin: 0 0.45rem;
   color: var(--muted);
   content: '·';
-}
+} */
 
 .project-table-gallery-caption ul {
   margin: 0;
@@ -474,8 +449,7 @@ ul.case-study-text.case-study-responsibilities {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .project-table-image-button,
-  .key-interaction-image-button {
+  .project-table-image-button {
     transition: none;
   }
 }
