@@ -1,30 +1,64 @@
 <script setup>
 import { ref } from 'vue'
 import browserBulkExportImage from '../assets/images/erp-visuals/browser-bulk-export.png'
-import bulkExportImage from '../assets/images/erp-visuals/bulk-export.png'
+import bulkExportImage from '../assets/images/erp-visuals/export-overview-numbering.png'
 import erpFileImage from '../assets/images/erp-visuals/erp-file.png'
-import templateFiltersImage from '../assets/images/erp-visuals/filters-filename.png'
-import templateEditorImage from '../assets/images/erp-visuals/template-editor-errors.png'
+import templateFiltersImage from '../assets/images/erp-visuals/template-editor-filter-numbering.png'
+import templateEditorImage from '../assets/images/erp-visuals/template-editor-overview-numbering.png'
+import templateEditorFieldImage from '../assets/images/erp-visuals/template-editor-mapping-numbering.png'
 import browserTemplateEditorImage from '../assets/images/erp-visuals/browser-template-editor.png'
-import browserWorkflowDiagramImage from '../assets/images/erp-visuals/workflow-diagram-bg2.png'
+import browserWorkflowDiagramImage from '../assets/images/erp-visuals/workflow-diagram-bg.png'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
 
-const erpSolutionImages = [
+const erpSolutionGroups = [
   {
-    src: templateEditorImage,
-    alt: 'ERP template editor with field mapping and validation errors',
     label: 'Template Editor',
+    images: [
+      {
+        src: templateEditorImage,
+        alt: 'ERP template editor with field mapping and validation errors',
+      },
+      {
+        src: templateEditorFieldImage,
+        alt: 'ERP template editor field mapping showing source and target fields',
+      },
+    ],
+    callouts: [
+      { number: '1', title: 'Choose row granularity', description: 'Set whether each purchase order or each line item becomes a row.' },
+      { number: '2', title: 'Configure output columns', description: 'Map export columns to source fields and add transformation rules.' },
+      { number: '2a', title: 'Handle overflow values', description: 'Route values over the character limit to itemdes1, joined with ~, instead of dropping them.' },
+      { number: '3', title: 'Review validation and preview', description: 'Check configuration issues and switch between table and raw CSV previews.' },
+      { number: '3a', title: 'Inspect the generated CSV', description: 'Review the raw export sample before using the mapping.' },
+    ],
   },
   {
-    src: bulkExportImage,
-    alt: 'ERP bulk export workflow showing purchase orders and export history',
     label: 'Bulk Export',
+    images: [
+      {
+        src: bulkExportImage,
+        alt: 'ERP bulk export workflow showing purchase orders and export history',
+      },
+    ],
+    callouts: [
+      { number: '1', title: 'Review orders waiting to export', description: 'See purchase orders eligible for the current export batch.' },
+      { number: '2', title: 'Download completed exports', description: 'Retrieve generated files from export history.' },
+      { number: '3', title: 'Inspect the batch', description: 'Review which purchase orders were included in an export.' },
+    ],
   },
   {
-    src: templateFiltersImage,
-    alt: 'ERP template filters showing filename-based filtering options',
     label: 'Template Filters',
+    images: [
+      {
+        src: templateFiltersImage,
+        alt: 'ERP template filters showing filename-based filtering options',
+      },
+    ],
+    callouts: [
+      { number: '1', title: 'Set exclusion conditions', description: 'Skip purchase orders that match the selected conditions.' },
+      { number: '2', title: 'Define output format', description: 'Set file format options and build filenames from available tokens.' },
+      { number: '3', title: 'Plan recurring exports - Coming soon', description: 'Configure scheduled exports as recurring delivery becomes available.' },
+    ],
   },
 ]
 
@@ -166,21 +200,36 @@ function closeImage() {
         </div>
         <div class="erp-solution-gallery">
           <figure
-            v-for="image in erpSolutionImages"
-            :key="image.src"
+            v-for="group in erpSolutionGroups"
+            :key="group.label"
             class="erp-solution-gallery-item"
           >
-            <figcaption class="erp-solution-gallery-caption">
-              <h5 class="case-study-label">{{ image.label }}</h5>
-            </figcaption>
-            <button
-              class="erp-solution-image-button"
-              type="button"
-              :aria-label="`View full-size image: ${image.alt}`"
-              @click="openImage(image)"
-            >
-              <img :src="image.src" :alt="image.alt" />
-            </button>
+            <div class="erp-solution-gallery-content">
+              <div class="erp-solution-gallery-images">
+                <button
+                  v-for="image in group.images"
+                  :key="image.src"
+                  class="erp-solution-image-button"
+                  type="button"
+                  :aria-label="`View full-size image: ${image.alt}`"
+                  @click="openImage(image)"
+                >
+                  <img :src="image.src" :alt="image.alt" />
+                </button>
+              </div>
+              <div>
+              <h5 class="case-study-label" style="margin: 2rem 0">{{ group.label }}</h5>
+              <ul class="erp-solution-callouts" :aria-label="`Callouts for ${group.label}`">
+                <li v-for="callout in group.callouts" :key="callout.number" class="erp-solution-callout">
+                  <span class="erp-solution-callout-number" aria-hidden="true">{{ callout.number }}</span>
+                  <p class="erp-solution-callout-copy">
+                    <strong>{{ callout.title }}</strong>
+                    {{ callout.description }}
+                  </p>
+                </li>
+              </ul>
+              </div>
+            </div>
           </figure>
         </div>
       </section>
@@ -312,8 +361,8 @@ function closeImage() {
 
 .erp-solution-gallery {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
   width: 100%;
   margin: 3rem 0;
 }
@@ -324,7 +373,58 @@ function closeImage() {
 }
 
 .erp-solution-gallery-caption {
-  margin-top: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+.erp-solution-gallery-content {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(15rem, 2fr);
+  align-items: center;
+  gap: clamp(1rem, 2vw, 2rem);
+}
+
+.erp-solution-gallery-images {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.erp-solution-callouts {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.erp-solution-callout {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+}
+
+.erp-solution-callout-number {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #414141;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.erp-solution-callout-copy {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.erp-solution-callout-copy strong {
+  display: block;
+  margin-bottom: 0.2rem;
 }
 
 .erp-solution-image-button {
@@ -383,6 +483,12 @@ function closeImage() {
 @media (prefers-reduced-motion: reduce) {
   .erp-solution-image-button {
     transition: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .erp-solution-gallery-content {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 </style>
