@@ -68,6 +68,10 @@ a:focus-visible {
   gap: 1rem;
 }
 
+.case-study-section {
+  padding: 1rem 0;
+}
+
 @media (max-width: 768px) {
   .case-study-details {
     flex-direction: column;

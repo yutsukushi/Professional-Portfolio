@@ -252,10 +252,6 @@ function closeImage() {
 </template>
 
 <style scoped>
-.case-study-section {
-  padding: 1rem 0;
-}
-
 .design-exploration-image {
   width: 100%;
   max-width: 90rem;

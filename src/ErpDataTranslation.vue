@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import bulkExportImage from '../assets/images/erp-visuals/browser-bulk-export.png'
 import erpFileImage from '../assets/images/erp-visuals/erp-file.png'
 import templateEditorImage from '../assets/images/erp-visuals/browser-template-editor.png'
+import workflowDiagramImage from '../assets/images/erp-visuals/workflow-diagram-bg2.png'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
 
@@ -96,7 +97,7 @@ function closeImage() {
         </div>
       </section>
 
-      <section>
+      <section class="case-study-section">
         <h4>Problem</h4>
         <p class="case-study-text"><b>
           Supporting customer-specific ERP files relied on manual, hard-coded export implementations that weren’t built to evolve alongside changing requirements.</b>
@@ -107,9 +108,16 @@ function closeImage() {
         <p class="case-study-text">
           The process created friction for administrators responsible for managing exports while making it difficult to adapt to changing customer requirements. Users also lacked visibility into which purchase orders had already been exported, forcing teams to manually track what had been processed.
         </p>
+        <div class="erp-problem-diagram-frame">
+          <img
+            class="erp-problem-diagram"
+            :src="workflowDiagramImage"
+            alt="Different customer data fields are consolidated by a template-driven export system into an ERP-ready deliverable"
+          />
+        </div>
       </section>
 
-      <section>
+      <section class="case-study-section">
         <h4>Opportunity</h4>
         <p class="case-study-text">
           <b>
@@ -120,7 +128,7 @@ function closeImage() {
         </p>
       </section>
 
-      <section>
+      <section class="case-study-section">
         <h4>Key Design Challenge</h4>
         <div class="erp-section-copy">
           <p class="case-study-text">
@@ -132,7 +140,7 @@ function closeImage() {
         </div>
       </section>
 
-      <section>
+      <section class="case-study-section">
         <h4>Solution</h4>
         <div class="erp-section-copy">
           <p class="case-study-text">
@@ -169,7 +177,7 @@ function closeImage() {
         </div>
       </section>
 
-      <section>
+      <section class="case-study-section">
         <h4>Trade-Offs</h4>
         <div class="erp-section-copy">
           <p class="case-study-text"><b>
@@ -207,6 +215,20 @@ function closeImage() {
 .erp-title {
   margin-block: 0.83em 0.5rem;
   font-size: 1.5em;
+}
+
+.erp-problem-diagram-frame {
+  width: 100%;
+  max-width: 60rem;
+  margin: 2rem auto 0;
+  overflow: hidden;
+}
+
+.erp-problem-diagram {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .erp-hero {
