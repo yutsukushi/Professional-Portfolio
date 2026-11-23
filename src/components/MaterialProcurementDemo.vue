@@ -126,6 +126,13 @@ const dummyProducts = [
   },
 ]
 
+const availableSuppliers = [
+  ...new Set([
+    ...initialProcurementRows.flatMap((row) => row.offers.map((offer) => offer.supplier)),
+    ...dummyProducts.map((product) => product.supplier),
+  ]),
+]
+
 const configurationFields = [
   { label: 'Output Signal', options: ['Pulse', 'Analog (4–20 mA)', 'Modbus RTU'] },
   { label: 'Pipe Size', options: ['2 in', '1 in', '3 in', '4 in'] },
@@ -137,6 +144,7 @@ const configurationFields = [
 const selectedRowIds = ref([])
 const selectedSuppliers = ref({})
 const emptyProductRows = ref([])
+const emptySupplierSearchQueries = ref({})
 const maxNewProductRows = 3
 const selectedEmptyProductRows = ref([])
 const activeSupplierPopoverRowId = ref(null)
@@ -217,6 +225,51 @@ function switchSupplier(row) {
 function selectSupplier(row, supplier) {
   selectedSuppliers.value = { ...selectedSuppliers.value, [row.id]: supplier }
   closeDropdown('supplier', row.id)
+}
+
+function filteredSuppliers(query) {
+  const normalizedQuery = query.trim().toLowerCase()
+  return availableSuppliers.filter((supplier) =>
+    supplier.toLowerCase().includes(normalizedQuery),
+  )
+}
+
+function filteredSupplierOptions(row) {
+  const query = (emptySupplierSearchQueries.value[row.id] || '').trim().toLowerCase()
+  if (!row.offers.length) {
+    return filteredSuppliers(query)
+  }
+  const hasCatalogSource = row.supplier && !row.offers.some((offer) => offer.supplier === row.supplier)
+  const catalogSource = hasCatalogSource
+    ? [{
+        supplier: row.supplier,
+        brand: row.brand,
+        productType: row.productType,
+        unitCost: row.unitCost,
+        alerts: [],
+        isCatalogSource: true,
+      }]
+    : []
+
+  return [...catalogSource, ...row.offers].filter((option) =>
+    `${option.supplier} ${option.brand} ${option.productType}`.toLowerCase().includes(query),
+  )
+}
+
+function setEmptySupplierSearchQuery(row, query) {
+  emptySupplierSearchQueries.value = {
+    ...emptySupplierSearchQueries.value,
+    [row.id]: query,
+  }
+}
+
+function selectEmptyProductSupplier(row, supplier) {
+  row.supplier = supplier
+  const offer = row.offers.find((item) => item.supplier === supplier)
+  if (offer) {
+    row.unitCost = offer.unitCost
+  }
+  closeDropdown('new-supplier', row.id)
 }
 
 function triggerKey(type, id) {
@@ -344,7 +397,9 @@ function closeSupplierPopoverOutside(event) {
   }
   const clickedInsideDropdown = dropdown.type === 'supplier'
     ? target.closest('.supplier-cell-content, .supplier-options')
-    : target.closest('.sku-entry, .sku-product-options')
+    : dropdown.type === 'new-supplier'
+      ? target.closest('.empty-product-supplier-input, .empty-supplier-options')
+      : target.closest('.sku-entry, .sku-product-options')
   if (!clickedInsideDropdown) {
     closeActiveDropdown()
   }
@@ -406,6 +461,7 @@ function addProductRow() {
     sku: '',
     brand: '',
     supplier: '',
+    offers: [],
     plannedQty: null,
     orderedQty: null,
     unitCost: null,
@@ -420,6 +476,7 @@ function resetDemo() {
   selectedRowIds.value = []
   selectedSuppliers.value = {}
   emptyProductRows.value = []
+  emptySupplierSearchQueries.value = {}
   selectedEmptyProductRows.value = []
   activeSupplierPopoverRowId.value = null
   pinnedSupplierPopoverRowId.value = null
@@ -439,6 +496,7 @@ function dropdownDomId(type, id) {
     product: 'sku-products',
     'new-product': 'empty-product-options',
     supplier: 'supplier-options',
+    'new-supplier': 'empty-supplier-options',
   }
   return `${prefixes[type]}-${id}`
 }
@@ -524,6 +582,9 @@ function updateRowSku(row, sku) {
 function setCustomSku(row, sku) {
   updateRowSku(row, sku)
   row.productType = sku.trim() ? 'NCP' : ''
+  if (emptyProductRows.value.some((emptyRow) => emptyRow.id === row.id)) {
+    row.offers = []
+  }
 }
 
 function applyProductSelection(row, product) {
@@ -597,11 +658,15 @@ function filteredDummyProducts(row) {
 }
 
 function selectDummyProduct(row, product) {
+  const sourceRow = initialProcurementRows.find(
+    (candidate) => candidate.sku === product.configuredSku,
+  )
   Object.assign(row, {
     sku: product.configuredSku,
     brand: product.brand,
     productType: product.productType,
     supplier: product.supplier,
+    offers: sourceRow?.offers || [],
     plannedQty: 1,
     orderedQty: 1,
     unitCost: product.unitCost,
@@ -615,6 +680,11 @@ function openProductDropdown(id, trigger) {
 
 function openEmptyProductDropdown(row, trigger) {
   openDropdown('new-product', row.id, trigger)
+}
+
+function openEmptySupplierDropdown(row, trigger) {
+  setEmptySupplierSearchQuery(row, '')
+  openDropdown('new-supplier', row.id, trigger)
 }
 </script>
 
@@ -872,7 +942,7 @@ function openEmptyProductDropdown(row, trigger) {
                 <th scope="row" class="sku-cell">
                   <ProductPicker
                     :id="`empty-product-options-${row.id}`"
-                    :model-value="row.sku"
+                    :model-value="productDisplayName(row)"
                     :title="row.sku"
                     :selected-sku="row.sku"
                     :products="filteredDummyProducts(row)"
@@ -891,14 +961,110 @@ function openEmptyProductDropdown(row, trigger) {
                   />
                 </th>
                 <td>{{ row.brand || (row.unitCost == null ? '-' : '') }}</td>
-                <td>
+                <td class="supplier-cell">
                   <input
+                    :ref="(element) => setTriggerElement('new-supplier', row.id, element)"
                     v-model="row.supplier"
                     class="empty-product-supplier-input"
                     type="text"
                     placeholder="Type or select supplier"
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-haspopup="listbox"
+                    :aria-expanded="activeDropdown?.type === 'new-supplier' && activeDropdown.id === row.id && filteredSupplierOptions(row).length > 0"
+                    :aria-controls="`empty-supplier-options-${row.id}`"
                     :aria-label="`Supplier for new product row ${row.id}`"
+                    @focus="openEmptySupplierDropdown(row, $event.currentTarget)"
+                    @click.stop="openEmptySupplierDropdown(row, $event.currentTarget)"
+                    @input="setEmptySupplierSearchQuery(row, $event.target.value)"
+                    @keydown.esc="closeDropdown('new-supplier', row.id)"
                   />
+                  <Teleport to="body">
+                    <div
+                      v-if="activeDropdown?.type === 'new-supplier' && activeDropdown.id === row.id && filteredSupplierOptions(row).length"
+                      :id="`empty-supplier-options-${row.id}`"
+                      class="supplier-options empty-supplier-options"
+                      :style="dropdownPosition"
+                      role="listbox"
+                      :aria-label="`Available suppliers for new product row ${row.id}`"
+                    >
+                      <div
+                        v-for="option in filteredSupplierOptions(row)"
+                        :key="row.offers.length ? option.supplier : option"
+                        class="supplier-option"
+                        role="option"
+                        :aria-selected="row.supplier === (row.offers.length ? option.supplier : option)"
+                        tabindex="0"
+                        @click.stop="selectEmptyProductSupplier(row, row.offers.length ? option.supplier : option)"
+                        @keydown.enter.stop="selectEmptyProductSupplier(row, row.offers.length ? option.supplier : option)"
+                        @keydown.space.prevent.stop="selectEmptyProductSupplier(row, row.offers.length ? option.supplier : option)"
+                      >
+                        <div class="supplier-option-layout">
+                          <span class="supplier-option-initial">S</span>
+                          <div class="supplier-option-description">
+                            <template v-if="row.offers.length">
+                              <div class="supplier-option-heading">
+                                <span><b>{{ option.supplier }}</b></span>
+                                <span
+                                  v-if="row.productType !== 'NCP' && !option.isCatalogSource && option.unitCost === lowestOfferPrice(row)"
+                                  class="supplier-option-badge supplier-option-badge--price"
+                                ><b>Lowest price</b></span>
+                                <span
+                                  v-if="row.productType !== 'NCP' && option.productType !== 'Flat'"
+                                  class="supplier-option-badge"
+                                  :class="`supplier-option-badge--${option.productType.toLowerCase()}`"
+                                ><b>{{ option.productType }}</b></span>
+                              </div>
+                              <div v-if="option.brand !== row.brand" class="supplier-option-brand">
+                                {{ option.brand }}
+                              </div>
+                              <div v-if="row.productType !== 'NCP' && !option.isCatalogSource" class="supplier-option-meta">
+                                <div class="supplier-option-stock" :class="`supplier-option-stock--${option.stockStatus}`">
+                                  <span class="supplier-option-stock-dot" aria-hidden="true"></span>
+                                  <span class="supplier-option-stock-text">{{ stockLabel(option) }}</span>
+                                </div>
+                                <template v-if="option.alerts.length">
+                                  <span class="supplier-option-separator" aria-hidden="true"></span>
+                                  <button
+                                    class="supplier-alert-trigger supplier-option-alert"
+                                    type="button"
+                                    :aria-label="`${option.alerts.length} product alert${option.alerts.length === 1 ? '' : 's'} from ${option.supplier}`"
+                                    @click.stop
+                                  >
+                                    {{ option.alerts.length }} product alert{{ option.alerts.length === 1 ? '' : 's' }}
+                                    <svg class="supplier-info-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none">
+                                      <circle cx="8" cy="8" r="6.25" />
+                                      <path d="M8 7.25v3.5M8 5.25h.01" />
+                                    </svg>
+                                    <span class="supplier-alert-tooltip" role="tooltip">
+                                      <span v-for="alert in option.alerts" :key="alert">{{ alert }}</span>
+                                    </span>
+                                  </button>
+                                </template>
+                              </div>
+                            </template>
+                            <template v-else>
+                              <div class="supplier-option-heading">
+                                <span><b>{{ option }}</b></span>
+                              </div>
+                              <div class="supplier-option-brand">
+                                Select a product to see supplier offer details
+                              </div>
+                            </template>
+                          </div>
+                          <div v-if="row.offers.length" class="supplier-option-price">
+                            <span><b>{{ formatCurrency(option.unitCost) }}</b></span>
+                            <span
+                              v-if="row.unitCost != null && option.unitCost < row.unitCost"
+                              class="supplier-option-savings"
+                            >
+                              Save {{ formatCurrency((row.unitCost - option.unitCost) * (row.orderedQty || 1)) }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Teleport>
                 </td>
                 <td class="supplier-availability-cell"><span class="supplier-availability-empty">-</span></td>
                 <td>{{ row.plannedQty ?? (row.unitCost == null ? '-' : '') }}</td>

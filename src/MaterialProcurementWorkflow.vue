@@ -6,6 +6,7 @@ import productSearchInteraction from '../assets/images/table-visuals/Frame 70.pn
 import supplierOffersInteraction from '../assets/images/table-visuals/Frame 71.png'
 import supplierSavingsInteraction from '../assets/images/table-visuals/Frame 72.png'
 import supplierAvailabilityInteraction from '../assets/images/table-visuals/Frame 75.png'
+import supplierAvailabilityMobileInteraction from '../assets/images/table-visuals/Frame 76.png'
 import procurementWorkflowExample from '../assets/images/table-visuals/Group 65.png'
 import MaterialProcurementDemo from './components/MaterialProcurementDemo.vue'
 import SiteFooter from './components/SiteFooter.vue'
@@ -40,7 +41,7 @@ const projectTableImages = [
 
 const keyInteractionDiagram = {
   src: supplierAvailabilityInteraction,
-  alt: 'Material row with arrows pointing to three key interaction examples',
+  alt: 'Material row displaying supplier availability and a savings action',
 }
 
 const keyInteractions = [
@@ -175,29 +176,34 @@ function closeImage() {
         <p class="case-study-text">Procurement workflows were embedded directly into each material row, allowing users to source products, compare suppliers, and act on cost-saving opportunities without leaving the workspace.</p>
         <div
           class="key-interactions-scroll"
-          tabindex="0"
-          role="region"
-          aria-label="Key interactions diagram. Scroll horizontally to view all three interaction examples."
         >
           <div class="key-interaction-diagram">
-            <img
-              class="key-interaction-source-image"
-              :src="keyInteractionDiagram.src"
-              :alt="keyInteractionDiagram.alt"
-            />
+            <picture class="key-interaction-source">
+              <source
+                media="(max-width: 768px)"
+                :srcset="supplierAvailabilityMobileInteraction"
+              />
+              <img
+                class="key-interaction-source-image"
+                :src="keyInteractionDiagram.src"
+                :alt="keyInteractionDiagram.alt"
+              />
+            </picture>
             <div class="key-interactions-grid">
               <article
                 v-for="interaction in keyInteractions"
                 :key="interaction.title"
                 class="key-interaction-card"
               >
+                <div class="key-interaction-annotation">
+                  <h5 class="case-study-label">{{ interaction.title }}</h5>
+                  <p class="case-study-text">{{ interaction.description }}</p>
+                </div>
                 <img
                   class="key-interaction-image"
                   :src="interaction.src"
                   :alt="interaction.alt"
                 />
-                <h5 class="case-study-label">{{ interaction.title }}</h5>
-                <p class="case-study-text">{{ interaction.description }}</p>
               </article>
             </div>
           </div>
@@ -274,7 +280,7 @@ function closeImage() {
 }
 
 .key-interactions-scroll {
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 .key-interaction-diagram {
@@ -283,6 +289,10 @@ function closeImage() {
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 2px 8px rgb(32 39 32 / 8%);
+}
+
+.key-interaction-source {
+  display: block;
 }
 
 .key-interaction-source-image {
@@ -300,10 +310,18 @@ function closeImage() {
 
 .key-interaction-card {
   min-width: 0;
+  display: grid;
+  grid-template-areas:
+    "image"
+    "annotation";
+}
+
+.key-interaction-annotation {
+  grid-area: annotation;
 }
 
 .key-interaction-card .case-study-label {
-  margin-top: 0.75rem;
+  margin: 0 0 0.75rem;
 }
 
 .key-interaction-card .case-study-text {
@@ -312,11 +330,12 @@ function closeImage() {
 
 .key-interaction-image {
   display: block;
+  grid-area: image;
   width: 100%;
   aspect-ratio: 16 / 10;  /* border: 1px solid #dfe3dc; */
   /* border-radius: 6px; */
   background: #fff;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
   object-fit: contain;
 }
 
@@ -442,9 +461,31 @@ ul.case-study-text {
   .project-table-gallery {
     grid-template-columns: 1fr;
   }
+}
 
+@media (max-width: 768px) {
   .key-interaction-diagram {
-    min-width: 720px;
+    padding: 0.75rem;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .key-interactions-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .key-interaction-card {
+    padding-top: 1.25rem;
+    border-top: 1px solid #dfe3dc;
+    grid-template-areas:
+      "annotation"
+      "image";
+  }
+
+  .key-interaction-image {
+    width: 75%;
+    margin: 0.75rem auto 0;
   }
 }
 
