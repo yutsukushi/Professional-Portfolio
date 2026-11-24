@@ -1,7 +1,9 @@
 <script setup>
 import bulkExportImage from '../assets/images/erp-visuals/browser-bulk-export.png'
+import createPromotionImage from '../assets/images/promos-visuals/create-new-promotion-1(1).png'
+import promotionOverviewImage from '../assets/images/promos-visuals/Promotion-overview(3).png'
 import templateEditorImage from '../assets/images/erp-visuals/browser-template-editor.png'
-import tableNewBrowser from '../assets/images/table-visuals/table-new-browser.png'
+import tableNewBrowser from '../assets/images/table-visuals/Frame 80(1).png'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
 </script>
@@ -30,12 +32,16 @@ import SiteHeader from './components/SiteHeader.vue'
         <li class="project-card">
           <RouterLink
             class="project-card-link"
-            to="/case-studies/promotions-authoring-system"
-            aria-label="Promotions Authoring System case study"
+            to="/case-studies/self-service-erp-data-translation"
+            aria-label="Self-Service ERP Data Translation case study"
           >
-            <div class="project-card-image project-card-image--promotions">
+            <div class="project-card-image project-card-image--erp">
+              <div class="project-thumbnail" aria-hidden="true">
+                <img class="project-thumbnail-image project-thumbnail-image--erp-bulk" :src="bulkExportImage" alt="" />
+                <img class="project-thumbnail-image project-thumbnail-image--erp-template" :src="templateEditorImage" alt="" />
+              </div>
               <span class="project-card-overlay">
-                <span class="project-card-title">Promotions Authoring System</span>
+                <span class="project-card-title">Self-Service ERP Data Translation</span>
               </span>
             </div>
           </RouterLink>
@@ -43,16 +49,16 @@ import SiteHeader from './components/SiteHeader.vue'
         <li class="project-card">
           <RouterLink
             class="project-card-link"
-            to="/case-studies/self-service-erp-data-translation"
-            aria-label="Self-Service ERP Data Translation case study"
+            to="/case-studies/promotions-authoring-system"
+            aria-label="Promotions Authoring System case study"
           >
-            <div class="project-card-image project-card-image--erp">
-              <div class="erp-thumbnail" aria-hidden="true">
-                <img class="erp-thumbnail-image erp-thumbnail-image--bulk" :src="bulkExportImage" alt="" />
-                <img class="erp-thumbnail-image erp-thumbnail-image--template" :src="templateEditorImage" alt="" />
+            <div class="project-card-image project-card-image--promotions">
+              <div class="project-thumbnail" aria-hidden="true">
+                <img class="project-thumbnail-image project-thumbnail-image--promotion-create" :src="createPromotionImage" alt="" />
+                <img class="project-thumbnail-image project-thumbnail-image--promotion-overview" :src="promotionOverviewImage" alt="" />
               </div>
               <span class="project-card-overlay">
-                <span class="project-card-title">Self-Service ERP Data Translation</span>
+                <span class="project-card-title">Promotions Authoring System</span>
               </span>
             </div>
           </RouterLink>
@@ -120,30 +126,42 @@ import SiteHeader from './components/SiteHeader.vue'
   object-position: center;
   display: block;
 }
-.erp-thumbnail {
+.project-thumbnail {
   position: relative;
   width: 85%;
   aspect-ratio: 859 / 626;
   transform: translateY(-2%);
 }
-.erp-thumbnail-image {
+.project-thumbnail-image {
   position: absolute;
   display: block;
   height: auto;
-  border-radius: 6px;
+  border-radius: 12px;
   box-shadow: 0 6px 14px rgb(0 0 0 / 22%);
 }
-.erp-thumbnail-image--bulk {
+.project-thumbnail-image--erp-bulk {
   z-index: 1;
   top: 8%;
   left: 7%;
   width: 54%;
 }
-.erp-thumbnail-image--template {
+.project-thumbnail-image--erp-template {
   z-index: 2;
   top: 29%;
   left: 36%;
   width: 57%;
+}
+.project-thumbnail-image--promotion-create {
+  z-index: 1;
+  bottom: -16%;
+  right: -9%;
+  width: 90%;
+}
+.project-thumbnail-image--promotion-overview {
+  z-index: 2;
+  bottom: -14%;
+  right: -35%;
+  width: 80%;
 }
 .project-card-overlay {
   position: absolute;

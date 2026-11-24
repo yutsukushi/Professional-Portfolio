@@ -81,7 +81,7 @@ function closeImage() {
 <template>
   <SiteHeader variant="case-study" />
   <main>
-    <h2 class="material-workspace-title">Turning a Project Table into a Material Workspace</h2>
+    <h2 class="case-study-title">Turning a Project Table into a Material Workspace</h2>
     <p class="case-study-text case-study-summary">For a procurement and material management platform used by construction contractors.</p>
     <MaterialProcurementDemo />
     <section class="case-study-details case-study-section">
@@ -96,6 +96,10 @@ function closeImage() {
       <div>
         <h5 class="case-study-label">Responsibilities</h5>
         <p class="case-study-text">UX/UI Design, Frontend Development, API and data modeling</p>
+      </div>
+      <div>
+        <h5 class="case-study-label">Timeline</h5>
+        <p class="case-study-text">1 month, 2026</p>
       </div>
     </section>
     <section class="case-study-section">
@@ -250,10 +254,6 @@ function closeImage() {
 </template>
 
 <style scoped>
-.material-workspace-title {
-  margin-bottom: 0.5rem;
-}
-
 .material-workflow-spaced-section {
   margin: 4rem 0;
 }

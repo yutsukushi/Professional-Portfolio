@@ -80,7 +80,7 @@ function closeImage() {
     <SiteHeader variant="case-study" />
 
     <main>
-      <h1 class="erp-title">Scaling ERP Exports Through Templates and Automation</h1>
+      <h1 class="case-study-title">Scaling ERP Exports Through Templates and Automation</h1>
       <p class="case-study-text case-study-summary">Replaced hard-coded ERP export implementations with a template-driven system that scales across customer-specific requirements.</p>
       <div class="erp-hero" role="group" aria-label="ERP export process from template configuration to deliverable">
         <figure class="erp-hero-step">
@@ -129,13 +129,11 @@ function closeImage() {
         </div>
         <div>
           <h5 class="case-study-label">Responsibilities</h5>
-          <ul class="case-study-text">
-            <li>Product design</li>
-            <li>UX/UI design</li>
-            <li>Front-end development</li>
-            <li>API and data modeling</li>
-            <li>Backend collaboration</li>
-          </ul>
+          <p class="case-study-text">UX/UI Design, Front-End Development, API and Data Modeling, Backend Collaboration</p>
+        </div>
+        <div>
+          <h5 class="case-study-label">Timeline</h5>
+          <p class="case-study-text">3 weeks, 2026</p>
         </div>
       </section>
 
@@ -267,11 +265,6 @@ function closeImage() {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-}
-
-.erp-title {
-  margin-block: 0.83em 0.5rem;
-  font-size: 1.5em;
 }
 
 .erp-problem-diagram-frame {
