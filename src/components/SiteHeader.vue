@@ -26,7 +26,7 @@ defineProps({
         <ul>
           <li><RouterLink :to="{ path: '/', hash: '#work' }">Work</RouterLink></li>
           <li><a :href="resumePdf" target="_blank" rel="noopener noreferrer">Resume</a></li>
-          <li><RouterLink :to="{ path: '/', hash: '#about' }">About Me</RouterLink></li>
+          <li><RouterLink to="/about">About Me</RouterLink></li>
         </ul>
       </nav>
     </div>
@@ -39,7 +39,7 @@ defineProps({
         <ul>
           <li><RouterLink :to="{ path: '/', hash: '#work' }">Work</RouterLink></li>
           <li><a :href="resumePdf" target="_blank" rel="noopener noreferrer">Resume</a></li>
-          <li><RouterLink :to="{ path: '/', hash: '#about' }">About Me</RouterLink></li>
+          <li><RouterLink to="/about">About Me</RouterLink></li>
         </ul>
       </nav>
     </div>

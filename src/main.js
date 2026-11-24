@@ -5,6 +5,7 @@ import MaterialProcurementWorkflow from './MaterialProcurementWorkflow.vue'
 import ErpDataTranslation from './ErpDataTranslation.vue'
 import PromotionsAuthoringSystem from './PromotionsAuthoringSystem.vue'
 import HomeView from './HomeView.vue'
+import AboutView from './AboutView.vue'
 import './style.css'
 
 if (window.location.search.startsWith('?/')) {
@@ -27,6 +28,11 @@ const router = createRouter({
       path: '/',
       component: HomeView,
       meta: { title: 'Yukie Kushibiki — Frontend Designer / Developer' },
+    },
+    {
+      path: '/about',
+      component: AboutView,
+      meta: { title: 'About — Yukie Kushibiki' },
     },
     {
       path: '/case-studies/material-procurement-workflow',
