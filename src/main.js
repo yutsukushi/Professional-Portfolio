@@ -26,7 +26,7 @@ const router = createRouter({
     {
       path: '/',
       component: HomeView,
-      meta: { title: 'Yukie Kushibiki — Product Design Engineer' },
+      meta: { title: 'Yukie Kushibiki — Frontend Designer / Developer' },
     },
     {
       path: '/case-studies/material-procurement-workflow',
