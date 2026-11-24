@@ -175,10 +175,10 @@ import SiteHeader from './components/SiteHeader.vue'
 
 .promotion-problem-image {
   display: block;
-  max-width:40rem;
+  max-width: 34rem;
   width: 100%;
   height: auto;
-  margin: 2rem auto;
+  margin: 2rem auto 0;
 }
 
 .promotion-management-image {
