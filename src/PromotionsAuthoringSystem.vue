@@ -2,6 +2,7 @@
 import createPromotionImage from '../assets/images/promos-visuals/create-new-promotion-full-form-2.png'
 import createPromotionHeroImage from '../assets/images/promos-visuals/create-new-promotion-1(1).png'
 import legacyPromosImage from '../assets/images/promos-visuals/legacy-promos.jpg'
+import promotionManagementImage from '../assets/images/promos-visuals/Promotion-overview(1).png'
 import promotionOverviewImage from '../assets/images/promos-visuals/Promotion-overview(3).png'
 import SiteFooter from './components/SiteFooter.vue'
 import SiteHeader from './components/SiteHeader.vue'
@@ -100,6 +101,11 @@ import SiteHeader from './components/SiteHeader.vue'
 
           <h4 class="case-study-subheading">Manage promotions after launch</h4>
           <p class="case-study-text">A dedicated management dashboard gave teams a centralized place to monitor promotions after launch. Redemptions, net sales, and promotional spend surfaced alongside active promotions, providing visibility into promotion activity without leaving the workflow.</p>
+          <img
+            class="promotion-management-image"
+            :src="promotionManagementImage"
+            alt="Promotion management overview showing promotion status, dates, redemptions, net sales, and spend"
+          />
       </section>
 
       <section class="case-study-section">
@@ -175,10 +181,18 @@ import SiteHeader from './components/SiteHeader.vue'
   margin: 2rem auto;
 }
 
+.promotion-management-image {
+  display: block;
+  width: 100%;
+  max-width: 48rem;
+  height: auto;
+  margin: 3rem auto 1rem;
+}
+
 .promotion-form-preview {
   max-width: 48rem;
   max-height: min(34rem, 70vh);
-  margin: 1.5rem auto 2.5rem;
+  margin: 3rem auto;
   overflow-y: auto;
   overscroll-behavior: contain;
   border: 1px solid var(--line);
