@@ -145,8 +145,7 @@ function closeImage() {
         <div>
           <h5 class="case-study-label">Timeline</h5>
           <div class="case-study-detail-lines">
-            <p class="case-study-text">2026</p>
-            <p class="case-study-text">3 weeks</p>
+            <p class="case-study-text">2026 (3 weeks)</p>
           </div>
         </div>
       </section>
@@ -296,8 +295,7 @@ function closeImage() {
 }
 
 .erp-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) 2rem minmax(0, 0.9fr) 2rem minmax(0, 1.15fr);
+  display: flex;
   align-items: center;
   gap: clamp(0.75rem, 1.8vw, 1.5rem);
   width: 100%;
@@ -305,6 +303,7 @@ function closeImage() {
 }
 
 .erp-hero-step {
+  flex: 0 1 auto;
   min-width: 0;
   margin: 0;
   text-align: center;
@@ -312,14 +311,10 @@ function closeImage() {
 
 .erp-hero-image {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: clamp(150px, 22vw, 245px);
   object-fit: contain;
-  transform: scale(1.1);
-}
-
-.erp-hero-image--file {
-  transform: scale(0.9);
 }
 
 .erp-hero-step figcaption {
@@ -329,6 +324,8 @@ function closeImage() {
 }
 
 .erp-hero-arrow {
+  flex: 1 1 0;
+  min-width: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -348,20 +345,30 @@ function closeImage() {
 
 @media (max-width: 768px) {
   .erp-hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.75rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    margin: 2.5rem 0;
   }
 
   .erp-hero-image {
-    height: clamp(160px, 45vw, 220px);
+    width: 100%;
+    height: clamp(140px, 40vw, 190px);
+  }
+
+  .erp-hero-step figcaption {
+    margin-top: 0.5rem;
   }
 
   .erp-hero-arrow {
+    flex: 0 0 1.5rem;
+    min-width: 0;
     height: 1.5rem;
+    justify-content: center;
   }
 
   .erp-hero-arrow svg {
-    width: 1.5rem;
+    width: 1.25rem;
     transform: rotate(90deg);
   }
 }

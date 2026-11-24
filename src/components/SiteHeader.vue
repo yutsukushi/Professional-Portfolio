@@ -20,7 +20,7 @@ defineProps({
             <span class="site-title-meta-detail site-title-meta-blurb">✦ Collector of tiny trinkets &amp; exotic plants</span>
           </p>
         </div>
-        <p class="site-title-helper">I work in the overlap between design and code, turning complex, data-dense workflows into clean, shipped products.</p>
+        <p class="site-title-helper">I work at the intersection between design and code, turning complex, data-dense workflows into clean, shipped products.</p>
       </div>
       <nav class="site-nav" aria-label="Primary navigation">
         <ul>

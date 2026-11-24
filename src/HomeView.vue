@@ -25,6 +25,7 @@ import SiteHeader from './components/SiteHeader.vue'
               <img class="case-study-image" :src="tableNewBrowser" alt="Material Procurement Workflow" />
               <span class="project-card-overlay">
                 <span class="project-card-title">Turning a Project Table into a Material Workspace</span>
+                <span class="project-card-metadata">Enterprise • Procurement • Workflow Design</span>
               </span>
             </div>
           </RouterLink>
@@ -33,7 +34,7 @@ import SiteHeader from './components/SiteHeader.vue'
           <RouterLink
             class="project-card-link"
             to="/case-studies/self-service-erp-data-translation"
-            aria-label="Self-Service ERP Data Translation case study"
+            aria-label="Self-Service ERP Export case study"
           >
             <div class="project-card-image project-card-image--erp">
               <div class="project-thumbnail" aria-hidden="true">
@@ -41,7 +42,8 @@ import SiteHeader from './components/SiteHeader.vue'
                 <img class="project-thumbnail-image project-thumbnail-image--erp-template" :src="templateEditorImage" alt="" />
               </div>
               <span class="project-card-overlay">
-                <span class="project-card-title">Self-Service ERP Data Translation</span>
+                <span class="project-card-title">Scaling ERP Exports Through Templates and Automation</span>
+                <span class="project-card-metadata">Enterprise • ERP • Workflow Automation</span>
               </span>
             </div>
           </RouterLink>
@@ -58,7 +60,8 @@ import SiteHeader from './components/SiteHeader.vue'
                 <img class="project-thumbnail-image project-thumbnail-image--promotion-overview" :src="promotionOverviewImage" alt="" />
               </div>
               <span class="project-card-overlay">
-                <span class="project-card-title">Promotions Authoring System</span>
+                <span class="project-card-title">Bringing Clarity to Promotion Creation & Management</span>
+                <span class="project-card-metadata">Enterprise • Marketing Operations • Complex Workflows</span>
               </span>
             </div>
           </RouterLink>
@@ -167,6 +170,11 @@ import SiteHeader from './components/SiteHeader.vue'
   position: absolute;
   z-index: 3;
   inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.4rem, 1vw, 0.75rem);
+  padding: 12.5% 1.5rem 1.5rem;
   pointer-events: none;
   background: linear-gradient(
     to bottom,
@@ -184,15 +192,16 @@ import SiteHeader from './components/SiteHeader.vue'
   transition: opacity 180ms ease;
 }
 .project-card-title {
-  position: absolute;
-  top: 25%;
-  right: 1.5rem;
-  left: 1.5rem;
-  transform: translateY(-50%);
+  margin: 0;
   color: #fff;
   font-size: clamp(1.1rem, 2vw, 1.75rem);
   font-weight: 700;
   line-height: 1.2;
+  text-align: center;
+}
+.project-card-metadata {
+  color: white;
+  line-height: 1.4;
   text-align: center;
 }
 .project-card-link:hover .project-card-image {

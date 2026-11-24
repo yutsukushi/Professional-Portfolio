@@ -110,8 +110,8 @@ function closeImage() {
       <div>
         <h5 class="case-study-label">Timeline</h5>
         <div class="case-study-detail-lines">
-          <p class="case-study-text">2026</p>
-          <p class="case-study-text">1 month</p>
+          <p class="case-study-text">2026 (1 month)</p>
+          <!-- <p class="case-study-text">1 month</p> -->
         </div>
       </div>
     </section>

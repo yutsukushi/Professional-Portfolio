@@ -14,7 +14,7 @@ import SiteHeader from './components/SiteHeader.vue'
     <SiteHeader variant="case-study" />
 
     <main>
-      <h2 class="case-study-title">Promotions Authoring System</h2>
+      <h2 class="case-study-title">Bringing Clarity to Promotion Creation & Management</h2>
       <p class="case-study-summary">Built a self-service authoring and management interface that allows internal teams to create, configure, and monitor promotional campaigns without engineering support.</p>
       <div class="promotions-hero" role="group" aria-label="Promotion creation and management screens">
         <img
@@ -54,8 +54,7 @@ import SiteHeader from './components/SiteHeader.vue'
         <div>
           <h5 class="case-study-label">Timeline</h5>
           <div class="case-study-detail-lines">
-            <p class="case-study-text">2024</p>
-            <p class="case-study-text">6 months</p>
+            <p class="case-study-text">2024 (6 months)</p>
           </div>
         </div>
       </section>
