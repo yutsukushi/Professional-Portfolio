@@ -30,19 +30,32 @@ import SiteHeader from './components/SiteHeader.vue'
       <section class="case-study-details" aria-label="Project details">
         <div>
           <h5 class="case-study-label">My Role</h5>
-          <p class="case-study-text">Product Designer, Developer</p>
+          <div class="case-study-detail-lines">
+            <p class="case-study-text">Product Designer</p>
+            <p class="case-study-text">Developer</p>
+          </div>
         </div>
         <div>
           <h5 class="case-study-label">Collaborators</h5>
-          <p class="case-study-text">Product Stakeholder, Backend Engineering</p>
+          <div class="case-study-detail-lines">
+            <p class="case-study-text">Product Stakeholder</p>
+            <p class="case-study-text">Backend Engineering</p>
+          </div>
         </div>
         <div>
           <h5 class="case-study-label">Responsibilities</h5>
-          <p class="case-study-text">UX/UI Design, Front-End Development, Backend Collaboration</p>
+          <ul class="case-study-text case-study-detail-lines">
+            <li>UX/UI Design</li>
+            <li>Front-End Development</li>
+            <li>Backend Collaboration</li>
+          </ul>
         </div>
         <div>
           <h5 class="case-study-label">Timeline</h5>
-          <p class="case-study-text">2024 (6 months)</p>
+          <div class="case-study-detail-lines">
+            <p class="case-study-text">2024</p>
+            <p class="case-study-text">6 months</p>
+          </div>
         </div>
       </section>
 

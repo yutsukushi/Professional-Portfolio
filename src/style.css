@@ -64,17 +64,46 @@ a:focus-visible {
 }
 
 .case-study-details {
-  display: flex;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.case-study-details > div {
+  min-width: 0;
+}
+
+.case-study-detail-lines {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  list-style: none;
+}
+
+.case-study-detail-lines > .case-study-text {
+  margin: 0;
+}
+
+ul.case-study-detail-lines {
+  padding: 0;
 }
 
 .case-study-section {
   padding: 1rem 0;
 }
 
+ul.case-study-text {
+  padding-inline-start: 1.25rem;
+}
+
+ul.case-study-text.case-study-detail-lines {
+  padding: 0;
+}
+
 @media (max-width: 768px) {
   .case-study-details {
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
   }
 }
 

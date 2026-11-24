@@ -1,4 +1,6 @@
 <script setup>
+import resumePdf from '../../assets/images/YukieKushibiki_Resume.pdf'
+
 defineProps({
   variant: {
     type: String,
@@ -23,7 +25,7 @@ defineProps({
       <nav class="site-nav" aria-label="Primary navigation">
         <ul>
           <li><RouterLink :to="{ path: '/', hash: '#work' }">Work</RouterLink></li>
-          <li><RouterLink :to="{ path: '/', hash: '#resume' }">Resume</RouterLink></li>
+          <li><a :href="resumePdf" target="_blank" rel="noopener noreferrer">Resume</a></li>
           <li><RouterLink :to="{ path: '/', hash: '#about' }">About Me</RouterLink></li>
         </ul>
       </nav>
@@ -36,7 +38,7 @@ defineProps({
       <nav class="site-nav" aria-label="Case study navigation">
         <ul>
           <li><RouterLink :to="{ path: '/', hash: '#work' }">Work</RouterLink></li>
-          <li><RouterLink :to="{ path: '/', hash: '#resume' }">Resume</RouterLink></li>
+          <li><a :href="resumePdf" target="_blank" rel="noopener noreferrer">Resume</a></li>
           <li><RouterLink :to="{ path: '/', hash: '#about' }">About Me</RouterLink></li>
         </ul>
       </nav>

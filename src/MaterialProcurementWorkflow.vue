@@ -87,28 +87,36 @@ function closeImage() {
     <section class="case-study-details case-study-section">
       <div>
         <h5 class="case-study-label">My Role</h5>
-        <p class="case-study-text">Product Designer, Developer</p>
+        <div class="case-study-detail-lines">
+          <p class="case-study-text">Product Designer</p>
+          <p class="case-study-text">Front-End Developer</p>
+        </div>
       </div>
       <div>
         <h5 class="case-study-label">Collaborators</h5>
-        <p class="case-study-text">Stakeholder, Backend Developers</p>
+        <div class="case-study-detail-lines">
+          <p class="case-study-text">Product Stakeholder</p>
+          <p class="case-study-text">Backend Engineers</p>
+        </div>
       </div>
       <div>
         <h5 class="case-study-label">Responsibilities</h5>
-        <!-- <p class="case-study-text">UX/UI Design, Frontend Development, API and data modeling</p> -->
-        <ul class="case-study-text">
+        <ul class="case-study-text case-study-detail-lines">
           <li>UX/UI Design</li>
           <li>Frontend Development</li>
-          <li>API and Data Modeling</li>
+          <li>API &amp; Data Modeling</li>
         </ul>
       </div>
       <div>
         <h5 class="case-study-label">Timeline</h5>
-        <p class="case-study-text">2026 (1 month)</p>
+        <div class="case-study-detail-lines">
+          <p class="case-study-text">2026</p>
+          <p class="case-study-text">1 month</p>
+        </div>
       </div>
     </section>
     <section class="case-study-section">
-      <h4>The Challenge</h4>
+      <h4>Problem</h4>
       <p class="case-study-text"><b>The project table was already where users managed materials, but making changes to those materials wasn't always straightforward.</b> Once products were added, updating project-specific information often meant returning to sourcing workflows, creating new product entries, or reworking imported data.</p>
       <p class="case-study-text">Purchasing information such as supplier availability, lead times, pricing, and discounts also lived elsewhere in the platform, making it difficult to evaluate sourcing decisions alongside the materials being managed.</p>
       <p class="case-study-text">Users also worked with catalog, non-catalog, and configurable products, each with its own workflow, making it difficult to manage materials consistently from a single place.</p>
@@ -349,24 +357,6 @@ function closeImage() {
   margin-bottom: 0.75rem;
   object-fit: contain;
 }
-
-ul.case-study-text {
-  padding-inline-start: 1.25rem;
-}
-
-/* ul.case-study-text.case-study-responsibilities {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  padding-inline-start: 0;
-  list-style: none;
-} */
-
-/* .case-study-responsibilities li + li::before {
-  margin: 0 0.45rem;
-  color: var(--muted);
-  content: '·';
-} */
 
 .project-table-gallery-caption ul {
   margin: 0;
