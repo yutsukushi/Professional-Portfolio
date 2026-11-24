@@ -42,7 +42,7 @@ import SiteHeader from './components/SiteHeader.vue'
         </div>
         <div>
           <h5 class="case-study-label">Timeline</h5>
-          <p class="case-study-text">6 months, 2024</p>
+          <p class="case-study-text">2024 (6 months)</p>
         </div>
       </section>
 

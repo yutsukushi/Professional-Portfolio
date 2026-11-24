@@ -95,11 +95,16 @@ function closeImage() {
       </div>
       <div>
         <h5 class="case-study-label">Responsibilities</h5>
-        <p class="case-study-text">UX/UI Design, Frontend Development, API and data modeling</p>
+        <!-- <p class="case-study-text">UX/UI Design, Frontend Development, API and data modeling</p> -->
+        <ul class="case-study-text">
+          <li>UX/UI Design</li>
+          <li>Frontend Development</li>
+          <li>API and Data Modeling</li>
+        </ul>
       </div>
       <div>
         <h5 class="case-study-label">Timeline</h5>
-        <p class="case-study-text">1 month, 2026</p>
+        <p class="case-study-text">2026 (1 month)</p>
       </div>
     </section>
     <section class="case-study-section">

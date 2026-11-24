@@ -133,7 +133,7 @@ function closeImage() {
         </div>
         <div>
           <h5 class="case-study-label">Timeline</h5>
-          <p class="case-study-text">3 weeks, 2026</p>
+          <p class="case-study-text">2026 (3 weeks)</p>
         </div>
       </section>
 
