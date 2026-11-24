@@ -2,6 +2,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
-  base: process.env.GITHUB_ACTIONS ? '/Professional-Portfolio/' : '/',
+  base: process.env.GITHUB_ACTIONS ? '/' : '/',
   plugins: [vue()],
 })
