@@ -17,7 +17,7 @@ defineProps({
           <h1 class="site-title">Hi, I'm Yukie!</h1>
           <p class="site-title-meta">
             <span class="site-title-meta-item">Frontend Designer / Developer</span>
-            <span class="site-title-meta-detail site-title-meta-blurb">✦ Collector of tiny trinkets &amp; exotic plants</span>
+            <span class="site-title-meta-detail site-title-meta-blurb">✦ Crafter &amp; collector of exotic plants</span>
           </p>
         </div>
         <p class="site-title-helper">I work at the intersection between design and code, turning complex, data-dense workflows into clean, shipped products.</p>
