@@ -15,7 +15,7 @@ import SiteHeader from './components/SiteHeader.vue'
       <div class="about-copy">
       <h2 id="about-title" class="about-title">Hi, I'm Yukie!</h2>
         <p>
-          I'm a product designer based in Pittsburgh, PA, with a fine arts background from Penn State University and a love for untangling complex problems.
+          I'm a frontend designer and developer based in Pittsburgh, PA, with a fine arts background from Penn State University and a love for untangling complex problems.
         </p>
 
         <p>
@@ -46,10 +46,10 @@ import SiteHeader from './components/SiteHeader.vue'
         <img src="../assets/images/about/plants.jpg" alt="A collection of green houseplants" />
       </div>
       <div class="gallery-photo gallery-photo--square">
-        <img src="../assets/images/about/gallery.jpg" alt="Close-up of colorful painted lettering" />
+        <img src="../assets/images/about/gallery.jpg" alt="A set of paintings in a gallery" />
       </div>
       <div class="gallery-photo gallery-photo--plants">
-        <img src="../assets/images/about/coco.jpg" alt="A collection of green houseplants" />
+        <img src="../assets/images/about/coco.jpg" alt="A cat laying on yarn" />
       </div>
     </section>
   </main>
