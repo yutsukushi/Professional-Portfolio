@@ -32,7 +32,7 @@ const projectTableImages = [
     label: 'After: Managing Materials',
     points: [
       'Edit and manage materials directly in the table',
-      'Compare suppliers, pricing and availaibility in context',
+      'Compare suppliers, pricing, and availability in context',
       'Replace products without leaving the workflow',
       'Manage catalog, non-catalog, and configurable products in a consistent experience'
     ],
@@ -53,7 +53,7 @@ const keyInteractions = [
   },
   {
     title: 'Compare supplier offers',
-    description: 'Compare supplier pricing, availability, and product alerts without leaving the table.',
+    description: 'Compare supplier pricing, availability, and product alertsdirectly within the project table.',
     src: supplierOffersInteraction,
     alt: 'Supplier offer list showing stock, alerts, prices, and savings',
   },
@@ -89,7 +89,7 @@ function closeImage() {
         <h5 class="case-study-label">My Role</h5>
         <div class="case-study-detail-lines">
           <p class="case-study-text">Product Designer</p>
-          <p class="case-study-text">Front-End Developer</p>
+          <p class="case-study-text">Frontend Developer</p>
         </div>
       </div>
       <div>
@@ -124,7 +124,7 @@ function closeImage() {
     <section class="case-study-section">
       <h4>Opportunity</h4>
       <p class="case-study-text"><b>Project tables already existed throughout the ecosystem, but they were primarily designed for tracking materials rather than managing them.</b></p>
-      <p class="case-study-text">I saw an opportunity to build on an existing project table pattern and expand it where users could edit project-specific product information and evaluate purchasing decisions without leaving the page.</p>
+      <p class="case-study-text">I saw an opportunity to build on an existing project table pattern and expand it into a workspace where users could edit project-specific product information and evaluate purchasing decisions without leaving the page.</p>
     </section>
     <section class="case-study-section">
       <h4>Design Exploration</h4>
@@ -141,9 +141,9 @@ function closeImage() {
     </section>
     <section class="case-study-section">
       <h4>Solution</h4>
-      <p class="case-study-text"><b>Give users more control over the materials they've added to their projects.</b></p>
+      <p class="case-study-text"><b>Enable users to edit, replace, and source project materials directly from the table.</b></p>
       <p class="case-study-text">I expanded the project table to support catalog, non-catalog, and configurable products within a consistent experience. Users could edit project-specific details such as brands, quantities, tags, and supplier notes directly from the row rather than returning to sourcing workflows or creating new entries.</p>
-      <p class="case-study-text">Purchasing information such as supplier availability, lead times, pricing, discounts, and supplier options surfaced alongside project material data, allowing sourcing decisions to happen earlier in the workflow without leaving the project.</p>
+      <p class="case-study-text">Purchasing information such as supplier availability, lead times, pricing, discounts, and supplier options was displayed alongside project material data, allowing sourcing decisions to happen earlier in the workflow without leaving the project.</p>
       <div class="project-table-gallery">
         <figure
           v-for="image in projectTableImages"
