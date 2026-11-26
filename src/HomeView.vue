@@ -25,7 +25,7 @@ import SiteHeader from './components/SiteHeader.vue'
               <img class="case-study-image" :src="tableNewBrowser" alt="Material Procurement Workflow" />
               <span class="project-card-overlay">
                 <span class="project-card-title">Turning a Project Table into a Material Workspace</span>
-                <span class="project-card-metadata">Enterprise • Procurement • Workflow Design</span>
+                <span class="project-card-metadata">Enterprise • Complex Systems • Decision Support</span>
               </span>
             </div>
           </RouterLink>
@@ -43,7 +43,7 @@ import SiteHeader from './components/SiteHeader.vue'
               </div>
               <span class="project-card-overlay">
                 <span class="project-card-title">Scaling ERP Exports Through Templates and Automation</span>
-                <span class="project-card-metadata">Enterprise • ERP • Workflow Automation</span>
+                <span class="project-card-metadata">Enterprise • Data Management • Process Automation</span>
               </span>
             </div>
           </RouterLink>
@@ -61,7 +61,7 @@ import SiteHeader from './components/SiteHeader.vue'
               </div>
               <span class="project-card-overlay">
                 <span class="project-card-title">Bringing Clarity to Promotion Creation & Management</span>
-                <span class="project-card-metadata">Enterprise • Marketing Operations • Complex Workflows</span>
+                <span class="project-card-metadata">B2B • Marketing Operations • User Enablement</span>
               </span>
             </div>
           </RouterLink>
