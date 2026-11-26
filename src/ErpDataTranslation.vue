@@ -203,7 +203,7 @@ function closeImage() {
             Administrators could create, edit, replace, or remove their organization's default export template, allowing export behavior to evolve alongside changing business requirements. Templates defined file structure, purchase order field mappings, customer-specific metadata, file naming conventions, and export qualification rules.
           </p>
           <p class="case-study-text">
-            Once configured, eligible orders were then collected into a bulk export workflow, allowing teams to process accumulated purchase orders in a single action without requiring developer involvement.
+            Once configured, eligible orders were collected into a bulk export workflow, allowing teams to process accumulated purchase orders in a single action without requiring developer involvement.
           </p>
           <p class="case-study-text">
             To improve visibility, exported purchase orders were tracked within the application, making it easier to identify what had already been processed. Generated files could then be downloaded directly or delivered through SFTP integrations based on organizational needs.
