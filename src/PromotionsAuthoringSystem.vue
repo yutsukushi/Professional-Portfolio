@@ -110,7 +110,7 @@ import SiteHeader from './components/SiteHeader.vue'
       <section class="case-study-section">
           <h4>Tradeoffs</h4>
           <h4 class="case-study-subheading">Making complexity understandable</h4>
-          <p class="case-study-text">Visually, the legacy interface was vertically shorter but it made the interface harder to navigate and understand. To bring clarity to the user, the interface became a scrolling experience to ensure all information was accessible.</p>
+          <p class="case-study-text">Although the legacy interface was vertically shorter, it was harder to navigate and understand. To make the content clearer, the interface became a scrolling experience so all information remained accessible.</p>
           <p class="case-study-text">Related functionality was grouped into dedicated sections and dependencies were surfaced in context, helping users understand how settings worked together while preserving the flexibility of the promotion engine.</p>
 
           <h4 class="case-study-subheading">Shipping confidence over schedule</h4>

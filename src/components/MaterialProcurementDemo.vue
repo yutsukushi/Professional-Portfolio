@@ -335,27 +335,96 @@ function getTriggerElement(type, id) {
   return triggerElements.get(triggerKey(type, id))
 }
 
+function getVisibleViewport() {
+  const visualViewport = window.visualViewport
+  const left = visualViewport?.offsetLeft ?? 0
+  const top = visualViewport?.offsetTop ?? 0
+  const width = visualViewport?.width ?? window.innerWidth
+  const height = visualViewport?.height ?? window.innerHeight
+
+  return {
+    left,
+    top,
+    right: left + width,
+    bottom: top + height,
+    width,
+  }
+}
+
+function isElementVisible(element) {
+  const bounds = element.getBoundingClientRect()
+  const viewport = getVisibleViewport()
+  const visibleBounds = {
+    left: Math.max(bounds.left, viewport.left),
+    top: Math.max(bounds.top, viewport.top),
+    right: Math.min(bounds.right, viewport.right),
+    bottom: Math.min(bounds.bottom, viewport.bottom),
+  }
+  let ancestor = element.parentElement
+
+  while (ancestor) {
+    const style = window.getComputedStyle(ancestor)
+    const clipsHorizontally = ['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowX)
+    const clipsVertically = ['auto', 'scroll', 'hidden', 'clip'].includes(style.overflowY)
+
+    if (clipsHorizontally || clipsVertically) {
+      const ancestorBounds = ancestor.getBoundingClientRect()
+      if (clipsHorizontally) {
+        visibleBounds.left = Math.max(visibleBounds.left, ancestorBounds.left)
+        visibleBounds.right = Math.min(visibleBounds.right, ancestorBounds.right)
+      }
+      if (clipsVertically) {
+        visibleBounds.top = Math.max(visibleBounds.top, ancestorBounds.top)
+        visibleBounds.bottom = Math.min(visibleBounds.bottom, ancestorBounds.bottom)
+      }
+    }
+
+    ancestor = ancestor.parentElement
+  }
+
+  return visibleBounds.right > visibleBounds.left && visibleBounds.bottom > visibleBounds.top
+}
+
 function positionDropdown(trigger, dropdown, estimatedHeight) {
   const bounds = trigger.getBoundingClientRect()
   const horizontalAnchorLeft =
     trigger.closest('.supplier-cell, .sku-cell')?.getBoundingClientRect().left ?? bounds.left
+  const viewport = getVisibleViewport()
   const viewportPadding = 12
   const dropdownGap = 6
-  const dropdownWidth = Math.min(320, window.innerWidth - viewportPadding * 2)
+  const dropdownWidth = Math.min(320, viewport.width - viewportPadding * 2)
   const dropdownHeight = dropdown?.getBoundingClientRect().height || estimatedHeight
+  const maxAvailableHeight = Math.max(0, viewport.bottom - viewport.top - viewportPadding * 2)
   const spaceBelow = Math.max(
     0,
-    window.innerHeight - bounds.bottom - dropdownGap - viewportPadding,
+    Math.min(
+      maxAvailableHeight,
+      viewport.bottom - bounds.bottom - dropdownGap - viewportPadding,
+    ),
   )
-  const spaceAbove = Math.max(0, bounds.top - dropdownGap - viewportPadding)
+  const spaceAbove = Math.max(
+    0,
+    Math.min(
+      maxAvailableHeight,
+      bounds.top - viewport.top - dropdownGap - viewportPadding,
+    ),
+  )
   const openBelow = dropdownHeight <= spaceBelow || spaceBelow >= spaceAbove
   const availableHeight = openBelow ? spaceBelow : spaceAbove
-  const top = openBelow
+  const visibleDropdownHeight = Math.min(dropdownHeight, availableHeight)
+  const preferredTop = openBelow
     ? bounds.bottom + dropdownGap
-    : Math.max(viewportPadding, bounds.top - Math.min(dropdownHeight, availableHeight) - dropdownGap)
+    : Math.max(
+        viewport.top + viewportPadding,
+        bounds.top - visibleDropdownHeight - dropdownGap,
+      )
+  const top = Math.max(
+    viewport.top + viewportPadding,
+    Math.min(preferredTop, viewport.bottom - visibleDropdownHeight - viewportPadding),
+  )
   const left = Math.max(
-    viewportPadding,
-    Math.min(horizontalAnchorLeft, window.innerWidth - dropdownWidth - viewportPadding),
+    viewport.left + viewportPadding,
+    Math.min(horizontalAnchorLeft, viewport.right - dropdownWidth - viewportPadding),
   )
 
   dropdownPosition.value = {
@@ -368,29 +437,31 @@ function positionDropdown(trigger, dropdown, estimatedHeight) {
 
 function positionSupplierPopover(trigger) {
   const bounds = trigger.getBoundingClientRect()
-  const popoverWidth = Math.min(240, window.innerWidth - 24)
+  const viewport = getVisibleViewport()
+  const popoverWidth = Math.min(240, viewport.width - 24)
   const estimatedPopoverHeight = 150
   const popoverGap = 4
   const viewportPadding = 12
-  const maxLeft = window.innerWidth - popoverWidth - viewportPadding
+  const maxLeft = viewport.right - popoverWidth - viewportPadding
   const left = Math.max(
-    viewportPadding,
+    viewport.left + viewportPadding,
     Math.min(bounds.left, maxLeft),
   )
   const rightAlignedLeft = Math.max(
-    viewportPadding,
+    viewport.left + viewportPadding,
     Math.min(bounds.right - popoverWidth, maxLeft),
   )
-  const alignRight = bounds.left + popoverWidth > window.innerWidth - viewportPadding
+  const alignRight = bounds.left + popoverWidth > viewport.right - viewportPadding
   const hasRoomBelow =
-    bounds.bottom + popoverGap + estimatedPopoverHeight <= window.innerHeight - viewportPadding
+    bounds.bottom + popoverGap + estimatedPopoverHeight <= viewport.bottom - viewportPadding
   const top = hasRoomBelow
     ? bounds.bottom + popoverGap
-    : Math.max(viewportPadding, bounds.top - estimatedPopoverHeight - popoverGap)
+    : Math.max(viewport.top + viewportPadding, bounds.top - estimatedPopoverHeight - popoverGap)
 
   supplierPopoverPosition.value = {
     left: `${(alignRight ? rightAlignedLeft : left) + window.scrollX}px`,
     top: `${top + window.scrollY}px`,
+    width: `${popoverWidth}px`,
   }
 }
 
@@ -451,17 +522,50 @@ function closeSupplierPopoverOutside(event) {
   }
 }
 
+function closeDropdownOnFocusOut(event) {
+  const dropdown = activeDropdown.value
+  const target = event.target
+  if (!dropdown || !(target instanceof Node)) {
+    return
+  }
+
+  const trigger = getTriggerElement(dropdown.type, dropdown.id)
+  const menu = document.getElementById(dropdown.domId)
+  if (!trigger?.contains(target) && !menu?.contains(target)) {
+    return
+  }
+
+  const nextTarget = event.relatedTarget
+  if (nextTarget instanceof Node) {
+    if (trigger?.contains(nextTarget) || menu?.contains(nextTarget)) {
+      return
+    }
+    closeActiveDropdown()
+    return
+  }
+
+  window.setTimeout(() => {
+    if (activeDropdown.value !== dropdown) {
+      return
+    }
+    const focusedElement = document.activeElement
+    if (trigger?.contains(focusedElement) || menu?.contains(focusedElement)) {
+      return
+    }
+    closeActiveDropdown()
+  }, 0)
+}
+
 function repositionActiveOverlays() {
   const dropdown = activeDropdown.value
   if (dropdown) {
     const trigger = getTriggerElement(dropdown.type, dropdown.id)
     const dropdownElement = document.getElementById(dropdown.domId)
-    if (trigger) {
-      positionDropdown(
-        trigger,
-        dropdownElement,
-        dropdown.type === 'supplier' ? 280 : 220,
-      )
+    const cell = trigger?.closest('.supplier-cell, .sku-cell')
+    if (!trigger || !cell || !isElementVisible(cell)) {
+      closeActiveDropdown()
+    } else {
+      positionDropdown(trigger, dropdownElement, dropdown.type === 'supplier' ? 280 : 220)
     }
   }
 
@@ -472,21 +576,22 @@ function repositionActiveOverlays() {
   }
 }
 
-function closeDropdownsOnScroll() {
-  closeActiveDropdown()
-  repositionActiveOverlays()
-}
-
 onMounted(() => {
   window.addEventListener('click', closeSupplierPopoverOutside)
+  window.addEventListener('focusout', closeDropdownOnFocusOut)
   window.addEventListener('resize', repositionActiveOverlays, { passive: true })
-  window.addEventListener('scroll', closeDropdownsOnScroll, true)
+  window.addEventListener('scroll', repositionActiveOverlays, { passive: true, capture: true })
+  window.visualViewport?.addEventListener('resize', repositionActiveOverlays, { passive: true })
+  window.visualViewport?.addEventListener('scroll', repositionActiveOverlays, { passive: true })
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('click', closeSupplierPopoverOutside)
+  window.removeEventListener('focusout', closeDropdownOnFocusOut)
   window.removeEventListener('resize', repositionActiveOverlays)
-  window.removeEventListener('scroll', closeDropdownsOnScroll, true)
+  window.removeEventListener('scroll', repositionActiveOverlays, true)
+  window.visualViewport?.removeEventListener('resize', repositionActiveOverlays)
+  window.visualViewport?.removeEventListener('scroll', repositionActiveOverlays)
 })
 
 function toggleAllRows(event) {
